@@ -169,3 +169,19 @@ public class YourServiceTest {
         verify(httpRequest, times(1)).getHeader("cookie");
     }
 }
+
+
+
+//
+public String doSaveDependentEdits() {
+	if (validateDependent()) {
+		passedDpndntValidation = true;
+
+		return getAuthorizationHelperBean().getForwardAuthorization("navEnrollMemberSummary");
+	}
+
+	setTrackChanges(false);
+	return null;
+}
+
+ 
