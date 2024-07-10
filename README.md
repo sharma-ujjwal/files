@@ -172,9 +172,9 @@ public class YourServiceTest {
 
 
 
-//
+
 public String doSaveDependentEdits() {
-	if (validateDependent()) {
+    if (validateDependent()) {
 		passedDpndntValidation = true;
 
 		return getAuthorizationHelperBean().getForwardAuthorization("navEnrollMemberSummary");
@@ -184,4 +184,55 @@ public String doSaveDependentEdits() {
 	return null;
 }
 
- 
+
+
+
+ import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+public class YourClassTest {
+
+    @InjectMocks
+    private YourClass yourClass;
+
+    @Mock
+    private AuthorizationHelperBean authorizationHelperBean;
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void testDoSaveDependentEdits_ValidationPasses() {
+        // Arrange
+        when(yourClass.validateDependent()).thenReturn(true);
+        when(authorizationHelperBean.getForwardAuthorization("navEnrollMemberSummary")).thenReturn("expectedForward");
+
+        // Act
+        String result = yourClass.doSaveDependentEdits();
+
+        // Assert
+        assertEquals("expectedForward", result);
+        assertTrue(yourClass.passedDpndntValidation);
+    }
+
+    @Test
+    public void testDoSaveDependentEdits_ValidationFails() {
+        // Arrange
+        when(yourClass.validateDependent()).thenReturn(false);
+
+        // Act
+        String result = yourClass.doSaveDependentEdits();
+
+        // Assert
+        assertNull(result);
+        verify(authorizationHelperBean, never()).getForwardAuthorization(anyString());
+    }
+}
