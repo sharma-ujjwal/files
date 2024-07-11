@@ -1079,4 +1079,114 @@ public class YourClassTest {
     }
 }
 
+
+
+
+   Here's a JUnit test case for the `parseLoadPaginationActionResponse` method with a dummy JSON response:
+
+```java
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.NullPermission;
+import com.thoughtworks.xstream.security.PrimitiveTypePermission;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class MemberListResponseDTOTest {
+
+    @Test
+    public void testParseLoadPaginationActionResponse() throws JSONException {
+        // Create a dummy JSON response
+        String jsonResponse = "{ \"memberListResponseDTO\": {" +
+                "\"memberList\": [" +
+                "{" +
+                "\"requestUser\": \"user1\"," +
+                "\"firstName\": \"John\"," +
+                "\"lastName\": \"Doe\"," +
+                "\"coverages\": [" +
+                "{" +
+                "\"benefitKey\": \"B001\"," +
+                "\"description\": \"Health Insurance\"" +
+                "}" +
+                "]" +
+                "}," +
+                "{" +
+                "\"requestUser\": \"user2\"," +
+                "\"firstName\": \"Jane\"," +
+                "\"lastName\": \"Smith\"," +
+                "\"coverages\": [" +
+                "{" +
+                "\"benefitKey\": \"B002\"," +
+                "\"description\": \"Dental Insurance\"" +
+                "}" +
+                "]" +
+                "}" +
+                "]," +
+                "\"totalMembers\": \"2\"" +
+                "}" +
+                "}";
+
+        JSONObject response = new JSONObject(jsonResponse);
+
+        // Call the method to test
+        MemberListResponseDTO result = parseLoadPaginationActionResponse(response);
+
+        // Validate the result
+        assertEquals("2", result.getTotalMembers());
+
+        List<MemberDTO> memberList = result.getMemberList();
+        assertEquals(2, memberList.size());
+
+        MemberDTO member1 = memberList.get(0);
+        assertEquals("user1", member1.getRequestUser());
+        assertEquals("John", member1.getFirstName());
+        assertEquals("Doe", member1.getLastName());
+
+        List<CoverageDTO> coverages1 = member1.getCoverages();
+        assertEquals(1, coverages1.size());
+        assertEquals("B001", coverages1.get(0).getBenefitKey());
+        assertEquals("Health Insurance", coverages1.get(0).getDescription());
+
+        MemberDTO member2 = memberList.get(1);
+        assertEquals("user2", member2.getRequestUser());
+        assertEquals("Jane", member2.getFirstName());
+        assertEquals("Smith", member2.getLastName());
+
+        List<CoverageDTO> coverages2 = member2.getCoverages();
+        assertEquals(1, coverages2.size());
+        assertEquals("B002", coverages2.get(0).getBenefitKey());
+        assertEquals("Dental Insurance", coverages2.get(0).getDescription());
+    }
+
+    private MemberListResponseDTO parseLoadPaginationActionResponse(JSONObject response) throws JSONException {
+        XStream xstream = new XStream(new JettisonMappedXmlDriver());
+        xstream.alias("memberListResponseDTO", MemberListResponseDTO.class);
+        xstream.addImplicitCollection(MemberListResponseDTO.class, "memberList", MemberDTO.class);
+        xstream.addImplicitCollection(MemberDTO.class, "coverages", CoverageDTO.class);
+        xstream.addPermission(NoTypePermission.NONE);
+        xstream.addPermission(NullPermission.NULL);
+        xstream.addPermission(PrimitiveTypePermission.PRIMITIVES);
+        xstream.allowTypesByWildcard(new String[]{
+                MemberListResponseDTO.class.getPackage().getName() + ".*"
+        });
+
+        return (MemberListResponseDTO) xstream.fromXML(response.toString());
+    }
+}
+```
+
+### Explanation
+1. **Dummy JSON Response:** A sample JSON response mimics the expected input for the method.
+2. **JUnit Test Method:** Tests the `parseLoadPaginationActionResponse` method using the dummy response.
+3. **Assertions:** Checks if the response is parsed correctly.
+4. **Private Method:** Includes the private method `parseLoadPaginationActionResponse` within the test class for completeness, allowing the test to call it directly.
+
+Note: Adjust the method visibility and class imports as necessary to fit your actual codebase structure.
   
