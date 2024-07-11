@@ -1021,4 +1021,62 @@
 			public String toString() {
 				return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 			}
-		}
+		} 
+
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+import com.thoughtworks.xstream.security.NoTypePermission;
+import com.thoughtworks.xstream.security.NullPermission;
+import com.thoughtworks.xstream.security.PrimitiveTypePermission;
+import org.json.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+public class YourClassTest {
+
+    private YourClass yourClass;
+
+    @BeforeEach
+    public void setUp() {
+        yourClass = new YourClass();
+    }
+
+    @Test
+    public void testParseLoadPaginationActionResponse() throws Exception {
+        // Create a mock JSONObject
+        JSONObject mockResponse = mock(JSONObject.class);
+        
+        // Mock the response behavior
+        when(mockResponse.get("memberListResponseDTO")).thenReturn("mockValue");
+
+        // Mock XStream behavior
+        XStream xstream = mock(XStream.class);
+        MemberListResponseDTO mockMemberListResponseDTO = new MemberListResponseDTO();
+        
+        // Mock the xstream behavior
+        when(xstream.fromXML(anyString())).thenReturn(mockMemberListResponseDTO);
+
+        // Call the method under test
+        try {
+            yourClass.parseLoadPaginationActionResponse(mockResponse);
+        } catch (JSONException e) {
+            fail("JSONException thrown");
+        }
+
+        // Verify the method behavior
+        verify(mockResponse, times(1)).get("memberListResponseDTO");
+        verify(xstream, times(1)).alias("memberListResponseDTO", MemberListResponseDTO.class);
+        verify(xstream, times(1)).addImplicitCollection(MemberListResponseDTO.class, "memberList", MemberDTO.class);
+        verify(xstream, times(1)).addImplicitCollection(MemberDTO.class, "coverages", CoverageDTO.class);
+        verify(xstream, times(1)).addPermission(NoTypePermission.NONE);
+        verify(xstream, times(1)).addPermission(NullPermission.NULL);
+        verify(xstream, times(1)).addPermission(PrimitiveTypePermission.PRIMITIVES);
+        verify(xstream, times(1)).allowTypesByWildcard(new String[]{MemberListResponseDTO.class.getPackage().getName() + ".*"});
+    }
+}
+
+  
