@@ -1,4 +1,5 @@
-private void parseLoadPaginationActionResponse(JSONObject response) throws JSONException {
+
+	private void parseLoadPaginationActionResponse(JSONObject response) throws JSONException {
 		XStream xstream = new XStream(new JettisonMappedXmlDriver());
 		xstream.alias("memberListResponseDTO", MemberListResponseDTO.class);
 		xstream.addImplicitCollection(MemberListResponseDTO.class, "memberList", MemberDTO.class);
