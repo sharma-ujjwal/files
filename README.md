@@ -1,3 +1,5 @@
+
+
 # files
 local files added in this repo
 
@@ -236,3 +238,265 @@ public class YourClassTest {
         verify(authorizationHelperBean, never()).getForwardAuthorization(anyString());
     }
 }
+
+
+	public String getMiddlewareSrvcUrl() {
+		return middlewareSrvcUrl;
+	}
+
+	public String getApplicationExternalUrl() {
+		return applicationExternalUrl;
+	}
+
+	public String getApplicationInternalUrl() {
+		return applicationInternalUrl;
+	}
+
+	public boolean getProductionEnvironment() {
+		return productionEnvironment;
+	}
+
+	public String getMyProfileUrl() {
+		return myProfileUrl;
+	}
+
+	public String getCompassStatusMessage() {
+		return compassStatusMessage;
+	}
+
+	public Integer getManageBillsMemberDetailsPaginationSize() {
+		return manageBillsMemberDetailsPaginationSize;
+	}
+
+	public Integer getPremiumReconMemberDetailsPaginationSize() {
+		return premiumReconMemberDetailsPaginationSize;
+	}
+
+	public String getSolarServiceUrl() {
+		return solarServiceUrl;
+	}
+
+	public Integer getSolarServicePort() {
+		return solarServicePort;
+	}
+
+	public String getAcomsUrl() {
+		return acomsUrl;
+	}
+
+	public String getGroupFactsUrl() {
+		return groupFactsUrl;
+	}
+
+	public String getGhUrl() {
+		return ghUrl;
+	}
+
+	public String getvResMemberReporting() {
+		return vResMemberReporting;
+	}
+
+	public String getDocViewerUrl() {
+		return docViewerUrl;
+	}
+
+	public String getMdrHelpUrl() {
+		return mdrHelpUrl;
+	}
+
+	public String getMcsHelpUrl() {
+		return mcsHelpUrl;
+	}
+
+	public Integer getMcsMembersPaginationSize() {
+		return mcsMembersPaginationSize;
+	}
+
+	public String getMemberCoverageStatementEnabled() {
+		return memberCoverageStatementEnabled;
+	}
+
+	public String getClaimsReportingEnabled() {
+		return claimsReportingEnabled;
+	}
+
+	public String getOrdersWildeUrl() {
+		return ordersWildeUrl;
+	}
+
+	public String getWebinar() {
+		return webinar;
+	}
+
+	public String getUserGuide() {
+		return userGuide;
+	}
+
+	public String getMemberRegistrationGuide() {
+		return memberRegistrationGuide;
+	}
+
+	public String getHomeContactUsUrl() {
+		return homeContactUsUrl;
+	}
+
+	public String getPolicyFormsUrl() {
+		return policyFormsUrl;
+	}
+
+	public String getGenericPolicyFormsUrl() {
+		return genericPolicyFormsUrl;
+	}
+
+	public String getEmployerLogoutUrl() {
+		return employerLogoutUrl;
+	}
+
+	public String getForEmployersHomeUrl() {
+		return forEmployersHomeUrl;
+	}
+
+	public String getBoxiRequesterId() {
+		return boxiRequesterId;
+	}
+
+	public String getBoxiRequesterToken() {
+		return boxiRequesterToken;
+	}
+
+	public String getBoxiBusinessObjectsUserGroupId() {
+		return boxiBusinessObjectsUserGroupId;
+	}
+
+	public String getBoxiLanguage() {
+		return boxiLanguage;
+	}
+
+	public String getBoxiAuthenticationType() {
+		return boxiAuthenticationType;
+	}
+
+	public String getBoxiAuthenticationServerUrl() {
+		return boxiAuthenticationServerUrl;
+	}
+
+	public String getBoxiServerUrl() {
+		return boxiServerUrl;
+	}
+
+	public String getBoxiReportHost() {
+		return boxiReportHost;
+	}
+
+	public String getBoxiDisabilityClaimsReportObjectId() {
+		return boxiDisabilityClaimsReportObjectId;
+	}
+
+	public Integer getBoxiMonitorScheduledRequestWaitTime() {
+		return boxiMonitorScheduledRequestWaitTime;
+	}
+
+	public Integer getBoxiMonitorScheduledRequestRepetitions() {
+		return boxiMonitorScheduledRequestRepetitions;
+	}
+
+	public String getBrokerLandingUrlId() {
+		return brokerLandingUrlId;
+	}
+
+	public String getBrokerMessageUrlId() {
+		return brokerMessageUrlId;
+	}
+
+	public String getReCaptchaSiteKey() {
+		return reCaptchaSiteKey;
+	}
+
+	public String getDocumentOutputServiceUrl() {
+		return documentOutputServiceUrl;
+	}
+
+	public String getIocDentalIdCardsDisplayable() {
+		return iocDentalIdCardsDisplayable;
+	}
+
+	public String getXpressionUser() {
+		return xpressionUser;
+	}
+
+	public String getXpressionPassword() {
+		return xpressionPassword;
+	}
+
+	public Integer getBenefitInfoPageRequestLimit() {
+		return benefitInfoPageRequestLimit;
+	}
+
+	public String getStaticContentPath() {
+		return staticContentPath;
+	}
+
+	public String getEmployerStaticContentPath() {
+		return employerStaticContentPath;
+	}
+
+	public String getBannerNewsPath() {
+		return bannerNewsPath;
+	}
+
+	public String getJndiBoxiBillingReportObjectId() {
+		return jndiBoxiBillingReportObjectId;
+	}
+
+	public RequestBuilderFactory getBoxiRequestBuilderFactory() {
+		return boxiRequestBuilderFactory;
+	}
+
+	public ResponseBuilderFactory getResponseBuilderFactory() {
+		return responseBuilderFactory;
+	}
+
+	public ReportHelper getReportHelper() {
+		return reportHelper;
+	}
+
+
+	public String getUnleashAppName() {
+		return unleashAppName;
+	}
+
+	public void setUnleashAppName(String unleashAppName) {
+		this.unleashAppName = unleashAppName;
+	}
+
+	public String getUnleashInstanceId() {
+		return unleashInstanceId;
+	}
+
+	public void setUnleashInstanceId(String unleashInstanceId) {
+		this.unleashInstanceId = unleashInstanceId;
+	}
+
+	public String getUnleashEnvironment() {
+		return unleashEnvironment;
+	}
+
+	public void setUnleashEnvironment(String unleashEnvironment) {
+		this.unleashEnvironment = unleashEnvironment;
+	}
+
+	public String getUnleashApiUrl() {
+		return unleashApiUrl;
+	}
+
+	public void setUnleashApiUrl(String unleashApiUrl) {
+		this.unleashApiUrl = unleashApiUrl;
+	}
+
+	public String getUnleashAuthHeader() {
+		return unleashAuthHeader;
+	}
+
+	public void setUnleashAuthHeader(String unleashAuthHeader) {
+		this.unleashAuthHeader = unleashAuthHeader;
+	}
