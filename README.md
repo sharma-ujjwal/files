@@ -500,3 +500,284 @@ public class YourClassTest {
 	public void setUnleashAuthHeader(String unleashAuthHeader) {
 		this.unleashAuthHeader = unleashAuthHeader;
 	}
+
+
+     import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+public class YourClassTest {
+    
+    private YourClass yourClass;
+
+    @BeforeEach
+    public void setUp() {
+        yourClass = new YourClass();
+        // Set up initial values for fields if necessary
+        // e.g., yourClass.setMiddlewareSrvcUrl("http://example.com");
+    }
+
+    @Test
+    public void testGetMiddlewareSrvcUrl() {
+        String expected = "http://example.com";
+        yourClass.setMiddlewareSrvcUrl(expected);
+        assertEquals(expected, yourClass.getMiddlewareSrvcUrl());
+    }
+
+    @Test
+    public void testGetApplicationExternalUrl() {
+        String expected = "http://external.example.com";
+        yourClass.setApplicationExternalUrl(expected);
+        assertEquals(expected, yourClass.getApplicationExternalUrl());
+    }
+
+    @Test
+    public void testGetApplicationInternalUrl() {
+        String expected = "http://internal.example.com";
+        yourClass.setApplicationInternalUrl(expected);
+        assertEquals(expected, yourClass.getApplicationInternalUrl());
+    }
+
+    @Test
+    public void testGetProductionEnvironment() {
+        boolean expected = true;
+        yourClass.setProductionEnvironment(expected);
+        assertEquals(expected, yourClass.getProductionEnvironment());
+    }
+
+    @Test
+    public void testGetMyProfileUrl() {
+        String expected = "http://profile.example.com";
+        yourClass.setMyProfileUrl(expected);
+        assertEquals(expected, yourClass.getMyProfileUrl());
+    }
+
+    @Test
+    public void testGetCompassStatusMessage() {
+        String expected = "Status message";
+        yourClass.setCompassStatusMessage(expected);
+        assertEquals(expected, yourClass.getCompassStatusMessage());
+    }
+
+    @Test
+    public void testGetManageBillsMemberDetailsPaginationSize() {
+        Integer expected = 10;
+        yourClass.setManageBillsMemberDetailsPaginationSize(expected);
+        assertEquals(expected, yourClass.getManageBillsMemberDetailsPaginationSize());
+    }
+
+    @Test
+    public void testGetPremiumReconMemberDetailsPaginationSize() {
+        Integer expected = 20;
+        yourClass.setPremiumReconMemberDetailsPaginationSize(expected);
+        assertEquals(expected, yourClass.getPremiumReconMemberDetailsPaginationSize());
+    }
+
+    @Test
+    public void testGetSolarServiceUrl() {
+        String expected = "http://solar.example.com";
+        yourClass.setSolarServiceUrl(expected);
+        assertEquals(expected, yourClass.getSolarServiceUrl());
+    }
+
+    @Test
+    public void testGetSolarServicePort() {
+        Integer expected = 8080;
+        yourClass.setSolarServicePort(expected);
+        assertEquals(expected, yourClass.getSolarServicePort());
+    }
+
+    @Test
+    public void testGetAcomsUrl() {
+        String expected = "http://acoms.example.com";
+        yourClass.setAcomsUrl(expected);
+        assertEquals(expected, yourClass.getAcomsUrl());
+    }
+
+    @Test
+    public void testGetGroupFactsUrl() {
+        String expected = "http://groupfacts.example.com";
+        yourClass.setGroupFactsUrl(expected);
+        assertEquals(expected, yourClass.getGroupFactsUrl());
+    }
+
+    @Test
+    public void testGetGhUrl() {
+        String expected = "http://gh.example.com";
+        yourClass.setGhUrl(expected);
+        assertEquals(expected, yourClass.getGhUrl());
+    }
+
+    @Test
+    public void testGetvResMemberReporting() {
+        String expected = "http://vres.example.com";
+        yourClass.setvResMemberReporting(expected);
+        assertEquals(expected, yourClass.getvResMemberReporting());
+    }
+
+    @Test
+    public void testGetDocViewerUrl() {
+        String expected = "http://docviewer.example.com";
+        yourClass.setDocViewerUrl(expected);
+        assertEquals(expected, yourClass.getDocViewerUrl());
+    }
+
+    @Test
+    public void testGetMdrHelpUrl() {
+        String expected = "http://mdrhelp.example.com";
+        yourClass.setMdrHelpUrl(expected);
+        assertEquals(expected, yourClass.getMdrHelpUrl());
+    }
+
+    @Test
+    public void testGetMcsHelpUrl() {
+        String expected = "http://mcshelp.example.com";
+        yourClass.setMcsHelpUrl(expected);
+        assertEquals(expected, yourClass.getMcsHelpUrl());
+    }
+
+    @Test
+    public void testGetMcsMembersPaginationSize() {
+        Integer expected = 30;
+        yourClass.setMcsMembersPaginationSize(expected);
+        assertEquals(expected, yourClass.getMcsMembersPaginationSize());
+    }
+
+    @Test
+    public void testGetMemberCoverageStatementEnabled() {
+        String expected = "true";
+        yourClass.setMemberCoverageStatementEnabled(expected);
+        assertEquals(expected, yourClass.getMemberCoverageStatementEnabled());
+    }
+
+    @Test
+    public void testGetClaimsReportingEnabled() {
+        String expected = "true";
+        yourClass.setClaimsReportingEnabled(expected);
+        assertEquals(expected, yourClass.getClaimsReportingEnabled());
+    }
+
+    @Test
+    public void testGetOrdersWildeUrl() {
+        String expected = "http://orderswilde.example.com";
+        yourClass.setOrdersWildeUrl(expected);
+        assertEquals(expected, yourClass.getOrdersWildeUrl());
+    }
+
+    @Test
+    public void testGetWebinar() {
+        String expected = "http://webinar.example.com";
+        yourClass.setWebinar(expected);
+        assertEquals(expected, yourClass.getWebinar());
+    }
+
+    @Test
+    public void testGetUserGuide() {
+        String expected = "http://userguide.example.com";
+        yourClass.setUserGuide(expected);
+        assertEquals(expected, yourClass.getUserGuide());
+    }
+
+    @Test
+    public void testGetMemberRegistrationGuide() {
+        String expected = "http://memberregistrationguide.example.com";
+        yourClass.setMemberRegistrationGuide(expected);
+        assertEquals(expected, yourClass.getMemberRegistrationGuide());
+    }
+
+    @Test
+    public void testGetHomeContactUsUrl() {
+        String expected = "http://homecontactus.example.com";
+        yourClass.setHomeContactUsUrl(expected);
+        assertEquals(expected, yourClass.getHomeContactUsUrl());
+    }
+
+    @Test
+    public void testGetPolicyFormsUrl() {
+        String expected = "http://policyforms.example.com";
+        yourClass.setPolicyFormsUrl(expected);
+        assertEquals(expected, yourClass.getPolicyFormsUrl());
+    }
+
+    @Test
+    public void testGetGenericPolicyFormsUrl() {
+        String expected = "http://genericpolicyforms.example.com";
+        yourClass.setGenericPolicyFormsUrl(expected);
+        assertEquals(expected, yourClass.getGenericPolicyFormsUrl());
+    }
+
+    @Test
+    public void testGetEmployerLogoutUrl() {
+        String expected = "http://employerlogout.example.com";
+        yourClass.setEmployerLogoutUrl(expected);
+        assertEquals(expected, yourClass.getEmployerLogoutUrl());
+    }
+
+    @Test
+    public void testGetForEmployersHomeUrl() {
+        String expected = "http://foremployershome.example.com";
+        yourClass.setForEmployersHomeUrl(expected);
+        assertEquals(expected, yourClass.getForEmployersHomeUrl());
+    }
+
+    @Test
+    public void testGetBoxiRequesterId() {
+        String expected = "requesterId";
+        yourClass.setBoxiRequesterId(expected);
+        assertEquals(expected, yourClass.getBoxiRequesterId());
+    }
+
+    @Test
+    public void testGetBoxiRequesterToken() {
+        String expected = "requesterToken";
+        yourClass.setBoxiRequesterToken(expected);
+        assertEquals(expected, yourClass.getBoxiRequesterToken());
+    }
+
+    @Test
+    public void testGetBoxiBusinessObjectsUserGroupId() {
+        String expected = "userGroupId";
+        yourClass.setBoxiBusinessObjectsUserGroupId(expected);
+        assertEquals(expected, yourClass.getBoxiBusinessObjectsUserGroupId());
+    }
+
+    @Test
+    public void testGetBoxiLanguage() {
+        String expected = "en";
+        yourClass.setBoxiLanguage(expected);
+        assertEquals(expected, yourClass.getBoxiLanguage());
+    }
+
+    @Test
+    public void testGetBoxiAuthenticationType() {
+        String expected = "authType";
+        yourClass.setBoxiAuthenticationType(expected);
+        assertEquals(expected, yourClass.getBoxiAuthenticationType());
+    }
+
+    @Test
+    public void testGetBoxiAuthenticationServerUrl() {
+        String expected = "http://boxiauthserver.example.com";
+        yourClass.setBoxiAuthenticationServerUrl(expected);
+        assertEquals(expected, yourClass.getBoxiAuthenticationServerUrl());
+    }
+
+    @Test
+    public void testGetBoxiServerUrl() {
+        String expected = "http://boxiserver.example.com";
+        yourClass.setBoxiServerUrl(expected);
+        assertEquals(expected, yourClass.getBoxiServerUrl());
+    }
+
+    @Test
+    public void testGetBoxiReportHost() {
+        String expected = "reportHost";
+        yourClass.setBoxiReportHost(expected);
+        assertEquals(expected, yourClass.getBoxiReportHost());
+    }
+
+    @Test
+    public void testGetBoxiDisabilityClaimsReportObjectId() {
+        String expected = "disabilityClaimsReportObjectId";
+        yourClass.setBoxiDisabilityClaimsReportObjectId(expected);
+        assertEquals(expected, yourClass.getBoxi
