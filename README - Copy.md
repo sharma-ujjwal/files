@@ -70,4 +70,70 @@
 		return result.getJSONObject("resultSet");
 	}
 
-	
+
+
+import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Date;
+import org.json.JSONObject;
+
+@RunWith(MockitoJUnitRunner.class)
+public class YourClassTest {
+
+    @Mock
+    private UserBean userBean;
+    
+    @Mock
+    private PolicyValueBean policyValueBean;
+    
+    @Mock
+    private PaginationControlsBean paginationControlsBean;
+    
+    @InjectMocks
+    private YourClass yourClass; // Replace YourClass with the actual class name containing the method
+    
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        when(userBean.getUserName()).thenReturn("testUser");
+        when(policyValueBean.getSelectedBillGroupKey()).thenReturn("testBillGroupKey");
+        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("testPolicyNumber");
+    }
+
+    @Test
+    public void testLoadSingleMemberForEdit() throws Exception {
+        String memberNumber = "12345";
+        String memberLastName = "Doe";
+        String memberFirstName = "John";
+        String pagStartPos = "0";
+        String pagEndPos = "10";
+
+        // Mocking the JSON response
+        JSONObject mockResponse = new JSONObject();
+        mockResponse.put("returnCode", "0");
+        mockResponse.put("returnMessage", "Success");
+
+        JSONObject resultSet = new JSONObject();
+        // Assuming that the response structure includes a "memberList" field
+        resultSet.put("memberList", "[{\"memberNumber\":\"12345\", \"caseMbrKey\":\"case123\", \"clientId\":\"client123\", \"memberGroupKey\":\"group123\"}]");
+        mockResponse.put("resultSet", resultSet);
+
+        // Mocking the executeMiddlewareServiceRequest method
+        when(yourClass.executeMiddlewareServiceRequest(any(JSONObject.class))).thenReturn(resultSet);
+
+        // Mocking the doSelectSingleMemberAction method
+        when(paginationControlsBean.doSelectSingleMemberAction("case123", "client123", "group123")).thenReturn("success");
+
+        String result = yourClass.loadSingleMemberForEdit(memberNumber, memberLastName, memberFirstName, pagStartPos, pagEndPos);
+        assertEquals("success", result);
+    }
+}	
