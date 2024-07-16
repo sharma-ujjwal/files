@@ -2220,3 +2220,122 @@ public class YourClassTest {
 			}
 		}
 
+
+
+     import static org.mockito.Mockito.*;
+     import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.Date;
+
+import org.json.JSONException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+
+@RunWith(MockitoJUnitRunner.class)
+public class YourClassTest {
+    
+    @Mock
+    private Logger logger;
+
+    @Mock
+    private EmployerMiddlewareServiceJsonExecutor executor;
+
+    @Mock
+    private SecondaryUserDataBean secondaryUserDataBean;
+
+    @InjectMocks
+    private YourClass yourClass;
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        when(yourClass.getUserBean().getUserName()).thenReturn("testUser");
+        when(yourClass.getMiddlewareServiceUrl()).thenReturn("http://test.url");
+    }
+
+    @Test
+    public void testResendSecondaryUserInvitationSuccess() throws JSONException, IOException {
+        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
+        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
+        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
+
+        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenReturn(EmployerMiddlewareServiceJsonExecutor.RETURN_CODE_SUCCESS);
+        
+        ResendSecondaryEmployerAccessResponseDTO response = mock(ResendSecondaryEmployerAccessResponseDTO.class);
+        when(response.isSuccess()).thenReturn(true);
+        when(executor.getResultJson()).thenReturn(new JSONObject("{ \"isSuccess\": true }"));
+
+        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
+        
+        assertTrue(result);
+        verify(logger).trace("Resend secondary user invitation: {}", anyString());
+        verify(logger).trace("Resend secondary user invitation completed: {}", anyString());
+    }
+
+    @Test
+    public void testResendSecondaryUserInvitationExecutorError() throws JSONException, IOException {
+        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
+        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
+        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
+
+        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenReturn(EmployerMiddlewareServiceJsonExecutor.RETURN_CODE_ERROR);
+
+        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
+        
+        assertFalse(result);
+        verify(logger).error("Error executing employer middleware manager: {}", anyString());
+    }
+
+    @Test
+    public void testResendSecondaryUserInvitationJSONException() throws JSONException, IOException {
+        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
+        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
+        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
+
+        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenThrow(new JSONException("JSON error"));
+
+        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
+        
+        assertFalse(result);
+        verify(logger).error("JSONException executing employer middleware manager: {}", any(JSONException.class));
+    }
+
+    @Test
+    public void testResendSecondaryUserInvitationIOException() throws JSONException, IOException {
+        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
+        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
+        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
+
+        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenThrow(new IOException("IO error"));
+
+        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
+        
+        assertFalse(result);
+        verify(logger).error("IOException executing employer middleware manager: {}", any(IOException.class));
+    }
+
+    @Test
+    public void testResendSecondaryUserInvitationResponseFailure() throws JSONException, IOException {
+        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
+        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
+        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
+
+        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenReturn(EmployerMiddlewareServiceJsonExecutor.RETURN_CODE_SUCCESS);
+        
+        ResendSecondaryEmployerAccessResponseDTO response = mock(ResendSecondaryEmployerAccessResponseDTO.class);
+        when(response.isSuccess()).thenReturn(false);
+        when(executor.getResultJson()).thenReturn(new JSONObject("{ \"isSuccess\": false }"));
+
+        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
+        
+        assertFalse(result);
+        verify(logger).error("Failed to resend secondary user invitation: {}", anyString());
+    }
+}
