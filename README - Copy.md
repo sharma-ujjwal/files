@@ -1,143 +1,125 @@
-private void populateAdjustedBillDepartmentList(List<BillDepartment> printBillsMemberList, List<BillDepartment> adjustedBillDepartmentList){
+public void processEnrollment() {
+		boolean isEnrollmentSuccessful = false;
+		String enrollmentMessage = "An error has occurred during the enrollment. Please print this page and contact Customer Advocacy.";
 
-		for(BillDepartment billDepartment : printBillsMemberList){
-			List<BillMember> billMemberList = new ArrayList<BillMember>();
-			BillDepartment department = new BillDepartment();
-			department.setName(billDepartment.getName());
-			//department.setMemberPastDueAmountTotal(billDepartment.getMemberPastDueAmountTotal());
-			department.setMemberEmployeeTotal(billDepartment.getMemberEmployeeTotal());
-			department.setMemberEmployerTotal(billDepartment.getMemberEmployerTotal());
-			department.setMemberBillAmountDueTotal(billDepartment.getMemberBillAmountDueTotal());
-			int count=0;
-			for(BillMember billMember : billDepartment.getMembers()){
-				BillMember member = new BillMember();
-				member.setFirstName(billMember.getFirstName());
-				member.setLastName(billMember.getLastName());
-				member.setCertNumber(billMember.getCertNumber());
-				//member.setPastDueAmountTotal(billMember.getPastDueAmountTotal());
-				member.setEmployerTotal(billMember.getEmployerTotal());
-				member.setEmployeeTotal(billMember.getEmployeeTotal());
-				member.setBillAmountDueTotal(billMember.getBillAmountDueTotal());
-				member.setCount(count++);
-				//employment status & waived message make up the waived/cobra column in the
-				//member details download spreadsheet
-				member.setEmploymentStatus(billMember.getEmploymentStatus());
-				member.setWaivedMessage(billMember.getWaivedMessage());
+		try {
+			JSONObject formattedRequest = new JSONObject();
+			JSONObject enrollmentRequest = buildEnrollmentRequest();
 
+			//set if we are an internal user
+			if(getUserBean().isInternalAccess()){
+				enrollmentRequest.put("internalAccess", getUserBean().isInternalAccess());
+			}
+			
+			int varianceLevel = getUserBean().isInternalAccess() ? WARNING_VARIANCE_LEVEL : ERROR_VARIANCE_LEVEL;
+			enrollmentRequest.put("varianceLevel", varianceLevel);
 
-				List<BillMemberCoverage> billMemberCoverageList = new ArrayList<BillMemberCoverage>();
-				if(billMember.getCoverages() != null && billMember.getCoverages().size() > 0){
-					billMemberCoverageList.addAll(billMember.getCoverages());
-					member.setCoverages(billMemberCoverageList);
+			//build the care event object for mits
+			JSONObject careEventObject = buildCareEventObject();
+			enrollmentRequest.put("careEvent", careEventObject);
+			
+			System.out.println("enrollMemberWizardHelperBean: jsonRequest is: " + enrollmentRequest.toString());
+			
+			//**************************************************************************************************************************
+			// Send request to middleware
+			// If this is an internal transaction, check the results coming back from compass.  If the results contain trRefNos
+			// return those results back and redirect to a different confirmation page.
+			//**************************************************************************************************************************
+			formattedRequest.put(JsonConstants.JSON_MANAGER, "enrollMemberManager");
+			formattedRequest.put(JsonConstants.JSON_REQUEST, enrollmentRequest);
+
+			JSONObject response = executeMiddlewareServiceRequest(formattedRequest);
+
+			String returnCode = response.optString("returnCode");
+			String returnMessage = response.optString("returnMessage");
+			JSONObject resultSet = response.optJSONObject("resultSet");
+
+			//----------------------------------------------------------------------------------------------------------
+			//if this was processed by an internal user, check for error variances and reroute to internal confirmation page
+			//----------------------------------------------------------------------------------------------------------
+			if(getUserBean().isInternalAccess()){
+
+				if(response != null && (response.has("compassVariance") || response.has("specialHandling"))){
+					List<SystemVarianceDetail> varianceDetailList = getVarianceDetailHelperBean().populateVarianceMessages(response);
+					getEnrollMemberWizardDataBean().setSystemVarianceDetailList(varianceDetailList);
+					isEnrollmentSuccessful = false;
+					enrollmentMessage = "This transaction was not completed successfully. The following variance Message(s) were received. Please copy any variances into the notes section of the current transaction in AtWork.";
+				}else{
+					isEnrollmentSuccessful = true;
+					enrollmentMessage = "This transaction was completed successfully.";
 				}
-
-				List<BillMemberAdjustment> billMemberAdjustmentList = new ArrayList<BillMemberAdjustment>();
-				if(billMember.getAdjustments() != null && billMember.getAdjustments().size() > 0){
-					billMemberAdjustmentList.addAll(billMember.getAdjustments());
-					member.setAdjustments(billMemberAdjustmentList);
+			}
+			else{
+				if (StringUtils.isEmpty(returnCode)) {
+					/* If there is not a return code there was a bad error. */
+					logger.error("No return code from enrollMemberManager. Check the middleware logs.");
+				} else if (returnCode.equals(RETURN_CODE_ERROR)) {
+					/* There was an error. Handle based on the return information. */
+					if (returnMessage.equalsIgnoreCase("JSON Format Error")) {
+						logger.info("EnrollMemberManager returned a format error on policy: " + getPolicyValueBean().getSelectedPolicyNumber());
+						enrollmentMessage = "A format error has occurred during the enrollment.  Please print this page and contact Customer Advocacy.";
+					} else if (returnMessage.equalsIgnoreCase("EmailError")) {
+						logger.info("EnrollMemberManager returned a email error on policy: " + getPolicyValueBean().getSelectedPolicyNumber());
+						enrollmentMessage = "An email error has occurred during the enrollment.  Please print this page and contact Customer Advocacy.";
+					} else {
+						logger.info("EnrollMemberManager returned an error on policy: " + getPolicyValueBean().getSelectedPolicyNumber());
+						enrollmentMessage = "An error has occurred during the enrollment.  Please print this page and contact Customer Advocacy.";
+					}
+				} else if (returnCode.equals(RETURN_CODE_SUCCESS) && returnMessage.equalsIgnoreCase("EmailSuccess")) {
+					/*
+					 * The enrollment was successful but requires manual work by CA
+					 * so let the user know it will take up to two days to process.
+					 */
+					logger.info("MemberInfoBean: buildEnrollment: Enrollment successful but email was sent.");
+					enrollmentMessage = "Congratulations! Your enrollment has been submitted.  Please allow up to two business days for these changes to take effect.";
+					isEnrollmentSuccessful = true;
+				} else if (returnCode.equals(RETURN_CODE_SUCCESS_PENDING_EOI)) {
+					/*
+					 * The enrollment was successful but it requires manual work by
+					 * CA to get EOI so let the user know there are some pending
+					 * amounts. They want a link to the policy forms in this
+					 * message, in order for the link to work we need to run the
+					 * policy forms load data method.
+					 */
+	
+					/*
+					 * Okay.  I just commented this out because they really want it to
+					 * work, but the form they want to link to does not exist. Supposedly
+					 * they are going to add it then we will put the link back in.
+					 * I am adding this comment on 8/1/2012, if this code is still commented
+					 * out after 8/1/2013 just delete it.  Thanks, Mike.
+					 */
+					getPolicyFormsBean().loadPolicyData();
+					enrollmentMessage = "Congratulations! Your request has been submitted successfully. Due to contractual provisions, additional coverage amounts are pending approval. You may download the Health Statement on the <a href=\"/employerui/content/policyForms.faces\">Policy Forms</a> page.";
+	
+					isEnrollmentSuccessful = true;
+				} else {
+					/*
+					 * The enrollment went through with no exceptions or manual work
+					 * required.
+					 */
+					enrollmentMessage = "Congratulations! The enrollment was successful.";
+					isEnrollmentSuccessful = true;
 				}
-
-				billMemberList.add(member);
+	
+				if (resultSet != null) {
+					getMemberInfoBean().setMemberNumber(resultSet.optString("mbrNo"));
+					getMemberInfoBean().setCaseMbrKey(resultSet.optString("CaseMbrKey"));
+					getMemberInfoBean().setClientId(resultSet.optString("clientId"));
+				} else if(response.has("emailCaseMbrKey")){
+					getMemberInfoBean().setCaseMbrKey(response.optString("emailCaseMbrKey"));
+				}
 			}
 
-			department.setMembers(billMemberList);
-			adjustedBillDepartmentList.add(department);
+		} catch (JSONException e) {
+			logger.error("JSONException attempting to process enrollment.");
+		} catch (IOException e) {
+			logger.error("IOException attempting to process enrollment.");
+		} catch (Exception e){
+			logger.error("Exception attempting to process enrollment.");			
 		}
+
+		getEnrollMemberWizardDataBean().setEnrollmentComplete(true);
+		getEnrollMemberWizardDataBean().setEnrollmentSuccessful(isEnrollmentSuccessful);
+		getEnrollMemberWizardDataBean().setEnrollmentMessage(enrollmentMessage);
 	}
-
-
- import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
-
-public class ManageBillHelperBeanTest {
-
-    @InjectMocks
-    private ManageBillHelperBean manageBillHelperBean;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
-    @Test
-    public void testPopulateAdjustedBillDepartmentList() {
-        // Create the input list of BillDepartment
-        List<BillDepartment> printBillsMemberList = new ArrayList<>();
-        BillDepartment originalDepartment = new BillDepartment();
-        originalDepartment.setName("Finance");
-        originalDepartment.setMemberEmployeeTotal(500.0);
-        originalDepartment.setMemberEmployerTotal(600.0);
-        originalDepartment.setMemberBillAmountDueTotal(1100.0);
-        
-        List<BillMember> originalMembers = new ArrayList<>();
-        BillMember originalMember = new BillMember();
-        originalMember.setFirstName("Alice");
-        originalMember.setLastName("Smith");
-        originalMember.setCertNumber("A12345");
-        originalMember.setEmployerTotal(300.0);
-        originalMember.setEmployeeTotal(200.0);
-        originalMember.setBillAmountDueTotal(500.0);
-        originalMember.setEmploymentStatus("Active");
-        originalMember.setWaivedMessage("N/A");
-        
-        List<BillMemberCoverage> originalCoverages = new ArrayList<>();
-        BillMemberCoverage originalCoverage = new BillMemberCoverage();
-        originalCoverage.setShortName("Health");
-        originalCoverages.add(originalCoverage);
-        originalMember.setCoverages(originalCoverages);
-        
-        List<BillMemberAdjustment> originalAdjustments = new ArrayList<>();
-        BillMemberAdjustment originalAdjustment = new BillMemberAdjustment();
-        originalAdjustment.setDescription("Adjustment");
-        originalAdjustments.add(originalAdjustment);
-        originalMember.setAdjustments(originalAdjustments);
-        
-        originalMembers.add(originalMember);
-        originalDepartment.setMembers(originalMembers);
-        printBillsMemberList.add(originalDepartment);
-        
-        // Create the output list
-        List<BillDepartment> adjustedBillDepartmentList = new ArrayList<>();
-        
-        // Call the method to be tested
-        manageBillHelperBean.populateAdjustedBillDepartmentList(printBillsMemberList, adjustedBillDepartmentList);
-        
-        // Verify the output list
-        assertEquals(1, adjustedBillDepartmentList.size());
-        
-        BillDepartment adjustedDepartment = adjustedBillDepartmentList.get(0);
-        assertEquals("Finance", adjustedDepartment.getName());
-        assertEquals(500.0, adjustedDepartment.getMemberEmployeeTotal());
-        assertEquals(600.0, adjustedDepartment.getMemberEmployerTotal());
-        assertEquals(1100.0, adjustedDepartment.getMemberBillAmountDueTotal());
-        
-        List<BillMember> adjustedMembers = adjustedDepartment.getMembers();
-        assertEquals(1, adjustedMembers.size());
-        
-        BillMember adjustedMember = adjustedMembers.get(0);
-        assertEquals("Alice", adjustedMember.getFirstName());
-        assertEquals("Smith", adjustedMember.getLastName());
-        assertEquals("A12345", adjustedMember.getCertNumber());
-        assertEquals(300.0, adjustedMember.getEmployerTotal());
-        assertEquals(200.0, adjustedMember.getEmployeeTotal());
-        assertEquals(500.0, adjustedMember.getBillAmountDueTotal());
-        assertEquals("Active", adjustedMember.getEmploymentStatus());
-        assertEquals("N/A", adjustedMember.getWaivedMessage());
-        
-        List<BillMemberCoverage> adjustedCoverages = adjustedMember.getCoverages();
-        assertEquals(1, adjustedCoverages.size());
-        assertEquals("Health", adjustedCoverages.get(0).getShortName());
-        
-        List<BillMemberAdjustment> adjustedAdjustments = adjustedMember.getAdjustments();
-        assertEquals(1, adjustedAdjustments.size());
-        assertEquals("Adjustment", adjustedAdjustments.get(0).getDescription());
-    }
-}
