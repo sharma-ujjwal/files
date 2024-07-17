@@ -154,3 +154,129 @@ public void submitSingleMcsRequest() {
 		logger.trace("Process single batch response took {} milliseconds", timeToProcessResponse - timeToMakeRequest);
 	}		
 }
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.lang3.time.StopWatch;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@ExtendWith(MockitoExtension.class)
+public class MemberCoverageStatementHelperBeanTest {
+
+    @Mock
+    private UserBean userBean;
+
+    @Mock
+    private MemberCoverageStatementDataBean memberCoverageStatementDataBean;
+
+    @Mock
+    private PolicyInfoDataBean policyInfoDataBean;
+
+    @Mock
+    private PolicyValueBean policyValueBean;
+
+    @Mock
+    private MemberCoverageStatementRulesBean memberCoverageStatementRulesBean;
+
+    @Mock
+    private DocumentServiceClientImpl documentServiceClient;
+
+    @InjectMocks
+    private MemberCoverageStatementHelperBean memberCoverageStatementHelperBean;
+
+    private static final Logger logger = LoggerFactory.getLogger(MemberCoverageStatementHelperBean.class);
+
+    @BeforeEach
+    void setup() {
+        when(memberCoverageStatementDataBean.getMatchedPolicyAuthorizations()).thenReturn(new ArrayList<>());
+        when(memberCoverageStatementDataBean.getSelectedMembers()).thenReturn(new HashMap<>());
+        when(userBean.isInternalAccess()).thenReturn(true);
+    }
+
+    @Test
+    void testSubmitSingleMcsRequest_Success() {
+        // Arrange
+        when(userBean.isInternalAccess()).thenReturn(false);
+        when(userBean.getAcomsRq()).thenReturn("someAcomsRq");
+
+        ResponseWrapper<ByteWrapper> mockResponse = new ResponseWrapper<>();
+        mockResponse.setResponseCode(ResponseCode.SUCCESS);
+        when(documentServiceClient.generateMcsForMember(any(MCSRequestDTO.class), anyString(), any(HttpServletRequest.class)))
+                .thenReturn(mockResponse);
+
+        // Act
+        memberCoverageStatementHelperBean.submitSingleMcsRequest();
+
+        // Assert
+        verify(documentServiceClient).generateMcsForMember(any(MCSRequestDTO.class), anyString(), any(HttpServletRequest.class));
+    }
+
+    @Test
+    void testSubmitSingleMcsRequest_DuplicateRequest() {
+        // Arrange
+        when(userBean.isInternalAccess()).thenReturn(false);
+        when(userBean.getAcomsRq()).thenReturn("someAcomsRq");
+
+        ResponseWrapper<ByteWrapper> mockResponse = new ResponseWrapper<>();
+        mockResponse.setResponseCode(ResponseCode.CANCELED);
+        mockResponse.setResponseMessage("Duplicate pending request");
+        when(documentServiceClient.generateMcsForMember(any(MCSRequestDTO.class), anyString(), any(HttpServletRequest.class)))
+                .thenReturn(mockResponse);
+
+        // Act
+        memberCoverageStatementHelperBean.submitSingleMcsRequest();
+
+        // Assert
+        verify(documentServiceClient).generateMcsForMember(any(MCSRequestDTO.class), anyString(), any(HttpServletRequest.class));
+        // Additional assertions to check for handling the duplicate request case can be added here
+    }
+
+    @Test
+    void testSubmitSingleMcsRequest_Error() {
+        // Arrange
+        when(userBean.isInternalAccess()).thenReturn(false);
+        when(userBean.getAcomsRq()).thenReturn("someAcomsRq");
+
+        ResponseWrapper<ByteWrapper> mockResponse = new ResponseWrapper<>();
+        mockResponse.setResponseCode(ResponseCode.ERROR);
+        when(documentServiceClient.generateMcsForMember(any(MCSRequestDTO.class), anyString(), any(HttpServletRequest.class)))
+                .thenReturn(mockResponse);
+
+        // Act
+        memberCoverageStatementHelperBean.submitSingleMcsRequest();
+
+        // Assert
+        verify(documentServiceClient).generateMcsForMember(any(MCSRequestDTO.class), anyString(), any(HttpServletRequest.class));
+        // Additional assertions to check for handling the error case can be added here
+    }
+
+    @Test
+    void testSubmitSingleMcsRequest_Exception() {
+        // Arrange
+        when(userBean.isInternalAccess()).thenReturn(false);
+        when(userBean.getAcomsRq()).thenReturn("someAcomsRq");
+
+        when(documentServiceClient.generateMcsForMember(any(MCSRequestDTO.class), anyString(), any(HttpServletRequest.class)))
+                .thenThrow(new RuntimeException("Service error"));
+
+        // Act
+        memberCoverageStatementHelperBean.submitSingleMcsRequest();
+
+        // Assert
+        verify(documentServiceClient).generateMcsForMember(any(MCSRequestDTO.class), anyString(), any(HttpServletRequest.class));
+        // Additional assertions to check for handling the exception case can be added here
+    }
+}
