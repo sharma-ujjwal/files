@@ -1,161 +1,296 @@
-	public String loadSingleMemberForEdit(String memberNumber, String memberLastName, String memberFirstName, String pagStartPos, String pagEndPos) {
-		JSONObject response = null;
-		MemberListRequestDTO request = new MemberListRequestDTO();
-		request.setRequestUser(getUserBean().getUserName());
-		request.setRequestApplication("OAc");
-		request.setRequestDate(new Date());
-		request.setPaginationStartPosition(pagStartPos);
-		request.setPaginationEndPosition(pagEndPos);
+		public void generateAcomsMdr(final MemberDeductionReportBean memberDeductionReportBean) {
+			final String DUPLICATE_REQUEST_RESPONSE_MSG = "Duplicate pending request";
 
-		request.setBgrpKey(getPolicyValueBean().getSelectedBillGroupKey());
-		request.setPolicyNumber(getPolicyValueBean().getSelectedPolicyNumber());
-		request.setEffectiveDate(formatForMiddleware(new Date()));
-		request.setResponseStructure(MemberListRequestDTO.DEPARTMENT);
-		request.setFirstName(memberFirstName);
-		request.setLastName(memberLastName);
-
-		try {
-			JSONObject formattedRequest = createJSONObjectRequest(request, getUserBean().getUserName(), "memberListManager");
-
-			response = executeMiddlewareServiceRequest(formattedRequest);
-		} catch (Exception e) {
-			logger.error("loadSingleMemberForEdit() error {}", e);
-		}
-
-		XStream xstream = new XStream(new JettisonMappedXmlDriver());
-		xstream.alias("memberListResponseDTO", MemberListResponseDTO.class);
-		xstream.addImplicitCollection(MemberListResponseDTO.class, "memberList", MemberDTO.class);
-		xstream.addImplicitCollection(MemberDTO.class, "coverages", CoverageDTO.class);
-		xstream.addPermission(NoTypePermission.NONE);
-		xstream.addPermission(NullPermission.NULL);
-		xstream.addPermission(PrimitiveTypePermission.PRIMITIVES);
-		xstream.allowTypesByWildcard(new String[] {
-				MemberListResponseDTO.class.getPackage().getName()+".*"
-		});
-		if (response != null && response.toString().length() > 2) {
-			MemberListResponseDTO memberListResponseDTO = (MemberListResponseDTO) xstream.fromXML(response.toString());
-			if (memberListResponseDTO.getMemberList() == null) {
-				return "";
+			StopWatch stopWatch = new StopWatch();
+			long timeToBuildRequest = 0;
+			long timeToMakeRequest = 0;
+			long timeToProcessResponse = 0;
+			
+			
+			// log request build timing
+			if (logger.isTraceEnabled()) {
+				stopWatch.start();
 			}
+			MDRRequestDTO request = new MDRRequestDTO();
 
-			for (MemberDTO memberDto : memberListResponseDTO.getMemberList()) {
-				if (memberDto.getMemberNumber().equals(memberNumber)) {
-					return getPaginationControlsBean().doSelectSingleMemberAction(memberDto.getCaseMbrKey(), memberDto.getClientId(), memberDto.getMemberGroupKey());
+			//
+			// set billgroups on request
+			//
+			List<String> billGroups = new ArrayList<>(memberDeductionReportBean.getMatchedPolicyAuthorizations().size());
+			for(CompassPolicyAuthorization cpa : memberDeductionReportBean.getMatchedPolicyAuthorizations()) {
+				if(cpa.isChosenForMDR()) {
+					billGroups.add(cpa.getBillGroupKey());
 				}
 			}
+			request.setBillGroups(billGroups);
+			
+			//
+			// set deduction frequencies on request	
+			//
+			List<DeductionFrequency> frequenices = new ArrayList<>(4);
+			if(memberDeductionReportBean.isFreqBiWeekly()) 
+				frequenices.add(DeductionFrequency.BI_WEEKLY);  		
+			if(memberDeductionReportBean.isFreqWeekly()) 
+				frequenices.add(DeductionFrequency.WEEKLY);		
+			if(memberDeductionReportBean.isFreqSemiMonthly()) 
+				frequenices.add(DeductionFrequency.SEMI_MONTHLY);		
+			if(memberDeductionReportBean.isFreqMonthly()) 
+				frequenices.add(DeductionFrequency.MONTHLY);		
+			request.setDeductionFrequencies(frequenices);
 
-		}
-		return "";
+			//
+			// set report name, type, and date on request
+			//
+			request.setReportName(memberDeductionReportBean.getMdrReportName());
+			if (getMemberDeductionReportBean().isMcsRequest()) {
+				request.setMCSReportName(memberDeductionReportBean.getMcsReportName());
+			}
+			else {
+				request.setMCSReportName(null);
+			}	
+			
+			request.setReportType(ReportType.valueOf(memberDeductionReportBean.getReportType()));
+			request.setEffectiveDate(new SimpleDateFormat("yyyyMMdd").format(memberDeductionReportBean.getReportDate()));
+			request.setGenerateMCS(getMemberDeductionReportBean().isMcsRequest());
+			
+			//
+			// miscellaneous
+			//
+			request.setPolicyNumber(memberDeductionReportBean.getPolicyNumber());
+			request.setExternalViewable(determineMdrExternalView(memberDeductionReportBean.isMdrExternalView()));
+			request.setExternalUser(!getUserBean().isInternalAccess());
+			
+			// Capture request build time
+			if (logger.isTraceEnabled()) {
+				timeToBuildRequest = stopWatch.getTime();
+			}
+
+			ResponseWrapper<ByteWrapper> response = this.getAcomsClient().generateMdrForGroup(request,
+																							  userBean.getAcomsRq(),
+																							 (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+
+			logger.debug(new StringBuilder("MDR request. policy: " + request.getPolicyNumber() + ". billgroups: " + request.getBillGroupString() + ". deductionFrequency: " + request.getDeductionFrequencies().toString() +
+					 ". effectiveDate: " + request.getEffectiveDate() + ". reportType: " + request.getReportType().getTransactionName() + ". reportName: " + request.getReportName() +
+					 ". externalViewable: " + request.isExternalViewable() + ". externalUser: " + request.isExternalUser() + ". createdDate: " + request.getCreatedDate()).toString());
+			// Capture request time
+			if (logger.isTraceEnabled()) {
+				timeToMakeRequest = stopWatch.getTime();
+			}		
+			
+			if (response == null) {
+				addFacesErrorMessage(MDR_FAILURE_MESSAGE);
+				StringBuilder msg = new StringBuilder("Error occurred requesting an MDR for policy: " + request.getPolicyNumber() + ", status is unknown or not available" +
+						 ". Parameters - billgroup: " + request.getBillGroups().toString() + 
+						 ", report type: " + request.getReportType().name() + 
+						 ", effective date: " + request.getEffectiveDate() + 
+						 ", deduction frequency: " + request.getDeductionFrequencies().toString() +
+						 ", user type: " + request.isExternalUser() +
+						 ", externally viewable: " + request.isExternalViewable());
+				if (request.getReportName() != null && request.getReportName().length() > 0) {
+					msg.append(", name: " + request.getReportName());
+				}
+			}
+			else if (response.getResponseCode() == ResponseCode.SUCCESS) {
+				addFacesInfoMessage(MDR_PENDING_MESSAGE);
+				
+				if (getMemberDeductionReportBean().isMcsRequest()) {
+					String timeFrame = getMemberDeductionReportBean().getTotalMemberCount() > 100 ? MCS_PENDING_24_HOURS : MCS_PENDING_5_MINUTES;
+					addFacesInfoMessage(MessageFormat.format(MCS_PENDING_MESSAGE, timeFrame, getDocViewerForMcsUrl()));
+				}
+
+				// MDR report results may be inaccurate if produced with a certain period before the policy anniversary date
+				//   due to renewal processing that may not be completed.
+				// Check if the requested report date falls with that renewal period, and if so notify the employer.
+				if (getMemberDeductionReportRulesBean().isDateWithinPolicyRenewalPeriod(getMemberDeductionReportBean().getReportDate())) {
+					addFacesInfoMessage(MDR_POLICY_CHANGES_MAY_NOT_BE_CURRENT_MESSAGE);
+				}
+				
+				logger.debug("Successfully requested generating an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage());
+			}
+			else if (response.getResponseCode() == ResponseCode.CANCELED) {
+				if (DUPLICATE_REQUEST_RESPONSE_MSG.equals(response.getResponseMessage())) {
+					addFacesInfoMessage(MDR_DUPLICATE_REQUEST_MESSAGE);
+					logger.debug("Duplicate request generating an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage());
+				}
+			}
+			else {
+				addFacesErrorMessage(MDR_FAILURE_MESSAGE);
+				StringBuilder msg = new StringBuilder("Error occurred requesting an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage() +
+					 ". Parameters - billgroup: " + request.getBillGroups().toString() + 
+					 ", report type: " + request.getReportType().name() + 
+					 ", effective date: " + request.getEffectiveDate() + 
+					 ", deduction frequency: " + request.getDeductionFrequencies().toString() +
+					 ", user type: " + request.isExternalUser() +
+					 ", externally viewable: " + request.isExternalViewable());
+				if (request.getReportName() != null && request.getReportName().length() > 0) {
+					msg.append(", name: " + request.getReportName());
+				}
+			}
+			
+			// Capture process request time
+			if (logger.isTraceEnabled()) {
+				timeToProcessResponse = stopWatch.getTime();
+			}
+			
+			// log timing info
+			if (logger.isTraceEnabled()) {
+				stopWatch.stop();
+				
+				logger.trace("Build MDR request took {} milliseconds", timeToBuildRequest);
+				logger.trace("Make MDR request took {} milliseconds", timeToMakeRequest - timeToBuildRequest);
+				logger.trace("Process MDR response took {} milliseconds", timeToProcessResponse - timeToMakeRequest);
+			}
+	}		public void generateAcomsMdr(final MemberDeductionReportBean memberDeductionReportBean) {
+			final String DUPLICATE_REQUEST_RESPONSE_MSG = "Duplicate pending request";
+
+			StopWatch stopWatch = new StopWatch();
+			long timeToBuildRequest = 0;
+			long timeToMakeRequest = 0;
+			long timeToProcessResponse = 0;
+			
+			
+			// log request build timing
+			if (logger.isTraceEnabled()) {
+				stopWatch.start();
+			}
+			MDRRequestDTO request = new MDRRequestDTO();
+
+			//
+			// set billgroups on request
+			//
+			List<String> billGroups = new ArrayList<>(memberDeductionReportBean.getMatchedPolicyAuthorizations().size());
+			for(CompassPolicyAuthorization cpa : memberDeductionReportBean.getMatchedPolicyAuthorizations()) {
+				if(cpa.isChosenForMDR()) {
+					billGroups.add(cpa.getBillGroupKey());
+				}
+			}
+			request.setBillGroups(billGroups);
+			
+			//
+			// set deduction frequencies on request	
+			//
+			List<DeductionFrequency> frequenices = new ArrayList<>(4);
+			if(memberDeductionReportBean.isFreqBiWeekly()) 
+				frequenices.add(DeductionFrequency.BI_WEEKLY);  		
+			if(memberDeductionReportBean.isFreqWeekly()) 
+				frequenices.add(DeductionFrequency.WEEKLY);		
+			if(memberDeductionReportBean.isFreqSemiMonthly()) 
+				frequenices.add(DeductionFrequency.SEMI_MONTHLY);		
+			if(memberDeductionReportBean.isFreqMonthly()) 
+				frequenices.add(DeductionFrequency.MONTHLY);		
+			request.setDeductionFrequencies(frequenices);
+
+			//
+			// set report name, type, and date on request
+			//
+			request.setReportName(memberDeductionReportBean.getMdrReportName());
+			if (getMemberDeductionReportBean().isMcsRequest()) {
+				request.setMCSReportName(memberDeductionReportBean.getMcsReportName());
+			}
+			else {
+				request.setMCSReportName(null);
+			}	
+			
+			request.setReportType(ReportType.valueOf(memberDeductionReportBean.getReportType()));
+			request.setEffectiveDate(new SimpleDateFormat("yyyyMMdd").format(memberDeductionReportBean.getReportDate()));
+			request.setGenerateMCS(getMemberDeductionReportBean().isMcsRequest());
+			
+			//
+			// miscellaneous
+			//
+			request.setPolicyNumber(memberDeductionReportBean.getPolicyNumber());
+			request.setExternalViewable(determineMdrExternalView(memberDeductionReportBean.isMdrExternalView()));
+			request.setExternalUser(!getUserBean().isInternalAccess());
+			
+			// Capture request build time
+			if (logger.isTraceEnabled()) {
+				timeToBuildRequest = stopWatch.getTime();
+			}
+
+			ResponseWrapper<ByteWrapper> response = this.getAcomsClient().generateMdrForGroup(request,
+																							  userBean.getAcomsRq(),
+																							 (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+
+			logger.debug(new StringBuilder("MDR request. policy: " + request.getPolicyNumber() + ". billgroups: " + request.getBillGroupString() + ". deductionFrequency: " + request.getDeductionFrequencies().toString() +
+					 ". effectiveDate: " + request.getEffectiveDate() + ". reportType: " + request.getReportType().getTransactionName() + ". reportName: " + request.getReportName() +
+					 ". externalViewable: " + request.isExternalViewable() + ". externalUser: " + request.isExternalUser() + ". createdDate: " + request.getCreatedDate()).toString());
+			// Capture request time
+			if (logger.isTraceEnabled()) {
+				timeToMakeRequest = stopWatch.getTime();
+			}		
+			
+			if (response == null) {
+				addFacesErrorMessage(MDR_FAILURE_MESSAGE);
+				StringBuilder msg = new StringBuilder("Error occurred requesting an MDR for policy: " + request.getPolicyNumber() + ", status is unknown or not available" +
+						 ". Parameters - billgroup: " + request.getBillGroups().toString() + 
+						 ", report type: " + request.getReportType().name() + 
+						 ", effective date: " + request.getEffectiveDate() + 
+						 ", deduction frequency: " + request.getDeductionFrequencies().toString() +
+						 ", user type: " + request.isExternalUser() +
+						 ", externally viewable: " + request.isExternalViewable());
+				if (request.getReportName() != null && request.getReportName().length() > 0) {
+					msg.append(", name: " + request.getReportName());
+				}
+			}
+			else if (response.getResponseCode() == ResponseCode.SUCCESS) {
+				addFacesInfoMessage(MDR_PENDING_MESSAGE);
+				
+				if (getMemberDeductionReportBean().isMcsRequest()) {
+					String timeFrame = getMemberDeductionReportBean().getTotalMemberCount() > 100 ? MCS_PENDING_24_HOURS : MCS_PENDING_5_MINUTES;
+					addFacesInfoMessage(MessageFormat.format(MCS_PENDING_MESSAGE, timeFrame, getDocViewerForMcsUrl()));
+				}
+
+				// MDR report results may be inaccurate if produced with a certain period before the policy anniversary date
+				//   due to renewal processing that may not be completed.
+				// Check if the requested report date falls with that renewal period, and if so notify the employer.
+				if (getMemberDeductionReportRulesBean().isDateWithinPolicyRenewalPeriod(getMemberDeductionReportBean().getReportDate())) {
+					addFacesInfoMessage(MDR_POLICY_CHANGES_MAY_NOT_BE_CURRENT_MESSAGE);
+				}
+				
+				logger.debug("Successfully requested generating an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage());
+			}
+			else if (response.getResponseCode() == ResponseCode.CANCELED) {
+				if (DUPLICATE_REQUEST_RESPONSE_MSG.equals(response.getResponseMessage())) {
+					addFacesInfoMessage(MDR_DUPLICATE_REQUEST_MESSAGE);
+					logger.debug("Duplicate request generating an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage());
+				}
+			}
+			else {
+				addFacesErrorMessage(MDR_FAILURE_MESSAGE);
+				StringBuilder msg = new StringBuilder("Error occurred requesting an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage() +
+					 ". Parameters - billgroup: " + request.getBillGroups().toString() + 
+					 ", report type: " + request.getReportType().name() + 
+					 ", effective date: " + request.getEffectiveDate() + 
+					 ", deduction frequency: " + request.getDeductionFrequencies().toString() +
+					 ", user type: " + request.isExternalUser() +
+					 ", externally viewable: " + request.isExternalViewable());
+				if (request.getReportName() != null && request.getReportName().length() > 0) {
+					msg.append(", name: " + request.getReportName());
+				}
+			}
+			
+			// Capture process request time
+			if (logger.isTraceEnabled()) {
+				timeToProcessResponse = stopWatch.getTime();
+			}
+			
+			// log timing info
+			if (logger.isTraceEnabled()) {
+				stopWatch.stop();
+				
+				logger.trace("Build MDR request took {} milliseconds", timeToBuildRequest);
+				logger.trace("Make MDR request took {} milliseconds", timeToMakeRequest - timeToBuildRequest);
+				logger.trace("Process MDR response took {} milliseconds", timeToProcessResponse - timeToMakeRequest);
+			}
 	}
-	
-	
-	public JSONObject executeMiddlewareServiceRequest(JSONObject request) throws JSONException, IOException {
-		JSONObject result = ServiceExecutor.executeRequest(employerIocLookup.getMiddlewareSrvcUrl(), request, null);
 
-		// If the result does not have a Return Code or a Return Message then
-		// something
-		// bad has happened. In that case we will build an error message and
-		// return.
-		if (!result.has("returnCode") || !result.has("returnMessage") || !result.has("resultSet")) {
-			logger.error("executeMiddlewareServiceRequest Error: Unknown Error. Request: {}", request);
-			return new JSONObject();
+	public DocumentServiceClient getAcomsClient()
+	{
+		if(acoms == null)
+		{
+			logger.debug("Document Service client URL: " + acomsUrl);
+			acoms = new DocumentServiceClientImpl(acomsUrl);
 		}
 
-		// If the Return Code is -1 then there was an error so log the error.
-		if (result.optString("returnCode").equals("-1")) {
-			logger.error("executeMiddlewareServiceRequest Error: {} Request: {}", result.optString("returnMessage"), request);
-			return new JSONObject();
-		}
-
-		return result.getJSONObject("resultSet");
+		return acoms;
 	}
-
-
-
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.mockito.MockitoAnnotations;
-
-import java.util.Date;
-import org.json.JSONObject;
-
-@RunWith(MockitoJUnitRunner.class)
-public class YourClassTest {
-
-    @Mock
-    private UserBean userBean;
-    
-    @Mock
-    private PolicyValueBean policyValueBean;
-    
-    @Mock
-    private PaginationControlsBean paginationControlsBean;
-    
-    @InjectMocks
-    private YourClass yourClass; // Replace YourClass with the actual class name containing the method
-    
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        when(userBean.getUserName()).thenReturn("testUser");
-        when(policyValueBean.getSelectedBillGroupKey()).thenReturn("testBillGroupKey");
-        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("testPolicyNumber");
-    }
-
-    @Test
-    public void testLoadSingleMemberForEdit() throws Exception {
-        String memberNumber = "12345";
-        String memberLastName = "Doe";
-        String memberFirstName = "John";
-        String pagStartPos = "0";
-        String pagEndPos = "10";
-
-        // Mocking the JSON response
-        JSONObject mockResponse = new JSONObject();
-        mockResponse.put("returnCode", "0");
-        mockResponse.put("returnMessage", "Success");
-
-        JSONObject resultSet = new JSONObject();
-        // Assuming that the response structure includes a "memberList" field
-        resultSet.put("memberList", "[{\"memberNumber\":\"12345\", \"caseMbrKey\":\"case123\", \"clientId\":\"client123\", \"memberGroupKey\":\"group123\"}]");
-        mockResponse.put("resultSet", resultSet);
-
-        // Mocking the executeMiddlewareServiceRequest method
-        when(yourClass.executeMiddlewareServiceRequest(any(JSONObject.class))).thenReturn(resultSet);
-
-        // Mocking the doSelectSingleMemberAction method
-        when(paginationControlsBean.doSelectSingleMemberAction("case123", "client123", "group123")).thenReturn("success");
-
-        String result = yourClass.loadSingleMemberForEdit(memberNumber, memberLastName, memberFirstName, pagStartPos, pagEndPos);
-        assertEquals("success", result);
-    }
-}	
-
-
-org.mockito.exceptions.misusing.InvalidUseOfMatchersException: 
-Misplaced or misused argument matcher detected here:
-
--> at com.sunlife.inc.oa.employer.helper.YourClassTest.testLoadSingleMemberForEdit(YourClassTest.java:64)
-
-You cannot use argument matchers outside of verification or stubbing.
-Examples of correct usage of argument matchers:
-    when(mock.get(anyInt())).thenReturn(null);
-    doThrow(new RuntimeException()).when(mock).someVoidMethod(any());
-    verify(mock).someMethod(contains("foo"))
-
-This message may appear after an NullPointerException if the last matcher is returning an object 
-like any() but the stubbed method signature expect a primitive argument, in this case,
-use primitive alternatives.
-    when(mock.get(any())); // bad use, will raise NPE
-    when(mock.get(anyInt())); // correct usage use
-
-Also, this error might show up because you use argument matchers with methods that cannot be mocked.
-Following methods *cannot* be stubbed/verified: final/private/equals()/hashCode().
-Mocking methods declared on non-public parent classes is not supported.
