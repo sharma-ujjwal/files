@@ -123,3 +123,140 @@ public void processEnrollment() {
 		getEnrollMemberWizardDataBean().setEnrollmentSuccessful(isEnrollmentSuccessful);
 		getEnrollMemberWizardDataBean().setEnrollmentMessage(enrollmentMessage);
 	}
+
+
+ import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import org.json.JSONObject;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.Logger;
+
+@ExtendWith(MockitoExtension.class)
+public class FacilityHelperBeanTest {
+
+    @InjectMocks
+    private FacilityHelperBean facilityHelperBean;
+
+    @Mock
+    private UserBean userBean;
+
+    @Mock
+    private EnrollMemberWizardDataBean enrollMemberWizardDataBean;
+
+    @Mock
+    private MemberInfoBean memberInfoBean;
+
+    @Mock
+    private PolicyValueBean policyValueBean;
+
+    @Mock
+    private PolicyFormsBean policyFormsBean;
+
+    @Mock
+    private VarianceDetailHelperBean varianceDetailHelperBean;
+
+    @Mock
+    private Logger logger;
+
+    @BeforeEach
+    public void setUp() {
+        // Set up any necessary mocks and initializations
+    }
+
+    @Test
+    public void testProcessEnrollmentSuccess() throws Exception {
+        // Mock the necessary method calls and data
+        when(userBean.isInternalAccess()).thenReturn(false);
+        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("Policy123");
+
+        // Create a sample successful response
+        JSONObject response = new JSONObject();
+        response.put("returnCode", "SUCCESS");
+        response.put("returnMessage", "EmailSuccess");
+        response.put("resultSet", new JSONObject().put("mbrNo", "12345").put("CaseMbrKey", "67890").put("clientId", "client123"));
+
+        when(facilityHelperBean.executeMiddlewareServiceRequest(any(JSONObject.class))).thenReturn(response);
+
+        // Call the method
+        facilityHelperBean.processEnrollment();
+
+        // Verify the results
+        verify(enrollMemberWizardDataBean).setEnrollmentComplete(true);
+        verify(enrollMemberWizardDataBean).setEnrollmentSuccessful(true);
+        verify(enrollMemberWizardDataBean).setEnrollmentMessage("Congratulations! Your enrollment has been submitted.  Please allow up to two business days for these changes to take effect.");
+        verify(memberInfoBean).setMemberNumber("12345");
+        verify(memberInfoBean).setCaseMbrKey("67890");
+        verify(memberInfoBean).setClientId("client123");
+    }
+
+    @Test
+    public void testProcessEnrollmentError() throws Exception {
+        // Mock the necessary method calls and data
+        when(userBean.isInternalAccess()).thenReturn(false);
+        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("Policy123");
+
+        // Create a sample error response
+        JSONObject response = new JSONObject();
+        response.put("returnCode", "ERROR");
+        response.put("returnMessage", "JSON Format Error");
+
+        when(facilityHelperBean.executeMiddlewareServiceRequest(any(JSONObject.class))).thenReturn(response);
+
+        // Call the method
+        facilityHelperBean.processEnrollment();
+
+        // Verify the results
+        verify(enrollMemberWizardDataBean).setEnrollmentComplete(true);
+        verify(enrollMemberWizardDataBean).setEnrollmentSuccessful(false);
+        verify(enrollMemberWizardDataBean).setEnrollmentMessage("A format error has occurred during the enrollment.  Please print this page and contact Customer Advocacy.");
+    }
+
+    @Test
+    public void testProcessEnrollmentInternalAccess() throws Exception {
+        // Mock the necessary method calls and data
+        when(userBean.isInternalAccess()).thenReturn(true);
+        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("Policy123");
+
+        // Create a sample internal access response
+        JSONObject response = new JSONObject();
+        response.put("compassVariance", new JSONObject());
+
+        when(facilityHelperBean.executeMiddlewareServiceRequest(any(JSONObject.class))).thenReturn(response);
+
+        // Call the method
+        facilityHelperBean.processEnrollment();
+
+        // Verify the results
+        verify(enrollMemberWizardDataBean).setEnrollmentComplete(true);
+        verify(enrollMemberWizardDataBean).setEnrollmentSuccessful(false);
+        verify(enrollMemberWizardDataBean).setEnrollmentMessage("This transaction was not completed successfully. The following variance Message(s) were received. Please copy any variances into the notes section of the current transaction in AtWork.");
+    }
+
+    @Test
+    public void testProcessEnrollmentException() {
+        // Mock the necessary method calls and data
+        when(userBean.isInternalAccess()).thenReturn(false);
+
+        // Mock the executeMiddlewareServiceRequest to throw an exception
+        try {
+            when(facilityHelperBean.executeMiddlewareServiceRequest(any(JSONObject.class))).thenThrow(new IOException("Test Exception"));
+        } catch (IOException e) {
+            fail("This should not happen");
+        }
+
+        // Call the method
+        facilityHelperBean.processEnrollment();
+
+        // Verify the results
+        verify(enrollMemberWizardDataBean).setEnrollmentComplete(true);
+        verify(enrollMemberWizardDataBean).setEnrollmentSuccessful(false);
+        verify(enrollMemberWizardDataBean).setEnrollmentMessage("An error has occurred during the enrollment. Please print this page and contact Customer Advocacy.");
+    }
+}
