@@ -58,3 +58,133 @@ public void determineBillGroupAvailability() {
 		Collections.sort(memberCoverageStatementDataBean.getExcludedPolicyAuthorizations(), this);
 		setShowExcludedBillGroupPanel(!memberCoverageStatementDataBean.getExcludedPolicyAuthorizations().isEmpty());
 	}	
+
+
+ import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.util.*;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+public class MemberCoverageStatementHelperBeanTest {
+
+    @Mock
+    private UserBean userBean;
+
+    @Mock
+    private MemberCoverageStatementDataBean memberCoverageStatementDataBean;
+
+    @Mock
+    private PolicyInfoDataBean policyInfoDataBean;
+
+    @Mock
+    private PolicyValueBean policyValueBean;
+
+    @InjectMocks
+    private MemberCoverageStatementHelperBean memberCoverageStatementHelperBean;
+
+    private List<IPolicyAuthorization> policyAuthorizationList;
+    private Map<String, BillGroupDTO> activeBillGroupMap;
+
+    @BeforeEach
+    void setup() {
+        policyAuthorizationList = new ArrayList<>();
+        activeBillGroupMap = new HashMap<>();
+        
+        when(userBean.getPolicyAuthorizations()).thenReturn(policyAuthorizationList);
+        when(memberCoverageStatementDataBean.getActiveBillgroupMap()).thenReturn(activeBillGroupMap);
+    }
+
+    @Test
+    void testDetermineBillGroupAvailability_NoActiveBillGroups() {
+        when(memberCoverageStatementDataBean.getReportDate()).thenReturn(new Date());
+        doAnswer(invocation -> {
+            activeBillGroupMap.put("key1", new BillGroupDTO());
+            return null;
+        }).when(memberCoverageStatementHelperBean).loadActiveBillGroups(any(Date.class));
+
+        memberCoverageStatementHelperBean.determineBillGroupAvailability();
+
+        verify(memberCoverageStatementHelperBean).loadActiveBillGroups(any(Date.class));
+        verify(memberCoverageStatementDataBean).setMatchedPolicyAuthorizations(any());
+        verify(memberCoverageStatementDataBean).setExcludedPolicyAuthorizations(any());
+    }
+
+    @Test
+    void testDetermineBillGroupAvailability_WithActiveBillGroups() {
+        activeBillGroupMap.put("key1", new BillGroupDTO());
+        CompassPolicyAuthorization policyAuthorization = mock(CompassPolicyAuthorization.class);
+        policyAuthorizationList.add(policyAuthorization);
+
+        when(policyAuthorization.getPolicyNumber()).thenReturn("POL123");
+        when(policyAuthorization.getBillGroupKey()).thenReturn("key1");
+        when(policyAuthorization.getPrivilegeCollection()).thenReturn(Arrays.asList("PRIVILEGE_BILL_VIEW", "PRIVILEGE_BILL_MANAGEMENT"));
+
+        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("POL123");
+        when(policyInfoDataBean.isAmendmentHold()).thenReturn(false);
+
+        List<BillGroupTransactionScheduler> schedulerList = new ArrayList<>();
+        BillGroupTransactionScheduler scheduler = mock(BillGroupTransactionScheduler.class);
+        when(scheduler.getPrdfName()).thenReturn("SCHEDULER_BILLING_PRDF_NAME");
+        schedulerList.add(scheduler);
+        when(policyAuthorization.getTransactionSchedulerList()).thenReturn(schedulerList);
+
+        memberCoverageStatementHelperBean.determineBillGroupAvailability();
+
+        verify(memberCoverageStatementHelperBean).determineBillGroupAvailabilityNoAmendmentHold(eq(policyAuthorization), anyList());
+        verify(memberCoverageStatementDataBean).setMatchedPolicyAuthorizations(any());
+        verify(memberCoverageStatementDataBean).setExcludedPolicyAuthorizations(any());
+    }
+
+    @Test
+    void testDetermineBillGroupAvailability_WithAmendmentHold() {
+        activeBillGroupMap.put("key1", new BillGroupDTO());
+        CompassPolicyAuthorization policyAuthorization = mock(CompassPolicyAuthorization.class);
+        policyAuthorizationList.add(policyAuthorization);
+
+        when(policyAuthorization.getPolicyNumber()).thenReturn("POL123");
+        when(policyAuthorization.getBillGroupKey()).thenReturn("key1");
+        when(policyAuthorization.getPrivilegeCollection()).thenReturn(Arrays.asList("PRIVILEGE_BILL_VIEW", "PRIVILEGE_BILL_MANAGEMENT"));
+
+        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("POL123");
+        when(policyInfoDataBean.isAmendmentHold()).thenReturn(true);
+
+        List<BillGroupTransactionScheduler> schedulerList = new ArrayList<>();
+        BillGroupTransactionScheduler scheduler = mock(BillGroupTransactionScheduler.class);
+        when(scheduler.getPrdfName()).thenReturn("SCHEDULER_BILLING_PRDF_NAME");
+        schedulerList.add(scheduler);
+        when(policyAuthorization.getTransactionSchedulerList()).thenReturn(schedulerList);
+
+        memberCoverageStatementHelperBean.determineBillGroupAvailability();
+
+        verify(memberCoverageStatementHelperBean).determineBillGroupAvailabilityForAmendmentHold(eq(policyAuthorization), anyList());
+        verify(memberCoverageStatementDataBean).setMatchedPolicyAuthorizations(any());
+        verify(memberCoverageStatementDataBean).setExcludedPolicyAuthorizations(any());
+    }
+
+    @Test
+    void testDetermineBillGroupAvailability_NoPrivileges() {
+        activeBillGroupMap.put("key1", new BillGroupDTO());
+        CompassPolicyAuthorization policyAuthorization = mock(CompassPolicyAuthorization.class);
+        policyAuthorizationList.add(policyAuthorization);
+
+        when(policyAuthorization.getPolicyNumber()).thenReturn("POL123");
+        when(policyAuthorization.getBillGroupKey()).thenReturn("key1");
+        when(policyAuthorization.getPrivilegeCollection()).thenReturn(Collections.emptyList());
+
+        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("POL123");
+        when(policyInfoDataBean.isAmendmentHold()).thenReturn(false);
+
+        memberCoverageStatementHelperBean.determineBillGroupAvailability();
+
+        verify(memberCoverageStatementDataBean).setMatchedPolicyAuthorizations(any());
+        verify(memberCoverageStatementDataBean).setExcludedPolicyAuthorizations(any());
+    }
+}
