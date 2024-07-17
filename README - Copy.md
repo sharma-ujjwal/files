@@ -294,3 +294,127 @@
 
 		return acoms;
 	}
+
+
+importoj static org.mockito.ArgumentMatchers.any;
+importoj static org.mockito.Mockito.*;
+
+importoni java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import .util.Date;
+
+ importoj static org.mockito.ArgumentMatchers.any;
+importoj static org.mockito.Mockito.*;
+
+importoni java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+public class MemberDeductionReportHelperBeanTest {
+
+    @Mock
+    private Logger logger;
+
+    @Mock
+    private FacesContext facesContext;
+
+    @Mock
+    private ExternalContext externalContext;
+
+    @Mock
+    private HttpServletRequest httpServletRequest;
+
+    @Mock
+    private DocumentServiceClient documentServiceClient;
+
+    @Mock
+    private UserBean userBean;
+
+    @Mock
+    private MemberDeductionReportRulesBean memberDeductionReportRulesBean;
+
+    @InjectMocks
+    private MemberDeductionReportHelperBean memberDeductionReportHelperBean;
+
+    @BeforeEach
+    void setup() {
+        when(facesContext.getExternalContext()).thenReturn(externalContext);
+        when(externalContext.getRequest()).thenReturn(httpServletRequest);
+    }
+
+    @Test
+    void testGenerateAcomsMdr_Success() throws Exception {
+        MemberDeductionReportBean memberDeductionReportBean = mock(MemberDeductionReportBean.class);
+        when(memberDeductionReportBean.getMatchedPolicyAuthorizations()).thenReturn(Collections.emptyList());
+        when(memberDeductionReportBean.isFreqBiWeekly()).thenReturn(true);
+        when(memberDeductionReportBean.isFreqWeekly()).thenReturn(false);
+        when(memberDeductionReportBean.isFreqSemiMonthly()).thenReturn(true);
+        when(memberDeductionReportBean.isFreqMonthly()).thenReturn(false);
+        when(memberDeductionReportBean.getMdrReportName()).thenReturn("TestReport");
+        when(memberDeductionReportBean.isMcsRequest()).thenReturn(true);
+        when(memberDeductionReportBean.getReportType()).thenReturn("TYPE");
+        when(memberDeductionReportBean.getReportDate()).thenReturn(new Date());
+        when(memberDeductionReportBean.getPolicyNumber()).thenReturn("POL123");
+
+        ResponseWrapper<ByteWrapper> response = new ResponseWrapper<>();
+        response.setResponseCode(ResponseCode.SUCCESS);
+        when(documentServiceClient.generateMdrForGroup(any(), any(), any())).thenReturn(response);
+
+        memberDeductionReportHelperBean.generateAcomsMdr(memberDeductionReportBean);
+
+        verify(logger).debug(anyString());
+        verify(documentServiceClient).generateMdrForGroup(any(), any(), any());
+    }
+
+    @Test
+    void testGenerateAcomsMdr_DuplicateRequest() throws Exception {
+        MemberDeductionReportBean memberDeductionReportBean = mock(MemberDeductionReportBean.class);
+        when(memberDeductionReportBean.getMatchedPolicyAuthorizations()).thenReturn(Collections.emptyList());
+
+        ResponseWrapper<ByteWrapper> response = new ResponseWrapper<>();
+        response.setResponseCode(ResponseCode.CANCELED);
+        response.setResponseMessage("Duplicate pending request");
+        when(documentServiceClient.generateMdrForGroup(any(), any(), any())).thenReturn(response);
+
+        memberDeductionReportHelperBean.generateAcomsMdr(memberDeductionReportBean);
+
+        verify(logger).debug(anyString());
+        verify(documentServiceClient).generateMdrForGroup(any(), any(), any());
+    }
+
+    @Test
+    void testGenerateAcomsMdr_Error() throws Exception {
+        MemberDeductionReportBean memberDeductionReportBean = mock(MemberDeductionReportBean.class);
+        when(memberDeductionReportBean.getMatchedPolicyAuthorizations()).thenReturn(Collections.emptyList());
+
+        ResponseWrapper<ByteWrapper> response = new ResponseWrapper<>();
+        response.setResponseCode(ResponseCode.ERROR);
+        when(documentServiceClient.generateMdrForGroup(any(), any(), any())).thenReturn(response);
+
+        memberDeductionReportHelperBean.generateAcomsMdr(memberDeductionReportBean);
+
+        verify(logger).debug(anyString());
+        verify(documentServiceClient).generateMdrForGroup(any(), any(), any());
+    }
+}
