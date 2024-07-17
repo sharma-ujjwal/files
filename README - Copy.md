@@ -1,420 +1,60 @@
-		public void generateAcomsMdr(final MemberDeductionReportBean memberDeductionReportBean) {
-			final String DUPLICATE_REQUEST_RESPONSE_MSG = "Duplicate pending request";
-
-			StopWatch stopWatch = new StopWatch();
-			long timeToBuildRequest = 0;
-			long timeToMakeRequest = 0;
-			long timeToProcessResponse = 0;
-			
-			
-			// log request build timing
-			if (logger.isTraceEnabled()) {
-				stopWatch.start();
-			}
-			MDRRequestDTO request = new MDRRequestDTO();
-
-			//
-			// set billgroups on request
-			//
-			List<String> billGroups = new ArrayList<>(memberDeductionReportBean.getMatchedPolicyAuthorizations().size());
-			for(CompassPolicyAuthorization cpa : memberDeductionReportBean.getMatchedPolicyAuthorizations()) {
-				if(cpa.isChosenForMDR()) {
-					billGroups.add(cpa.getBillGroupKey());
-				}
-			}
-			request.setBillGroups(billGroups);
-			
-			//
-			// set deduction frequencies on request	
-			//
-			List<DeductionFrequency> frequenices = new ArrayList<>(4);
-			if(memberDeductionReportBean.isFreqBiWeekly()) 
-				frequenices.add(DeductionFrequency.BI_WEEKLY);  		
-			if(memberDeductionReportBean.isFreqWeekly()) 
-				frequenices.add(DeductionFrequency.WEEKLY);		
-			if(memberDeductionReportBean.isFreqSemiMonthly()) 
-				frequenices.add(DeductionFrequency.SEMI_MONTHLY);		
-			if(memberDeductionReportBean.isFreqMonthly()) 
-				frequenices.add(DeductionFrequency.MONTHLY);		
-			request.setDeductionFrequencies(frequenices);
-
-			//
-			// set report name, type, and date on request
-			//
-			request.setReportName(memberDeductionReportBean.getMdrReportName());
-			if (getMemberDeductionReportBean().isMcsRequest()) {
-				request.setMCSReportName(memberDeductionReportBean.getMcsReportName());
-			}
-			else {
-				request.setMCSReportName(null);
-			}	
-			
-			request.setReportType(ReportType.valueOf(memberDeductionReportBean.getReportType()));
-			request.setEffectiveDate(new SimpleDateFormat("yyyyMMdd").format(memberDeductionReportBean.getReportDate()));
-			request.setGenerateMCS(getMemberDeductionReportBean().isMcsRequest());
-			
-			//
-			// miscellaneous
-			//
-			request.setPolicyNumber(memberDeductionReportBean.getPolicyNumber());
-			request.setExternalViewable(determineMdrExternalView(memberDeductionReportBean.isMdrExternalView()));
-			request.setExternalUser(!getUserBean().isInternalAccess());
-			
-			// Capture request build time
-			if (logger.isTraceEnabled()) {
-				timeToBuildRequest = stopWatch.getTime();
-			}
-
-			ResponseWrapper<ByteWrapper> response = this.getAcomsClient().generateMdrForGroup(request,
-																							  userBean.getAcomsRq(),
-																							 (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
-
-			logger.debug(new StringBuilder("MDR request. policy: " + request.getPolicyNumber() + ". billgroups: " + request.getBillGroupString() + ". deductionFrequency: " + request.getDeductionFrequencies().toString() +
-					 ". effectiveDate: " + request.getEffectiveDate() + ". reportType: " + request.getReportType().getTransactionName() + ". reportName: " + request.getReportName() +
-					 ". externalViewable: " + request.isExternalViewable() + ". externalUser: " + request.isExternalUser() + ". createdDate: " + request.getCreatedDate()).toString());
-			// Capture request time
-			if (logger.isTraceEnabled()) {
-				timeToMakeRequest = stopWatch.getTime();
-			}		
-			
-			if (response == null) {
-				addFacesErrorMessage(MDR_FAILURE_MESSAGE);
-				StringBuilder msg = new StringBuilder("Error occurred requesting an MDR for policy: " + request.getPolicyNumber() + ", status is unknown or not available" +
-						 ". Parameters - billgroup: " + request.getBillGroups().toString() + 
-						 ", report type: " + request.getReportType().name() + 
-						 ", effective date: " + request.getEffectiveDate() + 
-						 ", deduction frequency: " + request.getDeductionFrequencies().toString() +
-						 ", user type: " + request.isExternalUser() +
-						 ", externally viewable: " + request.isExternalViewable());
-				if (request.getReportName() != null && request.getReportName().length() > 0) {
-					msg.append(", name: " + request.getReportName());
-				}
-			}
-			else if (response.getResponseCode() == ResponseCode.SUCCESS) {
-				addFacesInfoMessage(MDR_PENDING_MESSAGE);
-				
-				if (getMemberDeductionReportBean().isMcsRequest()) {
-					String timeFrame = getMemberDeductionReportBean().getTotalMemberCount() > 100 ? MCS_PENDING_24_HOURS : MCS_PENDING_5_MINUTES;
-					addFacesInfoMessage(MessageFormat.format(MCS_PENDING_MESSAGE, timeFrame, getDocViewerForMcsUrl()));
-				}
-
-				// MDR report results may be inaccurate if produced with a certain period before the policy anniversary date
-				//   due to renewal processing that may not be completed.
-				// Check if the requested report date falls with that renewal period, and if so notify the employer.
-				if (getMemberDeductionReportRulesBean().isDateWithinPolicyRenewalPeriod(getMemberDeductionReportBean().getReportDate())) {
-					addFacesInfoMessage(MDR_POLICY_CHANGES_MAY_NOT_BE_CURRENT_MESSAGE);
-				}
-				
-				logger.debug("Successfully requested generating an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage());
-			}
-			else if (response.getResponseCode() == ResponseCode.CANCELED) {
-				if (DUPLICATE_REQUEST_RESPONSE_MSG.equals(response.getResponseMessage())) {
-					addFacesInfoMessage(MDR_DUPLICATE_REQUEST_MESSAGE);
-					logger.debug("Duplicate request generating an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage());
-				}
-			}
-			else {
-				addFacesErrorMessage(MDR_FAILURE_MESSAGE);
-				StringBuilder msg = new StringBuilder("Error occurred requesting an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage() +
-					 ". Parameters - billgroup: " + request.getBillGroups().toString() + 
-					 ", report type: " + request.getReportType().name() + 
-					 ", effective date: " + request.getEffectiveDate() + 
-					 ", deduction frequency: " + request.getDeductionFrequencies().toString() +
-					 ", user type: " + request.isExternalUser() +
-					 ", externally viewable: " + request.isExternalViewable());
-				if (request.getReportName() != null && request.getReportName().length() > 0) {
-					msg.append(", name: " + request.getReportName());
-				}
-			}
-			
-			// Capture process request time
-			if (logger.isTraceEnabled()) {
-				timeToProcessResponse = stopWatch.getTime();
-			}
-			
-			// log timing info
-			if (logger.isTraceEnabled()) {
-				stopWatch.stop();
-				
-				logger.trace("Build MDR request took {} milliseconds", timeToBuildRequest);
-				logger.trace("Make MDR request took {} milliseconds", timeToMakeRequest - timeToBuildRequest);
-				logger.trace("Process MDR response took {} milliseconds", timeToProcessResponse - timeToMakeRequest);
-			}
-	}		public void generateAcomsMdr(final MemberDeductionReportBean memberDeductionReportBean) {
-			final String DUPLICATE_REQUEST_RESPONSE_MSG = "Duplicate pending request";
-
-			StopWatch stopWatch = new StopWatch();
-			long timeToBuildRequest = 0;
-			long timeToMakeRequest = 0;
-			long timeToProcessResponse = 0;
-			
-			
-			// log request build timing
-			if (logger.isTraceEnabled()) {
-				stopWatch.start();
-			}
-			MDRRequestDTO request = new MDRRequestDTO();
-
-			//
-			// set billgroups on request
-			//
-			List<String> billGroups = new ArrayList<>(memberDeductionReportBean.getMatchedPolicyAuthorizations().size());
-			for(CompassPolicyAuthorization cpa : memberDeductionReportBean.getMatchedPolicyAuthorizations()) {
-				if(cpa.isChosenForMDR()) {
-					billGroups.add(cpa.getBillGroupKey());
-				}
-			}
-			request.setBillGroups(billGroups);
-			
-			//
-			// set deduction frequencies on request	
-			//
-			List<DeductionFrequency> frequenices = new ArrayList<>(4);
-			if(memberDeductionReportBean.isFreqBiWeekly()) 
-				frequenices.add(DeductionFrequency.BI_WEEKLY);  		
-			if(memberDeductionReportBean.isFreqWeekly()) 
-				frequenices.add(DeductionFrequency.WEEKLY);		
-			if(memberDeductionReportBean.isFreqSemiMonthly()) 
-				frequenices.add(DeductionFrequency.SEMI_MONTHLY);		
-			if(memberDeductionReportBean.isFreqMonthly()) 
-				frequenices.add(DeductionFrequency.MONTHLY);		
-			request.setDeductionFrequencies(frequenices);
-
-			//
-			// set report name, type, and date on request
-			//
-			request.setReportName(memberDeductionReportBean.getMdrReportName());
-			if (getMemberDeductionReportBean().isMcsRequest()) {
-				request.setMCSReportName(memberDeductionReportBean.getMcsReportName());
-			}
-			else {
-				request.setMCSReportName(null);
-			}	
-			
-			request.setReportType(ReportType.valueOf(memberDeductionReportBean.getReportType()));
-			request.setEffectiveDate(new SimpleDateFormat("yyyyMMdd").format(memberDeductionReportBean.getReportDate()));
-			request.setGenerateMCS(getMemberDeductionReportBean().isMcsRequest());
-			
-			//
-			// miscellaneous
-			//
-			request.setPolicyNumber(memberDeductionReportBean.getPolicyNumber());
-			request.setExternalViewable(determineMdrExternalView(memberDeductionReportBean.isMdrExternalView()));
-			request.setExternalUser(!getUserBean().isInternalAccess());
-			
-			// Capture request build time
-			if (logger.isTraceEnabled()) {
-				timeToBuildRequest = stopWatch.getTime();
-			}
-
-			ResponseWrapper<ByteWrapper> response = this.getAcomsClient().generateMdrForGroup(request,
-																							  userBean.getAcomsRq(),
-																							 (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
-
-			logger.debug(new StringBuilder("MDR request. policy: " + request.getPolicyNumber() + ". billgroups: " + request.getBillGroupString() + ". deductionFrequency: " + request.getDeductionFrequencies().toString() +
-					 ". effectiveDate: " + request.getEffectiveDate() + ". reportType: " + request.getReportType().getTransactionName() + ". reportName: " + request.getReportName() +
-					 ". externalViewable: " + request.isExternalViewable() + ". externalUser: " + request.isExternalUser() + ". createdDate: " + request.getCreatedDate()).toString());
-			// Capture request time
-			if (logger.isTraceEnabled()) {
-				timeToMakeRequest = stopWatch.getTime();
-			}		
-			
-			if (response == null) {
-				addFacesErrorMessage(MDR_FAILURE_MESSAGE);
-				StringBuilder msg = new StringBuilder("Error occurred requesting an MDR for policy: " + request.getPolicyNumber() + ", status is unknown or not available" +
-						 ". Parameters - billgroup: " + request.getBillGroups().toString() + 
-						 ", report type: " + request.getReportType().name() + 
-						 ", effective date: " + request.getEffectiveDate() + 
-						 ", deduction frequency: " + request.getDeductionFrequencies().toString() +
-						 ", user type: " + request.isExternalUser() +
-						 ", externally viewable: " + request.isExternalViewable());
-				if (request.getReportName() != null && request.getReportName().length() > 0) {
-					msg.append(", name: " + request.getReportName());
-				}
-			}
-			else if (response.getResponseCode() == ResponseCode.SUCCESS) {
-				addFacesInfoMessage(MDR_PENDING_MESSAGE);
-				
-				if (getMemberDeductionReportBean().isMcsRequest()) {
-					String timeFrame = getMemberDeductionReportBean().getTotalMemberCount() > 100 ? MCS_PENDING_24_HOURS : MCS_PENDING_5_MINUTES;
-					addFacesInfoMessage(MessageFormat.format(MCS_PENDING_MESSAGE, timeFrame, getDocViewerForMcsUrl()));
-				}
-
-				// MDR report results may be inaccurate if produced with a certain period before the policy anniversary date
-				//   due to renewal processing that may not be completed.
-				// Check if the requested report date falls with that renewal period, and if so notify the employer.
-				if (getMemberDeductionReportRulesBean().isDateWithinPolicyRenewalPeriod(getMemberDeductionReportBean().getReportDate())) {
-					addFacesInfoMessage(MDR_POLICY_CHANGES_MAY_NOT_BE_CURRENT_MESSAGE);
-				}
-				
-				logger.debug("Successfully requested generating an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage());
-			}
-			else if (response.getResponseCode() == ResponseCode.CANCELED) {
-				if (DUPLICATE_REQUEST_RESPONSE_MSG.equals(response.getResponseMessage())) {
-					addFacesInfoMessage(MDR_DUPLICATE_REQUEST_MESSAGE);
-					logger.debug("Duplicate request generating an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage());
-				}
-			}
-			else {
-				addFacesErrorMessage(MDR_FAILURE_MESSAGE);
-				StringBuilder msg = new StringBuilder("Error occurred requesting an MDR for policy: " + request.getPolicyNumber() + " with the following status " + response.getResponseCode() + " " + response.getResponseMessage() +
-					 ". Parameters - billgroup: " + request.getBillGroups().toString() + 
-					 ", report type: " + request.getReportType().name() + 
-					 ", effective date: " + request.getEffectiveDate() + 
-					 ", deduction frequency: " + request.getDeductionFrequencies().toString() +
-					 ", user type: " + request.isExternalUser() +
-					 ", externally viewable: " + request.isExternalViewable());
-				if (request.getReportName() != null && request.getReportName().length() > 0) {
-					msg.append(", name: " + request.getReportName());
-				}
-			}
-			
-			// Capture process request time
-			if (logger.isTraceEnabled()) {
-				timeToProcessResponse = stopWatch.getTime();
-			}
-			
-			// log timing info
-			if (logger.isTraceEnabled()) {
-				stopWatch.stop();
-				
-				logger.trace("Build MDR request took {} milliseconds", timeToBuildRequest);
-				logger.trace("Make MDR request took {} milliseconds", timeToMakeRequest - timeToBuildRequest);
-				logger.trace("Process MDR response took {} milliseconds", timeToProcessResponse - timeToMakeRequest);
-			}
-	}
-
-	public DocumentServiceClient getAcomsClient()
-	{
-		if(acoms == null)
-		{
-			logger.debug("Document Service client URL: " + acomsUrl);
-			acoms = new DocumentServiceClientImpl(acomsUrl);
+public void determineBillGroupAvailability() {
+		List<IPolicyAuthorization> policyAuthorizationList = getUserBean().getPolicyAuthorizations();
+		
+		Map<String,BillGroupDTO> activeBillGroupMap = getMemberCoverageStatementDataBean().getActiveBillgroupMap();
+		if (activeBillGroupMap == null || activeBillGroupMap.isEmpty()) {
+			loadActiveBillGroups(getMemberCoverageStatementDataBean().getReportDate());
+			activeBillGroupMap = getMemberCoverageStatementDataBean().getActiveBillgroupMap();
 		}
+		
+		memberCoverageStatementDataBean.setMatchedPolicyAuthorizations(new ArrayList<>());
+		memberCoverageStatementDataBean.setExcludedPolicyAuthorizations(new ArrayList<>());
+		
+		final boolean POLICY_ON_AMENDMENT_HOLD = policyInfoDataBean.isAmendmentHold();
 
-		return acoms;
-	}
-
-
-importoj static org.mockito.ArgumentMatchers.any;
-importoj static org.mockito.Mockito.*;
-
-importoni java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import .util.Date;
-
- importoj static org.mockito.ArgumentMatchers.any;
-importoj static org.mockito.Mockito.*;
-
-importoni java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-@ExtendWith(MockitoExtension.class)
-public class MemberDeductionReportHelperBeanTest {
-
-    @Mock
-    private Logger logger;
-
-    @Mock
-    private FacesContext facesContext;
-
-    @Mock
-    private ExternalContext externalContext;
-
-    @Mock
-    private HttpServletRequest httpServletRequest;
-
-    @Mock
-    private DocumentServiceClient documentServiceClient;
-
-    @Mock
-    private UserBean userBean;
-
-    @Mock
-    private MemberDeductionReportRulesBean memberDeductionReportRulesBean;
-
-    @InjectMocks
-    private MemberDeductionReportHelperBean memberDeductionReportHelperBean;
-
-    @BeforeEach
-    void setup() {
-        when(facesContext.getExternalContext()).thenReturn(externalContext);
-        when(externalContext.getRequest()).thenReturn(httpServletRequest);
-    }
-
-    @Test
-    void testGenerateAcomsMdr_Success() throws Exception {
-        MemberDeductionReportBean memberDeductionReportBean = mock(MemberDeductionReportBean.class);
-        when(memberDeductionReportBean.getMatchedPolicyAuthorizations()).thenReturn(Collections.emptyList());
-        when(memberDeductionReportBean.isFreqBiWeekly()).thenReturn(true);
-        when(memberDeductionReportBean.isFreqWeekly()).thenReturn(false);
-        when(memberDeductionReportBean.isFreqSemiMonthly()).thenReturn(true);
-        when(memberDeductionReportBean.isFreqMonthly()).thenReturn(false);
-        when(memberDeductionReportBean.getMdrReportName()).thenReturn("TestReport");
-        when(memberDeductionReportBean.isMcsRequest()).thenReturn(true);
-        when(memberDeductionReportBean.getReportType()).thenReturn("TYPE");
-        when(memberDeductionReportBean.getReportDate()).thenReturn(new Date());
-        when(memberDeductionReportBean.getPolicyNumber()).thenReturn("POL123");
-
-        ResponseWrapper<ByteWrapper> response = new ResponseWrapper<>();
-        response.setResponseCode(ResponseCode.SUCCESS);
-        when(documentServiceClient.generateMdrForGroup(any(), any(), any())).thenReturn(response);
-
-        memberDeductionReportHelperBean.generateAcomsMdr(memberDeductionReportBean);
-
-        verify(logger).debug(anyString());
-        verify(documentServiceClient).generateMdrForGroup(any(), any(), any());
-    }
-
-    @Test
-    void testGenerateAcomsMdr_DuplicateRequest() throws Exception {
-        MemberDeductionReportBean memberDeductionReportBean = mock(MemberDeductionReportBean.class);
-        when(memberDeductionReportBean.getMatchedPolicyAuthorizations()).thenReturn(Collections.emptyList());
-
-        ResponseWrapper<ByteWrapper> response = new ResponseWrapper<>();
-        response.setResponseCode(ResponseCode.CANCELED);
-        response.setResponseMessage("Duplicate pending request");
-        when(documentServiceClient.generateMdrForGroup(any(), any(), any())).thenReturn(response);
-
-        memberDeductionReportHelperBean.generateAcomsMdr(memberDeductionReportBean);
-
-        verify(logger).debug(anyString());
-        verify(documentServiceClient).generateMdrForGroup(any(), any(), any());
-    }
-
-    @Test
-    void testGenerateAcomsMdr_Error() throws Exception {
-        MemberDeductionReportBean memberDeductionReportBean = mock(MemberDeductionReportBean.class);
-        when(memberDeductionReportBean.getMatchedPolicyAuthorizations()).thenReturn(Collections.emptyList());
-
-        ResponseWrapper<ByteWrapper> response = new ResponseWrapper<>();
-        response.setResponseCode(ResponseCode.ERROR);
-        when(documentServiceClient.generateMdrForGroup(any(), any(), any())).thenReturn(response);
-
-        memberDeductionReportHelperBean.generateAcomsMdr(memberDeductionReportBean);
-
-        verify(logger).debug(anyString());
-        verify(documentServiceClient).generateMdrForGroup(any(), any(), any());
-    }
-}
+		Iterator<String> iter;
+		String authorization;
+		
+		//	iterate across set of IPolicyAuthorizations - if it's a compass IPolicyAuthorization for the selected policy and has a bill group key then
+		// 		iterate across the set of authorizations on the IPolicyAuthorization - if user has bill view or mgmt rights then
+		//			determine if the IPolicyAuthorization is included in the available or excluded set
+		for (IPolicyAuthorization policyAuthorization : policyAuthorizationList) {
+			if(policyAuthorization != null && policyAuthorization instanceof CompassPolicyAuthorization &&
+			   policyAuthorization.getPolicyNumber().equals(policyValueBean.getSelectedPolicyNumber()) && 
+			   policyAuthorization.getBillGroupKey() != null &&
+			   activeBillGroupMap.containsKey(policyAuthorization.getBillGroupKey())) {
+				iter = policyAuthorization.getPrivilegeCollection().iterator();
+				while (iter.hasNext()) {
+					authorization = iter.next();
+					if (IPolicyAuthorization.PRIVILEGE_BILL_VIEW.equalsIgnoreCase(authorization) ||
+						IPolicyAuthorization.PRIVILEGE_BILL_MANAGEMENT.equalsIgnoreCase(authorization)) {
+						
+						// create collection of billgroup schedulers for determining availability
+						List<BillGroupTransactionScheduler> billingSchedulerList = new ArrayList<>();
+						for (BillGroupTransactionScheduler scheduler : policyAuthorization.getTransactionSchedulerList()) {
+							if (SCHEDULER_BILLING_PRDF_NAME.equalsIgnoreCase(scheduler.getPrdfName())) {
+								billingSchedulerList.add(scheduler);
+							}
+						}
+												
+						if (POLICY_ON_AMENDMENT_HOLD) {
+							determineBillGroupAvailabilityForAmendmentHold(policyAuthorization, billingSchedulerList);
+						}
+						else {
+							determineBillGroupAvailabilityNoAmendmentHold(policyAuthorization, billingSchedulerList);
+						}
+						
+						break;		// prevent duplicate processing of billgroup in case user has both view & mgmt authorization	
+					}										
+				}
+			}
+		} 
+		
+		//sort matched policy authorizations alpha
+		Collections.sort(memberCoverageStatementDataBean.getMatchedPolicyAuthorizations(), this);
+		setShowBillGroupPanel(!memberCoverageStatementDataBean.getMatchedPolicyAuthorizations().isEmpty());
+		
+		//sort excluded policy authorizations alpha
+		Collections.sort(memberCoverageStatementDataBean.getExcludedPolicyAuthorizations(), this);
+		setShowExcludedBillGroupPanel(!memberCoverageStatementDataBean.getExcludedPolicyAuthorizations().isEmpty());
+	}	
