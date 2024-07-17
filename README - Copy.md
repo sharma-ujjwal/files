@@ -1,190 +1,156 @@
-public void determineBillGroupAvailability() {
-		List<IPolicyAuthorization> policyAuthorizationList = getUserBean().getPolicyAuthorizations();
-		
-		Map<String,BillGroupDTO> activeBillGroupMap = getMemberCoverageStatementDataBean().getActiveBillgroupMap();
-		if (activeBillGroupMap == null || activeBillGroupMap.isEmpty()) {
-			loadActiveBillGroups(getMemberCoverageStatementDataBean().getReportDate());
-			activeBillGroupMap = getMemberCoverageStatementDataBean().getActiveBillgroupMap();
+public void submitSingleMcsRequest() {
+	final String REQUESTING_APPLICATION = "OAc";
+	final String DUPLICATE_REQUEST_RESPONSE_MSG = "Duplicate pending request";
+	
+	StopWatch stopWatch = new StopWatch();
+	long timeToBuildRequest = 0;
+	long timeToMakeRequest = 0;
+	long timeToProcessResponse = 0;
+	
+	// log request build timing
+	if (logger.isTraceEnabled()) {
+		stopWatch.start();
+	}
+	
+	MCSRequestDTO mcsRequest = new MCSRequestDTO();
+			
+	//
+	// set billgroups on request
+	//
+	List<String> selectedBillGroupKeys = new ArrayList<>();
+	for(MCSCompassPolicyAuthorization billGroup : getMemberCoverageStatementDataBean().getMatchedPolicyAuthorizations()) {
+		if (billGroup.isSelectedForMCS()) {
+			selectedBillGroupKeys.add(billGroup.getBillGroupKey());
 		}
-		
-		memberCoverageStatementDataBean.setMatchedPolicyAuthorizations(new ArrayList<>());
-		memberCoverageStatementDataBean.setExcludedPolicyAuthorizations(new ArrayList<>());
-		
-		final boolean POLICY_ON_AMENDMENT_HOLD = policyInfoDataBean.isAmendmentHold();
+	}		
+	mcsRequest.setBillGroups(selectedBillGroupKeys);
+	
+	//
+	// set members on request
+	//
+	String memberNumber = null;
+	for (MemberCoverageStatementMember mbr : getMemberCoverageStatementDataBean().getSelectedMembers().values()) {
+		memberNumber = mbr.getMemberNumber();
+	}
+			
+	mcsRequest.setMemberNumber(memberNumber);
+	mcsRequest.setAllMembers(false);
+	ArrayList<String>caseMemberKeys = new ArrayList<>(getMemberCoverageStatementDataBean().getSelectedMembers().keySet());
+	mcsRequest.setCaseMemberKeys(caseMemberKeys);
+	
+	//
+	// set deduction frequencies on request	
+	//		
+	List<DeductionFrequency> frequenices = new ArrayList<>(4);
+	if (getMemberCoverageStatementDataBean().isFreqBiWeekly()) {
+		frequenices.add(DeductionFrequency.BI_WEEKLY);  		
+	}
+	if (getMemberCoverageStatementDataBean().isFreqWeekly()) {
+		frequenices.add(DeductionFrequency.WEEKLY);		
+	}
+	if (getMemberCoverageStatementDataBean().isFreqSemiMonthly()) { 
+		frequenices.add(DeductionFrequency.SEMI_MONTHLY);
+	}		
+	if (getMemberCoverageStatementDataBean().isFreqMonthly()) { 
+		frequenices.add(DeductionFrequency.MONTHLY);
+	}	
+	mcsRequest.setDeductionFrequencies(frequenices);
+						
+	//
+	// External/internal user, and externally viewable
+	// 
+	// NOTE mcsExternalView flag is hard set to false, until such time as we make the option selectable via the user interface
+	//
+	mcsRequest.setExternalUser(!getUserBean().isInternalAccess());
+	boolean mcsExternalView = false;
+	mcsRequest.setExternalViewable(getMemberCoverageStatementRulesBean().determineMcsExternalView(getUserBean().isInternalAccess(), mcsExternalView));		
+	
+	//
+	// Member filter criteria
+	//			
+	mcsRequest.setMemberFilterCriteria(null);
+	
+	//
+	// set report name, type, and date on request
+	//
+	mcsRequest.setReportName(getMemberCoverageStatementDataBean().getReportName());
+	mcsRequest.setEffectiveDate(new SimpleDateFormat("yyyyMMdd").format(getMemberCoverageStatementDataBean().getReportDate()));
+	mcsRequest.setReportType(ReportType.MCS_EDIT_MEMBER);
+			
+	//
+	// miscellaneous
+	//
+	mcsRequest.setPolicyNumber(getPolicyValueBean().getSelectedPolicyNumber());
+//TODO		mcsRequest.setRequestApplication(REQUESTING_APPLICATION);
+//TODO		mcsRequest.setRequestUser(userBean.getUserName());
+	mcsRequest.setCreatedDate(new SimpleDateFormat("yyyyMMdd").format(new Date()));		
 
-		Iterator<String> iter;
-		String authorization;
+	// Capture request build time
+	if (logger.isTraceEnabled()) {
+		timeToBuildRequest = stopWatch.getTime();
+	}		
+
+	//
+	// submit request
+	//		
+	ResponseWrapper<ByteWrapper> response = new ResponseWrapper<>();
+	try {
+		DocumentServiceClientImpl documentServiceClient = new DocumentServiceClientImpl(getAcomsUrl());
+		response = documentServiceClient.generateMcsForMember(mcsRequest,
+															  userBean.getAcomsRq(), 
+															  (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest());
+
+		// Capture request time
+		if (logger.isTraceEnabled()) {
+			timeToMakeRequest = stopWatch.getTime();
+		}			
+					
+		logger.debug("MCS request for member submitted. Parameters -- {}", formatRequestParams(mcsRequest));
 		
-		//	iterate across set of IPolicyAuthorizations - if it's a compass IPolicyAuthorization for the selected policy and has a bill group key then
-		// 		iterate across the set of authorizations on the IPolicyAuthorization - if user has bill view or mgmt rights then
-		//			determine if the IPolicyAuthorization is included in the available or excluded set
-		for (IPolicyAuthorization policyAuthorization : policyAuthorizationList) {
-			if(policyAuthorization != null && policyAuthorization instanceof CompassPolicyAuthorization &&
-			   policyAuthorization.getPolicyNumber().equals(policyValueBean.getSelectedPolicyNumber()) && 
-			   policyAuthorization.getBillGroupKey() != null &&
-			   activeBillGroupMap.containsKey(policyAuthorization.getBillGroupKey())) {
-				iter = policyAuthorization.getPrivilegeCollection().iterator();
-				while (iter.hasNext()) {
-					authorization = iter.next();
-					if (IPolicyAuthorization.PRIVILEGE_BILL_VIEW.equalsIgnoreCase(authorization) ||
-						IPolicyAuthorization.PRIVILEGE_BILL_MANAGEMENT.equalsIgnoreCase(authorization)) {
-						
-						// create collection of billgroup schedulers for determining availability
-						List<BillGroupTransactionScheduler> billingSchedulerList = new ArrayList<>();
-						for (BillGroupTransactionScheduler scheduler : policyAuthorization.getTransactionSchedulerList()) {
-							if (SCHEDULER_BILLING_PRDF_NAME.equalsIgnoreCase(scheduler.getPrdfName())) {
-								billingSchedulerList.add(scheduler);
-							}
-						}
-												
-						if (POLICY_ON_AMENDMENT_HOLD) {
-							determineBillGroupAvailabilityForAmendmentHold(policyAuthorization, billingSchedulerList);
-						}
-						else {
-							determineBillGroupAvailabilityNoAmendmentHold(policyAuthorization, billingSchedulerList);
-						}
-						
-						break;		// prevent duplicate processing of billgroup in case user has both view & mgmt authorization	
-					}										
-				}
+		//
+		// handle response
+		//
+		if (response == null) {
+			returnErrors(MCS_FAILURE_MESSAGE);           	
+			logger.error("MCS request for member failure; status is unknown or not available. Parameters -- {}", formatRequestParams(mcsRequest));
+		}
+		else if (response.getResponseCode() == ResponseCode.SUCCESS) { 
+			ResponseWrapper rw = extractAndReturnDocument(response.getPayload());
+			if (rw.getResponseCode() == ResponseCode.ERROR) {
+				returnErrors(MCS_FAILURE_MESSAGE);
+				logger.error("MCS request for member error; Response code: {} Response message: {} Parameters -- {}",
+						rw.getResponseCode(), rw.getResponseMessage(), formatRequestParams(mcsRequest));
 			}
 		} 
+		else if (response.getResponseCode() == ResponseCode.CANCELED) {
+			if (DUPLICATE_REQUEST_RESPONSE_MSG.equals(response.getResponseMessage())) {
+				returnErrors(MCS_DUPLICATE_REQUEST_MESSAGE);
+				logger.error("MCS request for member canceled; Response code: {} Response message: {} Parameters -- {}",
+						response.getResponseCode(), response.getResponseMessage(), formatRequestParams(mcsRequest));
+			}
+		}
+		else {
+			returnErrors(MCS_FAILURE_MESSAGE);
+			logger.error("MCS request for member error; Response code: {} Response message: {} Parameters -- {}",
+					response.getResponseCode(), response.getResponseMessage(), formatRequestParams(mcsRequest));
+		}
+	}
+	catch(Exception e) {
+		returnErrors(MCS_FAILURE_MESSAGE);
+		logger.error("MCS request for member error; Response code:" + response.getResponseCode() + ". Response message:" + response.getResponseMessage() + ". Parameters --" + formatRequestParams(mcsRequest), e);
+	}
+	
+	// Capture process request time
+	if (logger.isTraceEnabled()) {
+		timeToProcessResponse = stopWatch.getTime();
+	}
+	
+	// log timing info
+	if (logger.isTraceEnabled()) {
+		stopWatch.stop();
 		
-		//sort matched policy authorizations alpha
-		Collections.sort(memberCoverageStatementDataBean.getMatchedPolicyAuthorizations(), this);
-		setShowBillGroupPanel(!memberCoverageStatementDataBean.getMatchedPolicyAuthorizations().isEmpty());
-		
-		//sort excluded policy authorizations alpha
-		Collections.sort(memberCoverageStatementDataBean.getExcludedPolicyAuthorizations(), this);
-		setShowExcludedBillGroupPanel(!memberCoverageStatementDataBean.getExcludedPolicyAuthorizations().isEmpty());
-	}	
-
-
- import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-import java.util.*;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-@ExtendWith(MockitoExtension.class)
-public class MemberCoverageStatementHelperBeanTest {
-
-    @Mock
-    private UserBean userBean;
-
-    @Mock
-    private MemberCoverageStatementDataBean memberCoverageStatementDataBean;
-
-    @Mock
-    private PolicyInfoDataBean policyInfoDataBean;
-
-    @Mock
-    private PolicyValueBean policyValueBean;
-
-    @InjectMocks
-    private MemberCoverageStatementHelperBean memberCoverageStatementHelperBean;
-
-    private List<IPolicyAuthorization> policyAuthorizationList;
-    private Map<String, BillGroupDTO> activeBillGroupMap;
-
-    @BeforeEach
-    void setup() {
-        policyAuthorizationList = new ArrayList<>();
-        activeBillGroupMap = new HashMap<>();
-        
-        when(userBean.getPolicyAuthorizations()).thenReturn(policyAuthorizationList);
-        when(memberCoverageStatementDataBean.getActiveBillgroupMap()).thenReturn(activeBillGroupMap);
-    }
-
-    @Test
-    void testDetermineBillGroupAvailability_NoActiveBillGroups() {
-        when(memberCoverageStatementDataBean.getReportDate()).thenReturn(new Date());
-        doAnswer(invocation -> {
-            activeBillGroupMap.put("key1", new BillGroupDTO());
-            return null;
-        }).when(memberCoverageStatementHelperBean).loadActiveBillGroups(any(Date.class));
-
-        memberCoverageStatementHelperBean.determineBillGroupAvailability();
-
-        verify(memberCoverageStatementHelperBean).loadActiveBillGroups(any(Date.class));
-        verify(memberCoverageStatementDataBean).setMatchedPolicyAuthorizations(any());
-        verify(memberCoverageStatementDataBean).setExcludedPolicyAuthorizations(any());
-    }
-
-    @Test
-    void testDetermineBillGroupAvailability_WithActiveBillGroups() {
-        activeBillGroupMap.put("key1", new BillGroupDTO());
-        CompassPolicyAuthorization policyAuthorization = mock(CompassPolicyAuthorization.class);
-        policyAuthorizationList.add(policyAuthorization);
-
-        when(policyAuthorization.getPolicyNumber()).thenReturn("POL123");
-        when(policyAuthorization.getBillGroupKey()).thenReturn("key1");
-        when(policyAuthorization.getPrivilegeCollection()).thenReturn(Arrays.asList("PRIVILEGE_BILL_VIEW", "PRIVILEGE_BILL_MANAGEMENT"));
-
-        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("POL123");
-        when(policyInfoDataBean.isAmendmentHold()).thenReturn(false);
-
-        List<BillGroupTransactionScheduler> schedulerList = new ArrayList<>();
-        BillGroupTransactionScheduler scheduler = mock(BillGroupTransactionScheduler.class);
-        when(scheduler.getPrdfName()).thenReturn("SCHEDULER_BILLING_PRDF_NAME");
-        schedulerList.add(scheduler);
-        when(policyAuthorization.getTransactionSchedulerList()).thenReturn(schedulerList);
-
-        memberCoverageStatementHelperBean.determineBillGroupAvailability();
-
-        verify(memberCoverageStatementHelperBean).determineBillGroupAvailabilityNoAmendmentHold(eq(policyAuthorization), anyList());
-        verify(memberCoverageStatementDataBean).setMatchedPolicyAuthorizations(any());
-        verify(memberCoverageStatementDataBean).setExcludedPolicyAuthorizations(any());
-    }
-
-    @Test
-    void testDetermineBillGroupAvailability_WithAmendmentHold() {
-        activeBillGroupMap.put("key1", new BillGroupDTO());
-        CompassPolicyAuthorization policyAuthorization = mock(CompassPolicyAuthorization.class);
-        policyAuthorizationList.add(policyAuthorization);
-
-        when(policyAuthorization.getPolicyNumber()).thenReturn("POL123");
-        when(policyAuthorization.getBillGroupKey()).thenReturn("key1");
-        when(policyAuthorization.getPrivilegeCollection()).thenReturn(Arrays.asList("PRIVILEGE_BILL_VIEW", "PRIVILEGE_BILL_MANAGEMENT"));
-
-        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("POL123");
-        when(policyInfoDataBean.isAmendmentHold()).thenReturn(true);
-
-        List<BillGroupTransactionScheduler> schedulerList = new ArrayList<>();
-        BillGroupTransactionScheduler scheduler = mock(BillGroupTransactionScheduler.class);
-        when(scheduler.getPrdfName()).thenReturn("SCHEDULER_BILLING_PRDF_NAME");
-        schedulerList.add(scheduler);
-        when(policyAuthorization.getTransactionSchedulerList()).thenReturn(schedulerList);
-
-        memberCoverageStatementHelperBean.determineBillGroupAvailability();
-
-        verify(memberCoverageStatementHelperBean).determineBillGroupAvailabilityForAmendmentHold(eq(policyAuthorization), anyList());
-        verify(memberCoverageStatementDataBean).setMatchedPolicyAuthorizations(any());
-        verify(memberCoverageStatementDataBean).setExcludedPolicyAuthorizations(any());
-    }
-
-    @Test
-    void testDetermineBillGroupAvailability_NoPrivileges() {
-        activeBillGroupMap.put("key1", new BillGroupDTO());
-        CompassPolicyAuthorization policyAuthorization = mock(CompassPolicyAuthorization.class);
-        policyAuthorizationList.add(policyAuthorization);
-
-        when(policyAuthorization.getPolicyNumber()).thenReturn("POL123");
-        when(policyAuthorization.getBillGroupKey()).thenReturn("key1");
-        when(policyAuthorization.getPrivilegeCollection()).thenReturn(Collections.emptyList());
-
-        when(policyValueBean.getSelectedPolicyNumber()).thenReturn("POL123");
-        when(policyInfoDataBean.isAmendmentHold()).thenReturn(false);
-
-        memberCoverageStatementHelperBean.determineBillGroupAvailability();
-
-        verify(memberCoverageStatementDataBean).setMatchedPolicyAuthorizations(any());
-        verify(memberCoverageStatementDataBean).setExcludedPolicyAuthorizations(any());
-    }
+		logger.trace("Build MCS single request took {} milliseconds", timeToBuildRequest);
+		logger.trace("Make MCS single request took {} milliseconds", timeToMakeRequest - timeToBuildRequest);
+		logger.trace("Process single batch response took {} milliseconds", timeToProcessResponse - timeToMakeRequest);
+	}		
 }
