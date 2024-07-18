@@ -67,4 +67,29 @@ public class EmployerBean {
 			return new JSONObject();
 		}
 	}
-}
+} 
+
+
+
+importoj static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+
+import org.junit.Para;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.junit.importoj static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+
+import org.junit.Para;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.junit.importoj static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+
+import org.junit.Para;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.*;
+import org.mockito.junit.
