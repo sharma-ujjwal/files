@@ -71,25 +71,84 @@ public class EmployerBean {
 
 
 
-importoj static org.mockito.Mockito.*;
+import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
 
-import org.junit.Para;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.junit.importoj static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import org.junit.Para;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.importoj static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import java.util.*;
 
-import org.junit.Para;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.
+@RunWith(MockitoJUnitRunner.class)
+public class TransactionHistoryActionListenerBeanTest {
+
+    @InjectMocks
+    private TransactionHistoryActionListenerBean transactionHistoryActionListenerBean;
+
+    @Mock
+    private TransactionHistoryDataBean transactionHistoryDataBean;
+
+    @Mock
+    private UserBean userBean;
+
+    @Mock
+    private Logger logger;
+
+    @Before
+    public void setUp() {
+        transactionHistoryActionListenerBean = new TransactionHistoryActionListenerBean();
+        transactionHistoryActionListenerBean.logger = LoggerFactory.getLogger(TransactionHistoryActionListenerBean.class);
+        transactionHistoryActionListenerBean.setTransactionHistoryDataBean(transactionHistoryDataBean);
+        transactionHistoryActionListenerBean.setUserBean(userBean);
+    }
+
+    @Test
+    public void testRetrieveTransactionEvents() {
+        // Arrange
+        TransactionRequestDTO requestDTO = new TransactionRequestDTO();
+        Calendar calendar = new GregorianCalendar();
+        calendar.add(Calendar.DAY_OF_MONTH, 1);
+        Date endDate = calendar.getTime();
+
+        when(transactionHistoryDataBean.getEndDateRange()).thenReturn(new Date());
+        when(userBean.getUserName()).thenReturn("testUser");
+
+        JSONObject mockResponse = new JSONObject();
+        // Mock the response from the middleware service
+
+        // Act
+        transactionHistoryActionListenerBean.retrieveTransactionEvents(requestDTO);
+
+        // Assert
+        verify(transactionHistoryDataBean).getEndDateRange();
+        verify(userBean).getUserName();
+        // Add more verifications as needed
+
+        // Check if events were set correctly
+        List<TransactionEventDTO> events = transactionHistoryDataBean.getEvents();
+        assertNotNull(events);
+        // Add more assertions as needed
+    }
+
+    @Test
+    public void testRetrieveTransactionEvents_Exception() {
+        // Arrange
+        TransactionRequestDTO requestDTO = new TransactionRequestDTO();
+
+        when(transactionHistoryDataBean.getEndDateRange()).thenThrow(new RuntimeException("Test exception"));
+
+        // Act
+        try {
+            transactionHistoryActionListenerBean.retrieveTransactionEvents(requestDTO);
+            fail("Exception was expected but not thrown");
+        } catch (Exception e) {
+            // Assert
+            verify(logger).error(anyString(), any(Throwable.class));
+        }
+    }
+}
