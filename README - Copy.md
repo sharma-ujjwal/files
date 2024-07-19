@@ -105,3 +105,93 @@ public ResponseWrapper<ByteWrapper> generateMcsForMember(MCSRequestDTO mcsReques
 
         return responseWrapper;
     }
+
+
+
+    import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
+public class YourClassTest {
+
+    @Mock
+    private HttpServletRequest httpRequest;
+
+    @Mock
+    private HttpClientBuilder httpClientBuilder;
+
+    @Mock
+    private CloseableHttpClient httpClient;
+
+    @Mock
+    private HttpResponse httpResponse;
+
+    @InjectMocks
+    private YourClass yourClass; // Replace with the actual class name containing generateMcsForMember method
+
+    @Before
+    public void setUp() throws Exception {
+        MockitoAnnotations.initMocks(this);
+        when(httpClientBuilder.build()).thenReturn(httpClient);
+    }
+
+    @Test
+    public void testGenerateMcsForMember() throws Exception {
+        // Mocking the required objects
+        MCSRequestDTO mcsRequest = mock(MCSRequestDTO.class);
+        ACOMSRequest acomsRequest = mock(ACOMSRequest.class);
+
+        // Setting up the mock responses
+        when(mcsRequest.getPolicyNumber()).thenReturn("policyNumber");
+        when(mcsRequest.getBillGroupString()).thenReturn("billGroups");
+        when(mcsRequest.getCaseMemberKeysString()).thenReturn("caseMemberKeys");
+        when(mcsRequest.getMemberNumber()).thenReturn("memberNumber");
+        when(mcsRequest.getDeductionFrequencies()).thenReturn(new ArrayList<>());
+        when(mcsRequest.getEffectiveDate()).thenReturn("effectiveDate");
+        when(mcsRequest.getReportName()).thenReturn("reportName");
+        when(mcsRequest.getReportType()).thenReturn(ReportType.SOME_TYPE); // Replace SOME_TYPE with actual type
+        when(mcsRequest.isExternalViewable()).thenReturn(true);
+        when(mcsRequest.isExternalUser()).thenReturn(true);
+
+        when(acomsRequest.getInsuranceSystem()).thenReturn(InsuranceSystem.SOME_SYSTEM); // Replace SOME_SYSTEM with actual system
+        when(acomsRequest.getRole()).thenReturn(Role.SOME_ROLE); // Replace SOME_ROLE with actual role
+        when(acomsRequest.getUserName()).thenReturn("userName");
+        when(acomsRequest.getSesnGuid()).thenReturn("sesnGuid");
+        when(acomsRequest.getCommunicationChnnl()).thenReturn(CommunicationChnnl.SOME_CHANNEL); // Replace SOME_CHANNEL with actual channel
+
+        // Mocking HTTP response
+        String mockResponse = "<responseWrapper><responseCode>success</responseCode><responseMessage>Message</responseMessage><bytes>SGVsbG8gd29ybGQ=</bytes></responseWrapper>";
+        StringEntity entity = new StringEntity(mockResponse, StandardCharsets.UTF_8);
+        when(httpResponse.getEntity()).thenReturn(entity);
+        when(httpResponse.getStatusLine().getStatusCode()).thenReturn(200);
+        when(httpClient.execute(any(HttpUriRequest.class))).thenReturn(httpResponse);
+
+        // Running the test
+        ResponseWrapper<ByteWrapper> responseWrapper = yourClass.generateMcsForMember(mcsRequest, acomsRequest, httpRequest);
+
+        // Verifying the results
+        assertNotNull(responseWrapper);
+        assertEquals(ResponseCode.SUCCESS, responseWrapper.getResponseCode());
+        assertEquals("Message", responseWrapper.getResponseMessage());
+
+        // Verifying the payload
+        byte[] decodedPDF = Base64.getDecoder().decode("SGVsbG8gd29ybGQ=");
+        assertArrayEquals(decodedPDF, responseWrapper.getPayload().bytes);
+    }
+}
