@@ -195,3 +195,6 @@ public class YourClassTest {
         assertArrayEquals(decodedPDF, responseWrapper.getPayload().bytes);
     }
 }
+
+// system design
+https://github.com/ashishps1/awesome-low-level-design/blob/main/README.md
