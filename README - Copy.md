@@ -1,200 +1,468 @@
-public ResponseWrapper<ByteWrapper> generateMcsForMember(MCSRequestDTO mcsRequest, ACOMSRequest acomsRequest, HttpServletRequest httpRequest) {
-        ResponseWrapper<ByteWrapper> responseWrapper;
-        try {
-            URIBuilder uriBuilder = new URIBuilder(getServiceUrl());
-            String path = uriBuilder.build().getPath() + "/billing/" +
-                    "mcs/" + "member/" +
-                    acomsRequest.getInsuranceSystem().name() + "/" +
-                    acomsRequest.getRole().name() + "/" +
-                    acomsRequest.getUserName() + "/" +
-                    acomsRequest.getSesnGuid() + "/" +
-                    acomsRequest.getCommunicationChnnl().name();
-
-            String reportName = mcsRequest.getReportName();
-            if (reportName == null) {
-                reportName = "";
-            }
-
-            uriBuilder.setPath(path)
-                    .addParameter("policyNumber", mcsRequest.getPolicyNumber())
-                    .addParameter("billGroups", mcsRequest.getBillGroupString())
-                    .addParameter("caseMemberKeys", mcsRequest.getCaseMemberKeysString())
-                    .addParameter("memberNumber", mcsRequest.getMemberNumber())
-                    .addParameter("deductionFrequencies", DeductionFrequency.getFrequenciesAsString(mcsRequest.getDeductionFrequencies()))
-                    .addParameter("effectiveDate", mcsRequest.getEffectiveDate())
-                    .addParameter("reportName", URLEncoder.encode(reportName, StandardCharsets.UTF_8))
-                    .addParameter("reportTypeName", mcsRequest.getReportType().name())
-                    .addParameter("externalViewable", String.valueOf(mcsRequest.isExternalViewable()))
-                    .addParameter("externalUser", String.valueOf(mcsRequest.isExternalUser()));
-
-            String baseReqUrl = uriBuilder.build().toURL().toString();
-
-
-            HttpUriRequest uriRequest = RequestBuilder.get().setUri(baseReqUrl).addHeader("Content-Type", "application/xml").addHeader("cookie", getSiteminderCookie(httpRequest)).build();
-
-            logger.info("URI for generateMcsForMember  : {}", uriRequest.getURI());
-            HttpClient defaultHttpClient = HttpClientBuilder.create().build();
-
-            HttpResponse httpResponse = defaultHttpClient.execute(uriRequest);
-
-            responseWrapper = handleResponse(httpResponse);
-
-            String payload = new String((responseWrapper.getPayload()).bytes);
-            int start = payload.indexOf("<bytes>");
-            int end = payload.indexOf("</bytes>");
-            String justPDF = payload.substring(start + "<bytes>".length(), end);
-            Base64 decoder = new Base64();
-            byte[] decodedPDF = decoder.decode(justPDF);
-            responseWrapper.setPayload(new ByteWrapper(decodedPDF));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return responseWrapper;
-    }
-
-    // Implementation of this method to be used from acoms-client jar
-    public ResponseWrapper<ByteWrapper> generateMcsForGroup(MCSRequestDTO mcsRequest, ACOMSRequest acomsRequest, HttpServletRequest httpRequest) {
-        return null;
-    }
-
-    private ResponseWrapper<ByteWrapper> handleResponse(HttpResponse httpResponse) throws Exception {
-        ResponseWrapper<ByteWrapper> responseWrapper;
-        int statusCode = httpResponse.getStatusLine().getStatusCode();
-
-        if (statusCode >= 200 && statusCode < 300) {
-            HttpEntity entity = httpResponse.getEntity();
-            String response = EntityUtils.toString(entity, "UTF-8");
-            responseWrapper = buildResponse(response);
-        } else {
-
-            throw new Exception("Error accessing ACOMS received error code: " + statusCode);
-        }
-        return responseWrapper;
-    }
-
-    public ResponseWrapper<ByteWrapper> buildResponse(String response) throws Exception {
-        ResponseWrapper<ByteWrapper> responseWrapper = new ResponseWrapper<>();
-
-        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new InputSource(new StringReader(response)));
-
-        NodeList respNodes = doc.getElementsByTagName("responseWrapper");
-        if (respNodes.getLength() > 0) {
-            Element respElement = (Element) respNodes.item(0);
-
-            String respCode = respElement.getElementsByTagName("responseCode").item(0).getTextContent();
-
-            String respMessage = respElement.getElementsByTagName("responseMessage").item(0).getTextContent();
-            if (respCode != null) {
-                if (respCode.equalsIgnoreCase("error"))
-                    responseWrapper.setResponseCode(ResponseCode.ERROR);
-                if (respCode.equalsIgnoreCase("success"))
-                    responseWrapper.setResponseCode(ResponseCode.SUCCESS);
-                if (respCode.equalsIgnoreCase("warning")) {
-                    responseWrapper.setResponseCode(ResponseCode.WARNING);
-                }
-            } else {
-                responseWrapper.setResponseCode(ResponseCode.NOT_FOUND);
-            }
-            responseWrapper.setResponseMessage(respMessage);
-
-            byte[] bytearray = response.getBytes(StandardCharsets.UTF_8);
-            ByteWrapper payloadWrapper = new ByteWrapper(bytearray);
-
-            responseWrapper.setPayload(payloadWrapper);
-        }
-
-        return responseWrapper;
-    }
-
-
-
-    import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-
-public class YourClassTest {
-
-    @Mock
-    private HttpServletRequest httpRequest;
-
-    @Mock
-    private HttpClientBuilder httpClientBuilder;
-
-    @Mock
-    private CloseableHttpClient httpClient;
-
-    @Mock
-    private HttpResponse httpResponse;
-
-    @InjectMocks
-    private YourClass yourClass; // Replace with the actual class name containing generateMcsForMember method
-
-    @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        when(httpClientBuilder.build()).thenReturn(httpClient);
-    }
-
-    @Test
-    public void testGenerateMcsForMember() throws Exception {
-        // Mocking the required objects
-        MCSRequestDTO mcsRequest = mock(MCSRequestDTO.class);
-        ACOMSRequest acomsRequest = mock(ACOMSRequest.class);
-
-        // Setting up the mock responses
-        when(mcsRequest.getPolicyNumber()).thenReturn("policyNumber");
-        when(mcsRequest.getBillGroupString()).thenReturn("billGroups");
-        when(mcsRequest.getCaseMemberKeysString()).thenReturn("caseMemberKeys");
-        when(mcsRequest.getMemberNumber()).thenReturn("memberNumber");
-        when(mcsRequest.getDeductionFrequencies()).thenReturn(new ArrayList<>());
-        when(mcsRequest.getEffectiveDate()).thenReturn("effectiveDate");
-        when(mcsRequest.getReportName()).thenReturn("reportName");
-        when(mcsRequest.getReportType()).thenReturn(ReportType.SOME_TYPE); // Replace SOME_TYPE with actual type
-        when(mcsRequest.isExternalViewable()).thenReturn(true);
-        when(mcsRequest.isExternalUser()).thenReturn(true);
-
-        when(acomsRequest.getInsuranceSystem()).thenReturn(InsuranceSystem.SOME_SYSTEM); // Replace SOME_SYSTEM with actual system
-        when(acomsRequest.getRole()).thenReturn(Role.SOME_ROLE); // Replace SOME_ROLE with actual role
-        when(acomsRequest.getUserName()).thenReturn("userName");
-        when(acomsRequest.getSesnGuid()).thenReturn("sesnGuid");
-        when(acomsRequest.getCommunicationChnnl()).thenReturn(CommunicationChnnl.SOME_CHANNEL); // Replace SOME_CHANNEL with actual channel
-
-        // Mocking HTTP response
-        String mockResponse = "<responseWrapper><responseCode>success</responseCode><responseMessage>Message</responseMessage><bytes>SGVsbG8gd29ybGQ=</bytes></responseWrapper>";
-        StringEntity entity = new StringEntity(mockResponse, StandardCharsets.UTF_8);
-        when(httpResponse.getEntity()).thenReturn(entity);
-        when(httpResponse.getStatusLine().getStatusCode()).thenReturn(200);
-        when(httpClient.execute(any(HttpUriRequest.class))).thenReturn(httpResponse);
-
-        // Running the test
-        ResponseWrapper<ByteWrapper> responseWrapper = yourClass.generateMcsForMember(mcsRequest, acomsRequest, httpRequest);
-
-        // Verifying the results
-        assertNotNull(responseWrapper);
-        assertEquals(ResponseCode.SUCCESS, responseWrapper.getResponseCode());
-        assertEquals("Message", responseWrapper.getResponseMessage());
-
-        // Verifying the payload
-        byte[] decodedPDF = Base64.getDecoder().decode("SGVsbG8gd29ybGQ=");
-        assertArrayEquals(decodedPDF, responseWrapper.getPayload().bytes);
-    }
-}
-
-// system design
-https://github.com/ashishps1/awesome-low-level-design/blob/main/README.md
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.assurant.inc.sox.ar</groupId>
+  <artifactId>SoxAutoReview</artifactId>
+  <packaging>war</packaging>
+  <name>Sox AutoReviews War</name>
+  <version>1.4.0</version>
+  <description/>
+  <build>
+  <finalName>SoxAutoReview</finalName>
+          <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <targetPath>${basedir}/WebContent/WEB-INF/classes</targetPath>
+                <includes>
+                      <include>log4j.xml</include>
+                    </includes>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                    <exclude>${basedir}/src/test</exclude>
+                </excludes>
+            </resource>
+          	<!-- <resource>
+			       <directory>${basedir}/src/main/java</directory>
+			       <excludes>
+                    <exclude>**/*.jar</exclude>
+                </excludes>
+	         </resource> -->
+    		</resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>${jdkTargetVersion}</source>
+          <target>${jdkTargetVersion}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <webResources>
+            <resource>
+              <directory>WebContent</directory>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>validate</phase>
+            <!-- <goals>
+              <goal>copy-dependencies</goal>
+            </goals> -->
+            <configuration>
+              <overWriterSnapshots>true</overWriterSnapshots>
+              <outputDirectory>WebContent/WEB-INF/lib</outputDirectory>
+              <excludeScope>provided</excludeScope>
+              
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <configuration>
+          <attach>true</attach>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>clean</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>WebContent/WEB-INF/lib</directory>
+              <includes>
+                <include>**/*.jar</include>
+              </includes>
+            </fileset>
+			<fileset>
+				<directory>src/main/webapp/WEB-INF/classes</directory>
+				<includes>
+					<include>*.*</include>
+				</includes>
+			</fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <testFailureIgnore>true</testFailureIgnore>
+          <skipTests>true</skipTests>
+          <excludes>
+            <exclude>**/Test*.java</exclude>
+            <exclude>**/*Test.java</exclude>
+            <exclude>**/*Mock.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>com.assurant.inc.sox</groupId>
+      <artifactId>SoxDataAccess</artifactId>
+      <version>1.4.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.richfaces.framework</groupId>
+      <artifactId>richfaces-api</artifactId>
+      <version>3.1.5.GA</version>
+      <scope>compile</scope>
+      <exclusions>
+			<exclusion>
+				 <groupId>com.sun.faces</groupId>
+     			 <artifactId>jsf-api</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>com.sun.faces</groupId>
+	      		<artifactId>jsf-impl</artifactId>
+      		</exclusion>
+		</exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.richfaces.framework</groupId>
+      <artifactId>richfaces-impl</artifactId>
+      <version>3.1.5.GA</version>
+      <scope>compile</scope>
+      <exclusions>
+			<exclusion>
+				 <groupId>com.sun.faces</groupId>
+     			 <artifactId>jsf-api</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>com.sun.faces</groupId>
+	      		<artifactId>jsf-impl</artifactId>
+      		</exclusion>
+		</exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.richfaces.ui</groupId>
+      <artifactId>richfaces-ui</artifactId>
+      <version>3.1.5.GA</version>
+     <!--  <scope>compile</scope> -->
+      <exclusions>
+			<exclusion>
+				 <groupId>com.sun.faces</groupId>
+     			 <artifactId>jsf-api</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>com.sun.faces</groupId>
+	      		<artifactId>jsf-impl</artifactId>
+      		</exclusion>
+		</exclusions>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.3</version>
+      <scope>compile</scope>
+    </dependency>
+    <!-- <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring</artifactId>
+      <version>2.5.3</version>
+      <scope>compile</scope>
+    </dependency> -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <!-- <version>2.5.3</version> -->
+      <version>3.0.5.RELEASE</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+		<groupId>com.sun.jersey</groupId>
+		<artifactId>jersey-json</artifactId>
+		<version>1.12</version>
+		<exclusions>
+			<exclusion>
+				<artifactId>jaxb-impl</artifactId>
+				<groupId>com.sun.xml.bind</groupId>
+			</exclusion>
+			<exclusion>
+				<artifactId>jackson-core-asl</artifactId>
+				<groupId>org.codehaus.jackson</groupId>
+			</exclusion>
+			<exclusion>
+				<artifactId>jackson-mapper-asl</artifactId>
+				<groupId>org.codehaus.jackson</groupId>
+			</exclusion>
+			<exclusion>
+				<artifactId>stax-api</artifactId>
+				<groupId>stax</groupId>
+			</exclusion>
+			<exclusion>
+				<artifactId>jackson-xc</artifactId>
+				<groupId>org.codehaus.jackson</groupId>
+			</exclusion>
+			<exclusion>
+				<artifactId>jackson-jaxrs</artifactId>
+				<groupId>org.codehaus.jackson</groupId>
+			</exclusion>
+		</exclusions>
+	</dependency>
+		<!-- <dependency>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-spring</artifactId>
+			<exclusions>
+				<exclusion>
+					<artifactId>spring-aop</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-web</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-core</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-beans</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-context</artifactId>
+					<groupId>org.springframework</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>asm</artifactId>
+					<groupId>asm</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jersey-server</artifactId>
+					<groupId>com.sun.jersey</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency> -->
+    	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-context</artifactId>
+		<version>3.0.5.RELEASE</version>
+		<exclusions>
+			<!-- Exclude Commons Logging in favor of SLF4j -->
+			<exclusion>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+			 </exclusion>
+		</exclusions>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework</groupId>
+		<artifactId>spring-webmvc</artifactId>
+		<version>3.0.5.RELEASE</version>
+	</dependency>
+    <dependency>
+      <groupId>aspectj</groupId>
+      <artifactId>aspectjrt</artifactId>
+      <version>1.5.3</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
+      <version>1.5.3</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.15</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.dozer</groupId>
+      <artifactId>dozer</artifactId>
+      <version>4.2</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.el</groupId>
+      <artifactId>el-api</artifactId>
+      <version>1.0</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+	  <groupId>javax</groupId>
+	  <artifactId>javaee-api</artifactId>
+	  <version>7.0</version>
+	  <scope>provided</scope>
+	</dependency>
+    <dependency>
+      <groupId>javax.el</groupId>
+      <artifactId>el-ri</artifactId>
+      <version>1.2</version>
+      <scope>compile</scope>
+    </dependency>
+   <dependency>
+      <groupId>com.sun.facelets</groupId>
+      <artifactId>jsf-facelets</artifactId>
+      <version>1.1.14</version>
+      <scope>compile</scope>
+      <exclusions>
+			<exclusion>
+				 <groupId>com.sun.faces</groupId>
+     			 <artifactId>jsf-api</artifactId>
+			</exclusion>
+			<exclusion>
+				<groupId>com.sun.faces</groupId>
+	      		<artifactId>jsf-impl</artifactId>
+      		</exclusion>
+		</exclusions>
+    </dependency>
+    <!-- <dependency>
+      <groupId>javax.faces</groupId>
+      <artifactId>jsf-api</artifactId>
+      <version>1.2</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>jsp-api</artifactId>
+          <groupId>java.servlet.servlet.jsp</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jsp-api</artifactId>
+          <groupId>javax.servlet.jsp</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jstl</artifactId>
+          <groupId>javax.servlet.jsp.jstl</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency> -->
+     <dependency>
+      <groupId>com.sun.faces</groupId>
+      <artifactId>jsf-api</artifactId>
+      <version>2.0.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.faces</groupId>
+      <artifactId>jsf-impl</artifactId>
+      <version>2.0.3</version>
+    </dependency>
+    <dependency> 
+      <groupId>javax</groupId>
+      <artifactId>j2ee</artifactId>
+      <version>6.1</version>
+      <!-- <version>WAS.6.1.0.13</version> -->
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.ws</groupId>
+      <artifactId>com.ibm.ws.runtime_6.1.0</artifactId>
+      <version>WAS.6.1.0.13</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-digester</groupId>
+      <artifactId>commons-digester</artifactId>
+      <version>1.8</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.4</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>axis</groupId>
+      <artifactId>axis</artifactId>
+      <version>1.3</version>
+    </dependency>
+      <dependency>
+         <groupId>com.oracle</groupId>
+         <artifactId>ojdbc14</artifactId>
+         <version>10.1.0.4.0</version>
+         <scope>test</scope>
+      </dependency> 
+    <dependency>
+      <groupId>com.assurant.inc.common</groupId>
+      <artifactId>Obfuscator</artifactId>
+      <version>1.0</version>
+      <scope>compile</scope>
+    </dependency> 
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.3</version>
+      <scope>compile</scope>
+    </dependency>             
+    <dependency>
+      <groupId>net.sf.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <version>1.5.0</version>
+    </dependency>
+  </dependencies>
+  <reporting>
+      <plugins>
+         <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <reportSets>
+               <reportSet>
+                  <reports>
+                     <report>javadoc</report>
+                  </reports>
+               </reportSet>
+            </reportSets>
+         </plugin>
+         <plugin>
+            <artifactId>maven-pmd-plugin</artifactId>
+            <configuration>
+               <targetJdk>${jdkTargetVersion}</targetJdk>
+            </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-jxr-plugin</artifactId>
+            <reportSets>
+               <reportSet>
+                  <reports>
+                     <report>jxr</report>
+                  </reports>
+               </reportSet>
+            </reportSets>
+         </plugin>
+         <plugin>
+            <artifactId>maven-surefire-report-plugin</artifactId>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>cobertura-maven-plugin</artifactId>
+         </plugin>
+      </plugins>
+   </reporting>
+  <distributionManagement>
+    <repository>
+      <id>assurantDevRepository</id>
+      <name>Assurant Internal Repository</name>
+      <url>http://mci0lsubd001:8080/artifactory/libs-releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>assurantDevRepositorySnapshots</id>
+      <name>Assurant Internal Repository</name>
+      <url>http://mci0lsubd001:8080/artifactory/libs-snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+  <properties>
+    <jdkTargetVersion>1.6</jdkTargetVersion>
+  </properties>
+</project>
