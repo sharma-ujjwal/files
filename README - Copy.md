@@ -1,468 +1,114 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.assurant.inc.sox.ar</groupId>
-  <artifactId>SoxAutoReview</artifactId>
-  <packaging>war</packaging>
-  <name>Sox AutoReviews War</name>
-  <version>1.4.0</version>
-  <description/>
-  <build>
-  <finalName>SoxAutoReview</finalName>
-          <resources>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <targetPath>${basedir}/WebContent/WEB-INF/classes</targetPath>
-                <includes>
-                      <include>log4j.xml</include>
-                    </includes>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                    <exclude>${basedir}/src/test</exclude>
-                </excludes>
-            </resource>
-          	<!-- <resource>
-			       <directory>${basedir}/src/main/java</directory>
-			       <excludes>
-                    <exclude>**/*.jar</exclude>
-                </excludes>
-	         </resource> -->
-    		</resources>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>${jdkTargetVersion}</source>
-          <target>${jdkTargetVersion}</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-        <configuration>
-          <webResources>
-            <resource>
-              <directory>WebContent</directory>
-            </resource>
-          </webResources>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy-dependencies</id>
-            <phase>validate</phase>
-            <!-- <goals>
-              <goal>copy-dependencies</goal>
-            </goals> -->
-            <configuration>
-              <overWriterSnapshots>true</overWriterSnapshots>
-              <outputDirectory>WebContent/WEB-INF/lib</outputDirectory>
-              <excludeScope>provided</excludeScope>
-              
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-        <configuration>
-          <attach>true</attach>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>clean</id>
-            <phase>process-resources</phase>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>WebContent/WEB-INF/lib</directory>
-              <includes>
-                <include>**/*.jar</include>
-              </includes>
-            </fileset>
-			<fileset>
-				<directory>src/main/webapp/WEB-INF/classes</directory>
-				<includes>
-					<include>*.*</include>
-				</includes>
-			</fileset>
-          </filesets>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <testFailureIgnore>true</testFailureIgnore>
-          <skipTests>true</skipTests>
-          <excludes>
-            <exclude>**/Test*.java</exclude>
-            <exclude>**/*Test.java</exclude>
-            <exclude>**/*Mock.java</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  <dependencies>
-    <dependency>
-      <groupId>com.assurant.inc.sox</groupId>
-      <artifactId>SoxDataAccess</artifactId>
-      <version>1.4.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.richfaces.framework</groupId>
-      <artifactId>richfaces-api</artifactId>
-      <version>3.1.5.GA</version>
-      <scope>compile</scope>
-      <exclusions>
-			<exclusion>
-				 <groupId>com.sun.faces</groupId>
-     			 <artifactId>jsf-api</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>com.sun.faces</groupId>
-	      		<artifactId>jsf-impl</artifactId>
-      		</exclusion>
-		</exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.richfaces.framework</groupId>
-      <artifactId>richfaces-impl</artifactId>
-      <version>3.1.5.GA</version>
-      <scope>compile</scope>
-      <exclusions>
-			<exclusion>
-				 <groupId>com.sun.faces</groupId>
-     			 <artifactId>jsf-api</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>com.sun.faces</groupId>
-	      		<artifactId>jsf-impl</artifactId>
-      		</exclusion>
-		</exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.richfaces.ui</groupId>
-      <artifactId>richfaces-ui</artifactId>
-      <version>3.1.5.GA</version>
-     <!--  <scope>compile</scope> -->
-      <exclusions>
-			<exclusion>
-				 <groupId>com.sun.faces</groupId>
-     			 <artifactId>jsf-api</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>com.sun.faces</groupId>
-	      		<artifactId>jsf-impl</artifactId>
-      		</exclusion>
-		</exclusions>
-    </dependency>
-    <dependency>
-      <groupId>commons-lang</groupId>
-      <artifactId>commons-lang</artifactId>
-      <version>2.3</version>
-      <scope>compile</scope>
-    </dependency>
-    <!-- <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring</artifactId>
-      <version>2.5.3</version>
-      <scope>compile</scope>
-    </dependency> -->
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-test</artifactId>
-      <!-- <version>2.5.3</version> -->
-      <version>3.0.5.RELEASE</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-		<groupId>com.sun.jersey</groupId>
-		<artifactId>jersey-json</artifactId>
-		<version>1.12</version>
-		<exclusions>
-			<exclusion>
-				<artifactId>jaxb-impl</artifactId>
-				<groupId>com.sun.xml.bind</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>jackson-core-asl</artifactId>
-				<groupId>org.codehaus.jackson</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>jackson-mapper-asl</artifactId>
-				<groupId>org.codehaus.jackson</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>stax-api</artifactId>
-				<groupId>stax</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>jackson-xc</artifactId>
-				<groupId>org.codehaus.jackson</groupId>
-			</exclusion>
-			<exclusion>
-				<artifactId>jackson-jaxrs</artifactId>
-				<groupId>org.codehaus.jackson</groupId>
-			</exclusion>
-		</exclusions>
-	</dependency>
-		<!-- <dependency>
-			<groupId>com.sun.jersey.contribs</groupId>
-			<artifactId>jersey-spring</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>spring-aop</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-web</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-core</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-beans</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-context</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>asm</artifactId>
-					<groupId>asm</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>jersey-server</artifactId>
-					<groupId>com.sun.jersey</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency> -->
-    	<dependency>
-		<groupId>org.springframework</groupId>
-		<artifactId>spring-context</artifactId>
-		<version>3.0.5.RELEASE</version>
-		<exclusions>
-			<!-- Exclude Commons Logging in favor of SLF4j -->
-			<exclusion>
-				<groupId>commons-logging</groupId>
-				<artifactId>commons-logging</artifactId>
-			 </exclusion>
-		</exclusions>
-	</dependency>
-	<dependency>
-		<groupId>org.springframework</groupId>
-		<artifactId>spring-webmvc</artifactId>
-		<version>3.0.5.RELEASE</version>
-	</dependency>
-    <dependency>
-      <groupId>aspectj</groupId>
-      <artifactId>aspectjrt</artifactId>
-      <version>1.5.3</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>aspectj</groupId>
-      <artifactId>aspectjweaver</artifactId>
-      <version>1.5.3</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>1.2.15</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>net.sf.dozer</groupId>
-      <artifactId>dozer</artifactId>
-      <version>4.2</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.el</groupId>
-      <artifactId>el-api</artifactId>
-      <version>1.0</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-	  <groupId>javax</groupId>
-	  <artifactId>javaee-api</artifactId>
-	  <version>7.0</version>
-	  <scope>provided</scope>
-	</dependency>
-    <dependency>
-      <groupId>javax.el</groupId>
-      <artifactId>el-ri</artifactId>
-      <version>1.2</version>
-      <scope>compile</scope>
-    </dependency>
-   <dependency>
-      <groupId>com.sun.facelets</groupId>
-      <artifactId>jsf-facelets</artifactId>
-      <version>1.1.14</version>
-      <scope>compile</scope>
-      <exclusions>
-			<exclusion>
-				 <groupId>com.sun.faces</groupId>
-     			 <artifactId>jsf-api</artifactId>
-			</exclusion>
-			<exclusion>
-				<groupId>com.sun.faces</groupId>
-	      		<artifactId>jsf-impl</artifactId>
-      		</exclusion>
-		</exclusions>
-    </dependency>
-    <!-- <dependency>
-      <groupId>javax.faces</groupId>
-      <artifactId>jsf-api</artifactId>
-      <version>1.2</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>jsp-api</artifactId>
-          <groupId>java.servlet.servlet.jsp</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jsp-api</artifactId>
-          <groupId>javax.servlet.jsp</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>jstl</artifactId>
-          <groupId>javax.servlet.jsp.jstl</groupId>
-        </exclusion>
-      </exclusions>
-    </dependency> -->
-     <dependency>
-      <groupId>com.sun.faces</groupId>
-      <artifactId>jsf-api</artifactId>
-      <version>2.0.3</version>
-    </dependency>
-    <dependency>
-      <groupId>com.sun.faces</groupId>
-      <artifactId>jsf-impl</artifactId>
-      <version>2.0.3</version>
-    </dependency>
-    <dependency> 
-      <groupId>javax</groupId>
-      <artifactId>j2ee</artifactId>
-      <version>6.1</version>
-      <!-- <version>WAS.6.1.0.13</version> -->
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.ibm.ws</groupId>
-      <artifactId>com.ibm.ws.runtime_6.1.0</artifactId>
-      <version>WAS.6.1.0.13</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-digester</groupId>
-      <artifactId>commons-digester</artifactId>
-      <version>1.8</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.4</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>axis</groupId>
-      <artifactId>axis</artifactId>
-      <version>1.3</version>
-    </dependency>
-      <dependency>
-         <groupId>com.oracle</groupId>
-         <artifactId>ojdbc14</artifactId>
-         <version>10.1.0.4.0</version>
-         <scope>test</scope>
-      </dependency> 
-    <dependency>
-      <groupId>com.assurant.inc.common</groupId>
-      <artifactId>Obfuscator</artifactId>
-      <version>1.0</version>
-      <scope>compile</scope>
-    </dependency> 
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.3</version>
-      <scope>compile</scope>
-    </dependency>             
-    <dependency>
-      <groupId>net.sf.ehcache</groupId>
-      <artifactId>ehcache</artifactId>
-      <version>1.5.0</version>
-    </dependency>
-  </dependencies>
-  <reporting>
-      <plugins>
-         <plugin>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <reportSets>
-               <reportSet>
-                  <reports>
-                     <report>javadoc</report>
-                  </reports>
-               </reportSet>
-            </reportSets>
-         </plugin>
-         <plugin>
-            <artifactId>maven-pmd-plugin</artifactId>
-            <configuration>
-               <targetJdk>${jdkTargetVersion}</targetJdk>
-            </configuration>
-         </plugin>
-         <plugin>
-            <artifactId>maven-jxr-plugin</artifactId>
-            <reportSets>
-               <reportSet>
-                  <reports>
-                     <report>jxr</report>
-                  </reports>
-               </reportSet>
-            </reportSets>
-         </plugin>
-         <plugin>
-            <artifactId>maven-surefire-report-plugin</artifactId>
-         </plugin>
-         <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>cobertura-maven-plugin</artifactId>
-         </plugin>
-      </plugins>
-   </reporting>
-  <distributionManagement>
-    <repository>
-      <id>assurantDevRepository</id>
-      <name>Assurant Internal Repository</name>
-      <url>http://mci0lsubd001:8080/artifactory/libs-releases</url>
-    </repository>
-    <snapshotRepository>
-      <id>assurantDevRepositorySnapshots</id>
-      <name>Assurant Internal Repository</name>
-      <url>http://mci0lsubd001:8080/artifactory/libs-snapshots</url>
-    </snapshotRepository>
-  </distributionManagement>
-  <properties>
-    <jdkTargetVersion>1.6</jdkTargetVersion>
-  </properties>
-</project>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:rich="http://richfaces.org/rich"
+      xmlns:a4j="http://richfaces.org/a4j">
+
+<!-- 
+
+Include this xhtml file with ui:include tags and provide the following parameters:
+
+* aSelectionBean - A bean that extends the abstract class SelectionBean.java, and
+    defines behavior for how to initialize the lists, what to do when the apply
+    button is pressed, and return items when the user hits the search button.
+
+* panelId - A unique id for the panel to use.  Pick an id that is not used by any
+    other element on the including page, including other selectionModal.xhtml
+    includes.
+
+* formId - A unique id to give the form the modal panel uses.  Pick an id that
+    is not used by any other element on the including page, including other
+    selectionModal.xhtml includes.
+
+* rerenderOnApply - A component id to rerender after the user hits apply, used in
+    case the results of what the user selected needs to be updated somewhere else on
+    the page.
+
+* panelLabel - A string to display for the modal panel label.
+
+* leftLabel - A string to display above the left (available items) list.
+
+* rightLabel - A string to display above the right (selected items) list.
+
+-->
+
+
+<ui:composition>
+
+    <rich:popupPanel id="#{panelId}" moveable="true" resizeable="true">
+
+        <f:facet name="header" style="background-color:#d4cfc7;">
+            <h:outputLabel style="font-weight: bold;">#{panelLabel}</h:outputLabel>
+        </f:facet>
+
+        <a4j:region id="#{formId}region" style="background-color:#ffffff;">
+
+    <h:form id="#{formId}">
+      
+      <table><tbody>
+        <tr>
+        	<td>
+        		<h:messages id="noSelectionFoundMessage" style="color: #e80c00; font-size: 11pt;"/>
+        	</td>
+        </tr>      
+        <tr>
+          <td colspan="2">
+            <h:inputText value="#{aSelectionBean.availableSearchText}" onkeypress="return ((event.keyCode || event.which) != 13);" />
+            <a4j:commandButton id="searchSubmitButton" value="Search" action="#{aSelectionBean.searchAvailable}" render="#{formId}" />
+            <h:outputText value=" " />
+            <a4j:status>
+              <f:facet name="start">
+                    <h:graphicImage  value="/images/loader.gif"/>
+                </f:facet>
+            </a4j:status>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <div style="width: 200px; height: 200px; overflow: auto; border-style:solid; border-width: 1px">
+              <h:dataTable id="bundleDatatable" value="#{aSelectionBean.available}" var="item">
+                <h:column>
+                  <h:selectBooleanCheckbox value="#{item.selected}">
+                    <a4j:ajax event="click" render="" />
+                  </h:selectBooleanCheckbox>
+                </h:column>
+                <h:column>
+                  <h:outputText value="#{item.displayString}"/>
+                </h:column>
+              </h:dataTable>
+            </div>
+          </td>
+          <td>
+            <a4j:commandButton value="Add" style="width:60px" action="#{aSelectionBean.add}" render="#{formId}" />
+            <br />
+            <a4j:commandButton value="Remove" style="width:60px" action="#{aSelectionBean.remove}" render="#{formId}" />
+          </td>
+          <td>
+            #{rightLabel}
+            <div style="width: 200px; height: 200px; overflow: auto; border-style:solid; border-width: 1px">
+              <h:dataTable value="#{aSelectionBean.chosen}" var="item">
+                <h:column><h:selectBooleanCheckbox value="#{item.selected}" /></h:column>
+                <h:column><h:outputText value="#{item.displayString}" /></h:column>
+              </h:dataTable>
+            </div>
+          </td>
+        </tr>
+      </tbody></table>
+      <a4j:commandButton
+          value="Apply" 
+          onclick="Richfaces.hideModalPanel('#{panelId}');"
+          action="#{aSelectionBean.apply}"
+      	  reRender="#{rerenderOnApply}" />
+      <a4j:commandButton
+          value="Cancel" 
+          onclick="Richfaces.hideModalPanel('#{panelId}');" />
+    </h:form>
+    </a4j:region> 
+   
+  </rich:popupPanel>
+</ui:composition>
+
+</html>
