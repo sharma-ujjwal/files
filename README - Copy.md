@@ -1,464 +1,86 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<properties>
-		<jdkTargetVersion>17</jdkTargetVersion>
-		<springVersion>5.3.39</springVersion>
-		<logbackVersion>1.4.14</logbackVersion>
-		<slf4jVersion>2.0.7</slf4jVersion>
-		<aspectJWeaver>1.9.21.1</aspectJWeaver>
-		<asm>3.3.1</asm>
-		<asmAttrs>2.2.3</asmAttrs>
-		<dozer>5.5.1</dozer>
-		<elApi>2.2</elApi>
-		<commonsDigester>2.1</commonsDigester>
-		<junitJupiterVersion>5.10.0</junitJupiterVersion>
-		<commonsCodec>1.16.1</commonsCodec>
-		<ehCache>2.10.9.2</ehCache>
-		<cxfRtFrontendJaxws>4.0.4</cxfRtFrontendJaxws>
-		<javaxServletApi>4.0.1</javaxServletApi>
-		<servletApi>2.5</servletApi>
-		<axis>1.4</axis>
-		<javaxJsonApi>1.1.4</javaxJsonApi>
-		<javaxXmlRpcApi>1.1.2</javaxXmlRpcApi>
-		<commonsLang>2.6</commonsLang>
-	</properties>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.assurant.inc.sox.ar</groupId>
-	<artifactId>newsoxautoreviews</artifactId>
-	<packaging>war</packaging>
-	<name>Sox AutoReviews War</name>
-	<version>3.0-SNAPSHOT</version>
-	<description />
-	<build>
-		<finalName>newsoxautoreviews</finalName>
-		<resources>
-			<resource>
-				<directory>${basedir}/src/main/resources</directory>
-				<targetPath>${basedir}/WebContent/WEB-INF/classes</targetPath>
-				<excludes>
-					<exclude>**/*.java</exclude>
-					<exclude>${basedir}/src/test</exclude>
-				</excludes>
-			</resource>
-		</resources>
-		<plugins>
-			<plugin>
-				<groupId>io.openliberty.tools</groupId>
-				<artifactId>liberty-maven-plugin</artifactId>
-				<version>3.2.2</version>
-			</plugin>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<source>${jdkTargetVersion}</source>
-					<target>${jdkTargetVersion}</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>3.3.2</version>
-				<configuration>
-					<webResources>
-						<resource>
-							<directory>WebContent</directory>
-						</resource>
-					</webResources>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.8</version>
-				<executions>
-					<execution>
-						<id>copy-dependencies</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<overWriteSnapshots>true</overWriteSnapshots>
-							<outputDirectory>WebContent/WEB-INF/lib</outputDirectory>
-							<excludeScope>provided</excludeScope>
+    <h:head>
+        <h:outputStylesheet library="css" name="homeOfficePayments.css" />
+        <script src="https://kit.fontawesome.com/ca50ac5870.js" crossorigin="anonymous"></script>
+    </h:head>
 
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-source-plugin</artifactId>
-				<configuration>
-					<attach>true</attach>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>2.5</version>
-				<executions>
-					<execution>
-						<id>clean</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>clean</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>WebContent/WEB-INF/lib</directory>
-							<includes>
-								<include>**/*.jar</include>
-							</includes>
-						</fileset>
-						<fileset>
-							<directory>src/main/webapp/WEB-INF/classes</directory>
-							<includes>
-								<include>*.*</include>
-							</includes>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<testFailureIgnore>true</testFailureIgnore>
-					<skipTests>true</skipTests>
-					<excludes>
-						<exclude>**/Test*.java</exclude>
-						<exclude>**/*Test.java</exclude>
-						<exclude>**/*Mock.java</exclude>
-					</excludes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-	<dependencies>
-		<dependency>
-			<groupId>com.assurant.inc.sox</groupId>
-			<artifactId>SoxDataAccess</artifactId>
-			<version>3.0-SNAPSHOT-1</version>
-			<exclusions>
-				<exclusion>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>javax.mail</groupId>
-			<artifactId>mail</artifactId>
-			<version>1.4.7</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.facelets</groupId>
-			<artifactId>jsf-facelets</artifactId>
-			<version>1.1.14</version>
-		</dependency>
+    <div id="makePaymentPoliciesMarketingContainer">
+        <h:outputText value="#{staticContentDataBean.makePaymentEbillBelowTabURL}" escape="false" />
+    </div>
+    <h:form id="homeOfficePolicyFilterForm" styleClass="homeOfficePolicyFilterForm CQ">
+        <h:panelGroup layout="block" id="eBillHoPolicySelection">
+            <h:outputLabel value="Policy" for="homeOfficeFilterPolicyList" style="margin-right: 5px;"/>
+            <h:selectOneMenu id="homeOfficeFilterPolicyList" value="#{homeOfficeBillListDataBean.policyNumberSelection}">
+                <f:selectItem itemLabel="All policies" itemValue="ALL" />
+                <f:selectItems itemLabel="#{policyNumber}" itemValue="#{policyNumber}" var="policyNumber" value="#{sessionValueDataBean.getPolicyNumberSelectionList(3)}" />
+                <p:ajax listener="#{paymentsHelperBean.filterPaymentInfo(homeOfficeBillListDataBean.policyNumberSelection)}"
+                        update="makePaymentTabView:homeOfficePolicyForm" />
+            </h:selectOneMenu>
+        </h:panelGroup>
+    </h:form>
 
-		<dependency>
-			<groupId>org.glassfish</groupId>
-			<artifactId>javax.faces</artifactId>
-			<version>2.2.20</version>
-		</dependency>
+    <h:panelGroup layout="block" styleClass="makePaymentSelfBillLapsedPageLevelError" rendered="#{commonUtils.hasLapsedOasisEBillPolicy(sessionValueDataBean.getPolicyNumberSelectionList(3))}">
+        <i class="fas fa-exclamation-triangle warningIcon lapsedWarningIcon" ></i>
+        <div class="makePaymentSelfBillLapsedPageLevelMessage">
+            <h:outputText value="#{homeOfficeBillListActionListener.error519}" />
+        </div>
+    </h:panelGroup>
 
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<!--		<dependency>-->
-<!--			<groupId>javax.faces</groupId>-->
-<!--			<artifactId>javax.faces-api</artifactId>-->
-<!--			<version>2.2</version>-->
-<!--			<scope>provided</scope>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.apache.myfaces.core</groupId>-->
-<!--			<artifactId>myfaces-api</artifactId>-->
-<!--			<version>2.2.12</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.apache.myfaces.core</groupId>-->
-<!--			<artifactId>myfaces-impl</artifactId>-->
-<!--			<version>2.2.12</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.richfaces.ui</groupId>-->
-<!--			<artifactId>richfaces-components-ui</artifactId>-->
-<!--			<version>4.3.7.Final</version>-->
-<!--		</dependency>-->
-<!--		<dependency>-->
-<!--			<groupId>org.richfaces.core</groupId>-->
-<!--			<artifactId>richfaces-core-impl</artifactId>-->
-<!--			<version>4.3.7.Final</version>-->
-<!--		</dependency>-->
-		<dependency>
-			<groupId>javax.servlet.jsp</groupId>
-			<artifactId>javax.servlet.jsp-api</artifactId>
-			<version>2.3.3</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.richfaces.framework</groupId>
-			<artifactId>richfaces-api</artifactId>
-			<version>3.3.4.Final</version>
-			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>com.sun.faces</groupId>
-					<artifactId>jsf-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.faces</groupId>
-					<artifactId>jsf-impl</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.richfaces.framework</groupId>
-			<artifactId>richfaces-impl</artifactId>
-			<version>3.3.4.Final</version>
-			<scope>compile</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>com.sun.faces</groupId>
-					<artifactId>jsf-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.faces</groupId>
-					<artifactId>jsf-impl</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.richfaces.ui</groupId>
-			<artifactId>richfaces-ui</artifactId>
-			<version>3.3.4.Final</version>
-			<!--  <scope>compile</scope> -->
-			<exclusions>
-				<exclusion>
-					<groupId>com.sun.faces</groupId>
-					<artifactId>jsf-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.faces</groupId>
-					<artifactId>jsf-impl</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>${commonsLang}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
-			<version>${springVersion}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${springVersion}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-asm</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-core</artifactId>
-			<version>${springVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-			<version>${springVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-			<version>${springVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-aop</artifactId>
-			<version>${springVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjweaver</artifactId>
-			<version>${aspectJWeaver}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>asm</groupId>
-			<artifactId>asm</artifactId>
-			<version>${asm}</version>
-		</dependency>
-		<dependency>
-			<groupId>asm</groupId>
-			<artifactId>asm-attrs</artifactId>
-			<version>${asmAttrs}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-core</artifactId>
-			<version>${logbackVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>${logbackVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>${slf4jVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.dozer</groupId>
-			<artifactId>dozer</artifactId>
-			<version>${dozer}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>javax.el</groupId>
-			<artifactId>el-api</artifactId>
-			<version>${elApi}</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-digester</groupId>
-			<artifactId>commons-digester</artifactId>
-			<version>${commonsDigester}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junitJupiterVersion}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<version>${junitJupiterVersion}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.vintage</groupId>
-			<artifactId>junit-vintage-engine</artifactId>
-			<version>${junitJupiterVersion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.glassfish.web</groupId>
-			<artifactId>el-impl</artifactId>
-			<version>2.2</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>${commonsCodec}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.sf.ehcache</groupId>
-			<artifactId>ehcache</artifactId>
-			<version>${ehCache}</version>
-		</dependency>
-		<dependency>
-			<groupId>backport-util-concurrent</groupId>
-			<artifactId>backport-util-concurrent</artifactId>
-			<version>3.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-rt-frontend-jaxws</artifactId>
-			<version>${cxfRtFrontendJaxws}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.axis</groupId>
-			<artifactId>axis</artifactId>
-			<version>${axis}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.json</groupId>
-			<artifactId>javax.json-api</artifactId>
-			<version>${javaxJsonApi}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.xml.rpc</groupId>
-			<artifactId>javax.xml.rpc-api</artifactId>
-			<version>${javaxXmlRpcApi}</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.annotation</groupId>
-			<artifactId>javax.annotation-api</artifactId>
-			<version>1.3.2</version>
-		</dependency>
+    <h:panelGroup layout="block" styleClass="makePaymentSelfBillLapsedPageLevelError" rendered="#{commonUtils.hasPreLapsedHOPolicy(sessionValueDataBean.getPolicyNumberSelectionList(3))}">
+        <i class="fas fa-exclamation-triangle warningIcon lapsedWarningIcon" ></i>
+        <div class="makePaymentSelfBillLapsedPageLevelMessage">
+            <h:outputText value="#{homeOfficeBillListActionListener.error609}" />
+        </div>
+    </h:panelGroup>
+    <!-- ============================================================================== -->
+    <!-- page level application messages    											-->
+    <!-- ============================================================================== -->
 
 
-	</dependencies>
-	<reporting>
-		<plugins>
-			<plugin>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.4.1</version>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>javadoc</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-pmd-plugin</artifactId>
-				<version>3.21.0</version>
-				<configuration>
-					<targetJdk>${jdkTargetVersion}</targetJdk>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jxr-plugin</artifactId>
-				<version>3.3.1</version>
-				<reportSets>
-					<reportSet>
-						<reports>
-							<report>jxr</report>
-						</reports>
-					</reportSet>
-				</reportSets>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>3.2.5</version>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>cobertura-maven-plugin</artifactId>
-				<version>2.7</version>
-			</plugin>
-		</plugins>
-	</reporting>
-</project>
+    <!-- ============================================================================== -->
+    <!-- page level Faces (system and/or application) messages							-->
+    <!-- ============================================================================== -->
+    <h:messages id="errPageLevelMessage" globalOnly="true" layout="table" styleClass="errcb2 makePaymentPagelevelError" />
+
+    <h:form id="homeOfficePolicyForm">
+
+        <ui:include src="eBillPayments.xhtml" />
+
+        <ui:include src="homeOfficePayments.xhtml" />
+
+        <!-- ============================================================================== -->
+        <!-- button controls 																-->
+        <!-- ============================================================================== -->
+        <div id="makePaymentFooterContainer paymtStyleClassStaticMsg">
+            <!-- notification -->
+            <div class="makePaymentFooterMessage">
+                NOTE: You will have an opportunity to review your payment details before submitting your payment.
+            </div>
+
+            <!-- Continue button -->
+            <div class="makePaymentButtonContainer" id="makePaymentButtons">
+                <div id="makePaymentContinueButton">
+                    <div class="button submitBtn" style="margin-right:10px;">
+                        <div class="left" />
+                        <p:commandButton value="Continue" action="#{homeOfficeBillListActionListener.confirmContinue}"
+                                         process="@this makePaymentTabView:errPageLevelMessage frmDialogYN"
+                                         update="makePaymentTabView:errPageLevelMessage frmDialogYN"
+                                         onstart="showPopup();"
+                                         oncomplete="hidePopup();"
+                                         styleClass="makePaymentContStyle"  >
+                        </p:commandButton>
+                        <div class="right" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </h:form>
+
+    <h:outputScript library="js" name="makePaymentEbill.js" />
+</ui:composition>
