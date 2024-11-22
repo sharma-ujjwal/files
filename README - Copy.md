@@ -1,3 +1,55 @@
+Private Sub SortListView(columnIndex As Integer, sortOrder As Boolean)
+    Dim i As Integer, j As Integer
+    Dim tempItem As String
+    Dim tempSubItems() As String
+    Dim lvw As Object
+    Set lvw = Me.lvwData ' Replace lvwData with the actual name of your ListView control
+
+    ' Bubble sort algorithm for sorting ListView items numerically
+    For i = 1 To lvw.ListItems.Count - 1
+        For j = i + 1 To lvw.ListItems.Count
+            Dim currentValue As String, nextValue As String
+            
+            ' Get the column text to compare (main item or subitem)
+            If columnIndex = 0 Then
+                currentValue = lvw.ListItems(i).Text
+                nextValue = lvw.ListItems(j).Text
+            Else
+                currentValue = lvw.ListItems(i).ListSubItems(columnIndex).Text
+                nextValue = lvw.ListItems(j).ListSubItems(columnIndex).Text
+            End If
+            
+            ' Compare numerically if possible
+            Dim comparisonResult As Boolean
+            If IsNumeric(currentValue) And IsNumeric(nextValue) Then
+                comparisonResult = (Val(currentValue) > Val(nextValue))
+            Else
+                comparisonResult = (currentValue > nextValue) ' Default to string comparison
+            End If
+            
+            ' Check the sorting order
+            If (sortOrder And comparisonResult) Or _
+               (Not sortOrder And Not comparisonResult) Then
+                ' Swap items
+                tempItem = lvw.ListItems(i).Text
+                lvw.ListItems(i).Text = lvw.ListItems(j).Text
+                lvw.ListItems(j).Text = tempItem
+                
+                ' Swap subitems for all columns
+                ReDim tempSubItems(1 To lvw.ColumnHeaders.Count - 1)
+                Dim k As Integer
+                For k = 1 To lvw.ColumnHeaders.Count - 1
+                    tempSubItems(k) = lvw.ListItems(i).ListSubItems(k).Text
+                    lvw.ListItems(i).ListSubItems(k).Text = lvw.ListItems(j).ListSubItems(k).Text
+                    lvw.ListItems(j).ListSubItems(k).Text = tempSubItems(k)
+                Next k
+            End If
+        Next j
+    Next i
+End Sub
+
+
+
 
 Option Compare Database
 Option Explicit
