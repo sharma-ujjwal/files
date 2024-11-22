@@ -1,86 +1,163 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:h="http://xmlns.jcp.org/jsf/html"
-                xmlns:p="http://primefaces.org/ui"
-                xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+Option Compare Database
+Option Explicit
+ 
+' Constants for pagination
+Const ITEMS_PER_PAGE As Integer = 10
+ 
+' Variables to track pagination state
+Dim currentPage As Integer
+Dim totalPages As Integer
+Dim totalItems As Integer
+Dim dummyData As Collection
+Dim lastColumn As Integer
+Dim sortOrder As Boolean
+ 
+Private Sub Detail_Click()
 
-    <h:head>
-        <h:outputStylesheet library="css" name="homeOfficePayments.css" />
-        <script src="https://kit.fontawesome.com/ca50ac5870.js" crossorigin="anonymous"></script>
-    </h:head>
+End Sub
 
-    <div id="makePaymentPoliciesMarketingContainer">
-        <h:outputText value="#{staticContentDataBean.makePaymentEbillBelowTabURL}" escape="false" />
-    </div>
-    <h:form id="homeOfficePolicyFilterForm" styleClass="homeOfficePolicyFilterForm CQ">
-        <h:panelGroup layout="block" id="eBillHoPolicySelection">
-            <h:outputLabel value="Policy" for="homeOfficeFilterPolicyList" style="margin-right: 5px;"/>
-            <h:selectOneMenu id="homeOfficeFilterPolicyList" value="#{homeOfficeBillListDataBean.policyNumberSelection}">
-                <f:selectItem itemLabel="All policies" itemValue="ALL" />
-                <f:selectItems itemLabel="#{policyNumber}" itemValue="#{policyNumber}" var="policyNumber" value="#{sessionValueDataBean.getPolicyNumberSelectionList(3)}" />
-                <p:ajax listener="#{paymentsHelperBean.filterPaymentInfo(homeOfficeBillListDataBean.policyNumberSelection)}"
-                        update="makePaymentTabView:homeOfficePolicyForm" />
-            </h:selectOneMenu>
-        </h:panelGroup>
-    </h:form>
+Private Sub Form_Load()
+    ' Initialize pagination
+    currentPage = 1
+    InitializeDummyData
+    SetupListView
+    LoadData
+    UpdatePaginationControls
+End Sub
+ 
+Private Sub InitializeDummyData()
+    ' Initialize dummy data
+    Set dummyData = New Collection
+    Dim i As Integer
+    For i = 1 To 100
+        dummyData.Add Array("Item " & i, "SubItem " & i)
+    Next i
+    totalItems = dummyData.Count
+    totalPages = Int((totalItems - 1) / ITEMS_PER_PAGE) + 1
+End Sub
+ 
+Private Sub SetupListView()
+    ' Set up the ListView control with columns
+    With Me.lvwData
+        .View = lvwReport
+        .FullRowSelect = True
+        .GridLines = True
+        .ColumnHeaders.Clear
+        .ColumnHeaders.Add , , "Item", 100
+        .ColumnHeaders.Add , , "SubItem", 100
+    End With
+End Sub
+ 
+Private Sub LoadData()
+    ' Load data into the ListView control
+    Dim itm As ListItem
+    Dim startIndex As Integer
+    Dim endIndex As Integer
+    Dim itemCount As Integer
+    ' Clear the ListView
+    Me.lvwData.ListItems.Clear
+    ' Calculate the range of items to display on the current page
+    startIndex = (currentPage - 1) * ITEMS_PER_PAGE + 1
+    endIndex = startIndex + ITEMS_PER_PAGE - 1
+    If endIndex > totalItems Then endIndex = totalItems
+    ' Add items to the ListView
+    itemCount = 0
+    Dim i As Integer
+    For i = startIndex To endIndex
+        Set itm = Me.lvwData.ListItems.Add(, , dummyData(i)(0))
+        itm.ListSubItems.Add , , dummyData(i)(1)
+        itemCount = itemCount + 1
+    Next i
+End Sub
+ 
+Private Sub UpdatePaginationControls()
+    
+    Me.lblPageInfo.Caption = "Page " & currentPage & " of " & totalPages
+    Me.btnFirstPage.Enabled = (currentPage > 1)
+    Me.btnPreviousPage.Enabled = (currentPage > 1)
+    Me.btnNextPage.Enabled = (currentPage < totalPages)
+    Me.btnLastPage.Enabled = (currentPage < totalPages)
+End Sub
+ 
+Private Sub btnFirstPage_Click()
 
-    <h:panelGroup layout="block" styleClass="makePaymentSelfBillLapsedPageLevelError" rendered="#{commonUtils.hasLapsedOasisEBillPolicy(sessionValueDataBean.getPolicyNumberSelectionList(3))}">
-        <i class="fas fa-exclamation-triangle warningIcon lapsedWarningIcon" ></i>
-        <div class="makePaymentSelfBillLapsedPageLevelMessage">
-            <h:outputText value="#{homeOfficeBillListActionListener.error519}" />
-        </div>
-    </h:panelGroup>
+    currentPage = 1
+    LoadData
+    UpdatePaginationControls
+End Sub
+ 
+Private Sub btnPreviousPage_Click()
+    
+    If currentPage > 1 Then
+        currentPage = currentPage - 1
+        LoadData
+        UpdatePaginationControls
+    End If
+End Sub
+ 
+Private Sub btnNextPage_Click()
+    
+    If currentPage < totalPages Then
+        currentPage = currentPage + 1
+        LoadData
+        UpdatePaginationControls
+    End If
+End Sub
+ 
+Private Sub btnLastPage_Click()
 
-    <h:panelGroup layout="block" styleClass="makePaymentSelfBillLapsedPageLevelError" rendered="#{commonUtils.hasPreLapsedHOPolicy(sessionValueDataBean.getPolicyNumberSelectionList(3))}">
-        <i class="fas fa-exclamation-triangle warningIcon lapsedWarningIcon" ></i>
-        <div class="makePaymentSelfBillLapsedPageLevelMessage">
-            <h:outputText value="#{homeOfficeBillListActionListener.error609}" />
-        </div>
-    </h:panelGroup>
-    <!-- ============================================================================== -->
-    <!-- page level application messages    											-->
-    <!-- ============================================================================== -->
+    currentPage = totalPages
+    LoadData
+    UpdatePaginationControls
+End Sub
 
+Private Function CompareNumeric(x As String, y As String) As Integer
+    If Val(x) < Val(y) Then
+        CompareNumeric = -1
+    ElseIf Val(x) > Val(y) Then
+        CompareNumeric = 1
+    Else
+        CompareNumeric = 0
+    End If
+End Function
 
-    <!-- ============================================================================== -->
-    <!-- page level Faces (system and/or application) messages							-->
-    <!-- ============================================================================== -->
-    <h:messages id="errPageLevelMessage" globalOnly="true" layout="table" styleClass="errcb2 makePaymentPagelevelError" />
+Private Sub SortListView(columnIndex As Integer, sortOrder As Boolean)
+    Dim i As Integer, j As Integer
+    Dim tempItem As String
+    Dim tempSubItem As String
+    Dim lvw As Object
+    Set lvw = Me.lvwData ' Replace lvwData with the actual name of your ListView control
 
-    <h:form id="homeOfficePolicyForm">
+    ' Bubble sort algorithm for sorting ListView items
+    For i = 1 To lvw.ListItems.Count - 1
+        For j = i + 1 To lvw.ListItems.Count
+            If columnIndex <= lvw.ListItems(i).ListSubItems.Count And columnIndex <= lvw.ListItems(j).ListSubItems.Count Then
+                If (sortOrder And Val(lvw.ListItems(i).ListSubItems(columnIndex).Text) > Val(lvw.ListItems(j).ListSubItems(columnIndex).Text)) Or _
+                   (Not sortOrder And Val(lvw.ListItems(i).ListSubItems(columnIndex).Text) < Val(lvw.ListItems(j).ListSubItems(columnIndex).Text)) Then
+                    ' Swap items
+                    tempItem = lvw.ListItems(i).Text
+                    tempSubItem = lvw.ListItems(i).ListSubItems(columnIndex).Text
+                    lvw.ListItems(i).Text = lvw.ListItems(j).Text
+                    lvw.ListItems(i).ListSubItems(columnIndex).Text = lvw.ListItems(j).ListSubItems(columnIndex).Text
+                    lvw.ListItems(j).Text = tempItem
+                    lvw.ListItems(j).ListSubItems(columnIndex).Text = tempSubItem
+                End If
+            End If
+        Next j
+    Next i
+End Sub
+Private Sub lvwData_ColumnClick(ByVal ColumnHeader As Object)
+    ' Determine the sort order
+    If lastColumn = ColumnHeader.Index - 1 Then
+        sortOrder = Not sortOrder
+    Else
+        sortOrder = True
+    End If
+    
+    ' Sort the ListView by the clicked column
+    SortListView ColumnHeader.Index - 1, sortOrder
+    
+    ' Remember the last sorted column
+    lastColumn = ColumnHeader.Index - 1
+End Sub
 
-        <ui:include src="eBillPayments.xhtml" />
-
-        <ui:include src="homeOfficePayments.xhtml" />
-
-        <!-- ============================================================================== -->
-        <!-- button controls 																-->
-        <!-- ============================================================================== -->
-        <div id="makePaymentFooterContainer paymtStyleClassStaticMsg">
-            <!-- notification -->
-            <div class="makePaymentFooterMessage">
-                NOTE: You will have an opportunity to review your payment details before submitting your payment.
-            </div>
-
-            <!-- Continue button -->
-            <div class="makePaymentButtonContainer" id="makePaymentButtons">
-                <div id="makePaymentContinueButton">
-                    <div class="button submitBtn" style="margin-right:10px;">
-                        <div class="left" />
-                        <p:commandButton value="Continue" action="#{homeOfficeBillListActionListener.confirmContinue}"
-                                         process="@this makePaymentTabView:errPageLevelMessage frmDialogYN"
-                                         update="makePaymentTabView:errPageLevelMessage frmDialogYN"
-                                         onstart="showPopup();"
-                                         oncomplete="hidePopup();"
-                                         styleClass="makePaymentContStyle"  >
-                        </p:commandButton>
-                        <div class="right" />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </h:form>
-
-    <h:outputScript library="js" name="makePaymentEbill.js" />
-</ui:composition>
