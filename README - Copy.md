@@ -1,56 +1,75 @@
 Private Sub SortListView(columnIndex As Integer, sortOrder As Boolean)
-    Dim i As Integer, j As Integer
-    Dim tempItem As String
-    Dim tempSubItems() As String
+    Dim itemArray() As Variant
+    Dim i As Integer
     Dim lvw As Object
-    Set lvw = Me.lvwData ' Replace lvwData with the actual name of your ListView control
+    Set lvw = Me.lvwData
 
-    ' Bubble sort algorithm for sorting ListView items
-    For i = 1 To lvw.ListItems.Count - 1
-        For j = i + 1 To lvw.ListItems.Count
-            Dim currentValue As String, nextValue As String
-            Dim currentNumber As Double, nextNumber As Double
-            
-            ' Get the column text to compare (main item or subitem)
-            If columnIndex = 0 Then
-                currentValue = lvw.ListItems(i).Text
-                nextValue = lvw.ListItems(j).Text
-            Else
-                currentValue = lvw.ListItems(i).ListSubItems(columnIndex).Text
-                nextValue = lvw.ListItems(j).ListSubItems(columnIndex).Text
-            End If
-            
-            ' Extract numeric parts from strings
-            currentNumber = ExtractNumber(currentValue)
-            nextNumber = ExtractNumber(nextValue)
-            
-            ' Compare numerically
-            Dim comparisonResult As Boolean
-            comparisonResult = (currentNumber > nextNumber)
-            
-            ' Check the sorting order
-            If (sortOrder And comparisonResult) Or _
-               (Not sortOrder And Not comparisonResult) Then
-                ' Swap items
-                tempItem = lvw.ListItems(i).Text
-                lvw.ListItems(i).Text = lvw.ListItems(j).Text
-                lvw.ListItems(j).Text = tempItem
-                
-                ' Swap subitems for all columns
-                ReDim tempSubItems(1 To lvw.ColumnHeaders.Count - 1)
-                Dim k As Integer
-                For k = 1 To lvw.ColumnHeaders.Count - 1
-                    tempSubItems(k) = lvw.ListItems(i).ListSubItems(k).Text
-                    lvw.ListItems(i).ListSubItems(k).Text = lvw.ListItems(j).ListSubItems(k).Text
-                    lvw.ListItems(j).ListSubItems(k).Text = tempSubItems(k)
-                Next k
-            End If
+    ' Extract ListView data into an array
+    ReDim itemArray(1 To lvw.ListItems.Count, 0 To lvw.ColumnHeaders.Count)
+    For i = 1 To lvw.ListItems.Count
+        itemArray(i, 0) = lvw.ListItems(i).Text ' Main column
+        Dim j As Integer
+        For j = 1 To lvw.ColumnHeaders.Count - 1
+            itemArray(i, j) = lvw.ListItems(i).ListSubItems(j).Text ' Subitems
+        Next j
+    Next i
+
+    ' Sort the array (numeric or string sorting based on content)
+    QuickSort itemArray, 1, UBound(itemArray), columnIndex, sortOrder
+
+    ' Update the ListView with the sorted data
+    lvw.ListItems.Clear
+    Dim itm As ListItem
+    For i = 1 To UBound(itemArray)
+        Set itm = lvw.ListItems.Add(, , itemArray(i, 0)) ' Main item
+        For j = 1 To lvw.ColumnHeaders.Count - 1
+            itm.ListSubItems.Add , , itemArray(i, j) ' Subitems
         Next j
     Next i
 End Sub
 
+Private Sub QuickSort(arr() As Variant, low As Long, high As Long, columnIndex As Integer, sortOrder As Boolean)
+    If low < high Then
+        Dim pivotIndex As Long
+        pivotIndex = Partition(arr, low, high, columnIndex, sortOrder)
+        QuickSort arr, low, pivotIndex - 1, columnIndex, sortOrder
+        QuickSort arr, pivotIndex + 1, high, columnIndex, sortOrder
+    End If
+End Sub
+
+Private Function Partition(arr() As Variant, low As Long, high As Long, columnIndex As Integer, sortOrder As Boolean) As Long
+    Dim pivot As Variant
+    Dim i As Long, j As Long
+    Dim temp As Variant
+
+    pivot = ExtractNumber(arr(high, columnIndex)) ' Use last element as pivot
+    i = low - 1
+
+    For j = low To high - 1
+        Dim compareValue As Boolean
+        compareValue = (ExtractNumber(arr(j, columnIndex)) <= pivot) ' Ascending
+        If Not sortOrder Then compareValue = Not compareValue ' Descending
+
+        If compareValue Then
+            i = i + 1
+            ' Swap rows in the array
+            SwapRows arr, i, j
+        End If
+    Next j
+
+    ' Swap pivot to correct position
+    SwapRows arr, i + 1, high
+    Partition = i + 1
+End Function
+
+Private Sub SwapRows(arr() As Variant, row1 As Long, row2 As Long)
+    Dim temp() As Variant
+    temp = arr(row1)
+    arr(row1) = arr(row2)
+    arr(row2) = temp
+End Sub
+
 Private Function ExtractNumber(inputStr As String) As Double
-    ' Extracts the numeric part from a string
     Dim matches As Object
     Dim regex As Object
     Set regex = CreateObject("VBScript.RegExp")
@@ -64,7 +83,6 @@ Private Function ExtractNumber(inputStr As String) As Double
         ExtractNumber = 0 ' Default to 0 if no numeric value is found
     End If
 End Function
-
 
 
 
