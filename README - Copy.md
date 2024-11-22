@@ -1,3 +1,4 @@
+
 Option Compare Database
 Option Explicit
  
@@ -161,3 +162,46 @@ Private Sub lvwData_ColumnClick(ByVal ColumnHeader As Object)
     lastColumn = ColumnHeader.Index - 1
 End Sub
 
+
+
+
+Private Sub SortListView(columnIndex As Integer, sortOrder As Boolean)
+    Dim i As Integer, j As Integer
+    Dim tempItem As String
+    Dim tempSubItem As String
+    Dim lvw As Object
+    Set lvw = Me.lvwData ' Replace lvwData with the actual name of your ListView control
+
+    ' Bubble sort algorithm for sorting ListView items
+    For i = 1 To lvw.ListItems.Count - 1
+        For j = i + 1 To lvw.ListItems.Count
+            Dim currentValue As String, nextValue As String
+            
+            ' Get the column text to compare (main item or subitem)
+            If columnIndex = 0 Then
+                currentValue = lvw.ListItems(i).Text
+                nextValue = lvw.ListItems(j).Text
+            Else
+                currentValue = lvw.ListItems(i).ListSubItems(columnIndex).Text
+                nextValue = lvw.ListItems(j).ListSubItems(columnIndex).Text
+            End If
+            
+            ' Check the sorting order
+            If (sortOrder And currentValue > nextValue) Or _
+               (Not sortOrder And currentValue < nextValue) Then
+                ' Swap items
+                tempItem = lvw.ListItems(i).Text
+                lvw.ListItems(i).Text = lvw.ListItems(j).Text
+                lvw.ListItems(j).Text = tempItem
+                
+                ' Swap subitems for all columns
+                Dim k As Integer
+                For k = 1 To lvw.ColumnHeaders.Count - 1
+                    tempSubItem = lvw.ListItems(i).ListSubItems(k).Text
+                    lvw.ListItems(i).ListSubItems(k).Text = lvw.ListItems(j).ListSubItems(k).Text
+                    lvw.ListItems(j).ListSubItems(k).Text = tempSubItem
+                Next k
+            End If
+        Next j
+    Next i
+End Sub
