@@ -5,10 +5,11 @@ Private Sub SortListView(columnIndex As Integer, sortOrder As Boolean)
     Dim lvw As Object
     Set lvw = Me.lvwData ' Replace lvwData with the actual name of your ListView control
 
-    ' Bubble sort algorithm for sorting ListView items numerically
+    ' Bubble sort algorithm for sorting ListView items
     For i = 1 To lvw.ListItems.Count - 1
         For j = i + 1 To lvw.ListItems.Count
             Dim currentValue As String, nextValue As String
+            Dim currentNumber As Double, nextNumber As Double
             
             ' Get the column text to compare (main item or subitem)
             If columnIndex = 0 Then
@@ -19,13 +20,13 @@ Private Sub SortListView(columnIndex As Integer, sortOrder As Boolean)
                 nextValue = lvw.ListItems(j).ListSubItems(columnIndex).Text
             End If
             
-            ' Compare numerically if possible
+            ' Extract numeric parts from strings
+            currentNumber = ExtractNumber(currentValue)
+            nextNumber = ExtractNumber(nextValue)
+            
+            ' Compare numerically
             Dim comparisonResult As Boolean
-            If IsNumeric(currentValue) And IsNumeric(nextValue) Then
-                comparisonResult = (Val(currentValue) > Val(nextValue))
-            Else
-                comparisonResult = (currentValue > nextValue) ' Default to string comparison
-            End If
+            comparisonResult = (currentNumber > nextNumber)
             
             ' Check the sorting order
             If (sortOrder And comparisonResult) Or _
@@ -47,6 +48,22 @@ Private Sub SortListView(columnIndex As Integer, sortOrder As Boolean)
         Next j
     Next i
 End Sub
+
+Private Function ExtractNumber(inputStr As String) As Double
+    ' Extracts the numeric part from a string
+    Dim matches As Object
+    Dim regex As Object
+    Set regex = CreateObject("VBScript.RegExp")
+    
+    regex.Pattern = "\d+" ' Match numeric values
+    regex.Global = False
+    If regex.Test(inputStr) Then
+        Set matches = regex.Execute(inputStr)
+        ExtractNumber = CDbl(matches(0)) ' Convert the first match to a number
+    Else
+        ExtractNumber = 0 ' Default to 0 if no numeric value is found
+    End If
+End Function
 
 
 
