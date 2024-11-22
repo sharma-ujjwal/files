@@ -5,6 +5,95 @@ Private Sub SortListView(columnIndex As Integer, sortOrder As Boolean)
     Set lvw = Me.lvwData
 
     ' Extract ListView data into an array
+    ReDim itemArray(1 To lvw.ListItems.Count, 0 To lvw.ColumnHeaders.Count - 1)
+    For i = 1 To lvw.ListItems.Count
+        itemArray(i, 0) = lvw.ListItems(i).Text ' Main column
+        Dim j As Integer
+        For j = 1 To lvw.ColumnHeaders.Count - 1
+            itemArray(i, j) = lvw.ListItems(i).ListSubItems(j).Text ' Subitems
+        Next j
+    Next i
+
+    ' Sort the array (numeric or string sorting based on content)
+    QuickSort itemArray, 1, UBound(itemArray), columnIndex, sortOrder
+
+    ' Update the ListView with the sorted data
+    lvw.ListItems.Clear
+    Dim itm As ListItem
+    For i = 1 To UBound(itemArray)
+        Set itm = lvw.ListItems.Add(, , itemArray(i, 0)) ' Main item
+        For j = 1 To lvw.ColumnHeaders.Count - 1
+            itm.ListSubItems.Add , , itemArray(i, j) ' Subitems
+        Next j
+    Next i
+End Sub
+
+Private Sub QuickSort(ByRef arr As Variant, ByVal low As Long, ByVal high As Long, ByVal columnIndex As Integer, ByVal sortOrder As Boolean)
+    If low < high Then
+        Dim pivotIndex As Long
+        pivotIndex = Partition(arr, low, high, columnIndex, sortOrder)
+        QuickSort arr, low, pivotIndex - 1, columnIndex, sortOrder
+        QuickSort arr, pivotIndex + 1, high, columnIndex, sortOrder
+    End If
+End Sub
+
+Private Function Partition(ByRef arr As Variant, ByVal low As Long, ByVal high As Long, ByVal columnIndex As Integer, ByVal sortOrder As Boolean) As Long
+    Dim pivot As Variant
+    Dim i As Long, j As Long
+    Dim temp As Variant
+
+    pivot = ExtractNumber(arr(high, columnIndex)) ' Use last element as pivot
+    i = low - 1
+
+    For j = low To high - 1
+        Dim compareValue As Boolean
+        compareValue = (ExtractNumber(arr(j, columnIndex)) <= pivot) ' Ascending
+        If Not sortOrder Then compareValue = Not compareValue ' Descending
+
+        If compareValue Then
+            i = i + 1
+            ' Swap rows in the array
+            SwapRows arr, i, j
+        End If
+    Next j
+
+    ' Swap pivot to correct position
+    SwapRows arr, i + 1, high
+    Partition = i + 1
+End Function
+
+Private Sub SwapRows(ByRef arr As Variant, ByVal row1 As Long, ByVal row2 As Long)
+    Dim temp() As Variant
+    temp = arr(row1)
+    arr(row1) = arr(row2)
+    arr(row2) = temp
+End Sub
+
+Private Function ExtractNumber(inputStr As String) As Double
+    Dim matches As Object
+    Dim regex As Object
+    Set regex = CreateObject("VBScript.RegExp")
+    
+    regex.Pattern = "\d+" ' Match numeric values
+    regex.Global = False
+    If regex.Test(inputStr) Then
+        Set matches = regex.Execute(inputStr)
+        ExtractNumber = CDbl(matches(0)) ' Convert the first match to a number
+    Else
+        ExtractNumber = 0 ' Default to 0 if no numeric value is found
+    End If
+End Function
+
+
+77777
+
+Private Sub SortListView(columnIndex As Integer, sortOrder As Boolean)
+    Dim itemArray() As Variant
+    Dim i As Integer
+    Dim lvw As Object
+    Set lvw = Me.lvwData
+
+    ' Extract ListView data into an array
     ReDim itemArray(1 To lvw.ListItems.Count, 0 To lvw.ColumnHeaders.Count)
     For i = 1 To lvw.ListItems.Count
         itemArray(i, 0) = lvw.ListItems(i).Text ' Main column
