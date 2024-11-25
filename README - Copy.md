@@ -1,22 +1,10 @@
-Private Sub InitializeDummyData()
-    ' Initialize dummy data
-    Set dummyData = New Collection
-    Dim i As Integer
-    For i = 1 To 100
-        dummyData.Add Array("Item " & i, "SubItem " & i & "A", "SubItem " & i & "B", "SubItem " & i & "C", "SubItem " & i & "D", "SubItem " & i & "E")
-    Next i
-    totalItems = dummyData.Count
-    totalPages = Int((totalItems - 1) / ITEMS_PER_PAGE) + 1
-End Sub
-
-
 Private Sub LoadData()
     ' Load data into the ListView control
     Dim itm As ListItem
     Dim startIndex As Integer
     Dim endIndex As Integer
     Dim i As Integer
-    Dim subItemsConcat As String
+    Dim j As Integer
 
     ' Clear the ListView
     Me.lvwData.ListItems.Clear
@@ -27,20 +15,22 @@ Private Sub LoadData()
     endIndex = startIndex + ITEMS_PER_PAGE - 1
     If endIndex > totalItems Then endIndex = totalItems
 
-    ' Add items to the ListView
+    ' Add items and subitems to the ListView
     For i = startIndex To endIndex
-        ' Combine subitems into a single string
-        subItemsConcat = dummyData(i)(1) & ", " & dummyData(i)(2) & ", " & dummyData(i)(3) & ", " & dummyData(i)(4) & ", " & dummyData(i)(5)
+        ' Add the main item
+        Set itm = Me.lvwData.ListItems.Add(, , dummyData(i)(0)) ' Main item
         
-        ' Add the main item and the combined subitems
-        Set itm = Me.lvwData.ListItems.Add(, , dummyData(i)(0))
-        itm.ListSubItems.Add , , subItemsConcat
+        ' Add subitems as separate rows with the main item column blank
+        For j = 1 To 5
+            Set itm = Me.lvwData.ListItems.Add(, , "") ' Blank main item column
+            itm.ListSubItems.Add , , dummyData(i)(j)
+        Next j
     Next i
 End Sub
 
 
-Option Compare Database
-Option Explicit
+Private Sub LoadData()
+ Explicit
 
 ' Constants for pagination
 Const ITEMS_PER_PAGE As Integer = 30
