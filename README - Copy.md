@@ -1,3 +1,38 @@
+Private Sub LoadData()
+    ' Load data into the ListView control
+    Dim itm As ListItem
+    Dim startIndex As Integer
+    Dim endIndex As Integer
+    Dim itemCount As Integer
+    ' Clear the ListView
+    Me.lvwData.ListItems.Clear
+    Me.lvwData.AllowColumnReorder = True
+
+    ' Calculate the range of items to display on the current page
+    startIndex = (currentPage - 1) * ITEMS_PER_PAGE + 1
+    endIndex = startIndex + ITEMS_PER_PAGE - 1
+    If endIndex > totalItems Then endIndex = totalItems
+
+    ' Add items to the ListView
+    itemCount = 0
+    Dim i As Integer
+    For i = startIndex To endIndex
+        ' Add the main item
+        Set itm = Me.lvwData.ListItems.Add(, , dummyData(i)(0))
+        
+        ' Add five subitems
+        itm.ListSubItems.Add , , dummyData(i)(1)  ' SubItem 1
+        itm.ListSubItems.Add , , "Additional Info " & i & "A"  ' SubItem 2
+        itm.ListSubItems.Add , , "Additional Info " & i & "B"  ' SubItem 3
+        itm.ListSubItems.Add , , "Additional Info " & i & "C"  ' SubItem 4
+        itm.ListSubItems.Add , , "Additional Info " & i & "D"  ' SubItem 5
+
+        itemCount = itemCount + 1
+    Next i
+End Sub
+
+
+
 Option Compare Database
 Option Explicit
 
