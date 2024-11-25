@@ -1,9 +1,23 @@
+Private Sub InitializeDummyData()
+    ' Initialize dummy data
+    Set dummyData = New Collection
+    Dim i As Integer
+    For i = 1 To 100
+        dummyData.Add Array("Item " & i, "SubItem " & i & "A", "SubItem " & i & "B", "SubItem " & i & "C", "SubItem " & i & "D", "SubItem " & i & "E")
+    Next i
+    totalItems = dummyData.Count
+    totalPages = Int((totalItems - 1) / ITEMS_PER_PAGE) + 1
+End Sub
+
+
 Private Sub LoadData()
     ' Load data into the ListView control
     Dim itm As ListItem
     Dim startIndex As Integer
     Dim endIndex As Integer
-    Dim itemCount As Integer
+    Dim i As Integer
+    Dim subItemsConcat As String
+
     ' Clear the ListView
     Me.lvwData.ListItems.Clear
     Me.lvwData.AllowColumnReorder = True
@@ -14,23 +28,15 @@ Private Sub LoadData()
     If endIndex > totalItems Then endIndex = totalItems
 
     ' Add items to the ListView
-    itemCount = 0
-    Dim i As Integer
     For i = startIndex To endIndex
-        ' Add the main item
-        Set itm = Me.lvwData.ListItems.Add(, , dummyData(i)(0))
+        ' Combine subitems into a single string
+        subItemsConcat = dummyData(i)(1) & ", " & dummyData(i)(2) & ", " & dummyData(i)(3) & ", " & dummyData(i)(4) & ", " & dummyData(i)(5)
         
-        ' Add five subitems
-        itm.ListSubItems.Add , , dummyData(i)(1)  ' SubItem 1
-        itm.ListSubItems.Add , , "Additional Info " & i & "A"  ' SubItem 2
-        itm.ListSubItems.Add , , "Additional Info " & i & "B"  ' SubItem 3
-        itm.ListSubItems.Add , , "Additional Info " & i & "C"  ' SubItem 4
-        itm.ListSubItems.Add , , "Additional Info " & i & "D"  ' SubItem 5
-
-        itemCount = itemCount + 1
+        ' Add the main item and the combined subitems
+        Set itm = Me.lvwData.ListItems.Add(, , dummyData(i)(0))
+        itm.ListSubItems.Add , , subItemsConcat
     Next i
 End Sub
-
 
 
 Option Compare Database
