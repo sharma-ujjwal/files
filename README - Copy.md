@@ -388,3 +388,41 @@ Private Sub lvwData_Updated(Code As Integer)
 
 End Sub
 
+
+______________________________________________________
+
+Private Sub LoadData()
+    Dim tvw As Object
+    Dim nodeItem As Object
+    Dim startIndex As Integer
+    Dim endIndex As Integer
+    Dim i As Integer
+    Dim j As Integer
+    Dim subItemCount As Integer
+
+    ' Set the TreeView control
+    Set tvw = Me.lvwData.Object
+
+    ' Clear the TreeView
+    tvw.Nodes.Clear
+
+    ' Calculate the range of items to display on the current page
+    startIndex = (currentPage - 1) * ITEMS_PER_PAGE + 1
+    endIndex = startIndex + ITEMS_PER_PAGE - 1
+    If endIndex > totalItems Then endIndex = totalItems
+
+    ' Add items and subitems to the TreeView
+    For i = startIndex To endIndex
+        ' Dynamically calculate subitem count for each item
+        subItemCount = UBound(dummyData(i)) ' Number of subitems = upper bound of array
+        
+        ' Add the main item with the subitem count
+        Set nodeItem = tvw.Nodes.Add(, , , dummyData(i)(0) & " (" & subItemCount & " SubItems)")
+
+        ' Add subitems under the main item
+        For j = 1 To subItemCount
+            tvw.Nodes.Add nodeItem, tvwChild, , dummyData(i)(j)
+        Next j
+    Next i
+End Sub
+
