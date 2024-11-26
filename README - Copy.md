@@ -167,3 +167,45 @@ End Sub
 Private Sub lvwData_Updated(Code As Integer)
 
 End Sub
+
+
+
+
+
+
+
+To display details of a subitem in the textbox when you click on it in the TreeView, you need to handle the NodeClick event of the TreeView. Here's how you can modify your code:
+
+Steps to Implement:
+
+1. Add a TextBox control (e.g., txtSubItemDetails) to your form below the TreeView.
+
+
+2. Handle the NodeClick event to capture the selected subitem and update the TextBox.
+
+
+
+Updated Code:
+
+Private Sub lvwData_NodeClick(ByVal Node As Object)
+    ' Display the details of the clicked subitem in the textbox
+    If Not Node Is Nothing Then
+        Me.txtSubItemDetails.Value = "Selected Item: " & Node.Text
+    End If
+End Sub
+
+Explanation:
+
+The NodeClick event is triggered whenever a node in the TreeView is clicked.
+
+The Node parameter represents the node that was clicked.
+
+The code updates the txtSubItemDetails textbox with the text of the clicked node.
+
+
+Full Integration:
+
+Ensure that the txtSubItemDetails TextBox control is added to the form and its Name property is set to txtSubItemDetails.
+
+Now, when you click on any item or subitem in the TreeView, the TextBox will display the corresponding text. You can further enhance this functionality to show additional det
+ails if needed.
