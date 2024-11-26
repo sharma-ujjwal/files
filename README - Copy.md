@@ -231,3 +231,12 @@ Private Sub AddTreeViewItem(itemText As String, subItems As Variant)
         tvw.Nodes.Add nodeItem, tvwChild, , subItems(i)
     Next i
 End Sub
+
+
+Private Sub lvwData_NodeClick(ByVal Node As Object)
+    If Node.Children > 0 Then
+        Me.txtSubItemDetails.Value = "Selected Item: " & Node.Text & " (Parent Node)"
+    Else
+        Me.txtSubItemDetails.Value = "Selected SubItem: " & Node.Text
+    End If
+End Sub
