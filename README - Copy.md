@@ -209,3 +209,25 @@ Ensure that the txtSubItemDetails TextBox control is added to the form and its N
 
 Now, when you click on any item or subitem in the TreeView, the TextBox will display the corresponding text. You can further enhance this functionality to show additional det
 ails if needed.
+
+
+
+
+Private Sub AddTreeViewItem(itemText As String, subItems As Variant)
+    Dim tvw As Object
+    Dim nodeItem As Object
+    Dim subItemCount As Integer
+    Set tvw = Me.lvwData.Object
+
+    ' Count the number of subitems
+    subItemCount = UBound(subItems) - LBound(subItems) + 1
+
+    ' Add the main item with subitem count
+    Set nodeItem = tvw.Nodes.Add(, , , itemText & " (" & subItemCount & " SubItems)")
+
+    ' Add subitems under the main item
+    Dim i As Integer
+    For i = LBound(subItems) To UBound(subItems)
+        tvw.Nodes.Add nodeItem, tvwChild, , subItems(i)
+    Next i
+End Sub
