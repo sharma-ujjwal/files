@@ -731,3 +731,165 @@ Private Sub LoadData()
         Next email
     Next i
 End Sub
+
+
+
+
+
+
+To modify the LoadData logic to work with the clsEmail structure, we need to iterate through dummyData and its associated Collection of clsEmail objects. Here's the updated code:
+
+Updated LoadData Code
+
+Private Sub LoadData()
+    Dim tvw As Object
+    Dim nodeItem As Object
+    Dim startIndex As Integer
+    Dim endIndex As Integer
+    Dim i As Integer
+    Dim email As clsEmail
+    Dim subItems As Collection
+
+    ' Set the TreeView control
+    Set tvw = Me.lvwData.Object
+
+    ' Clear the TreeView
+    tvw.Nodes.Clear
+
+    ' Calculate the range of items to display on the current page
+    startIndex = (currentPage - 1) * ITEMS_PER_PAGE + 1
+    endIndex = startIndex + ITEMS_PER_PAGE - 1
+    If endIndex > totalItems Then endIndex = totalItems
+
+    ' Add items and subitems to the TreeView
+    For i = startIndex To endIndex
+        ' Add the main item
+        Set nodeItem = tvw.Nodes.Add(, , , dummyData(i)(0)) ' Main item (e.g., "Item 1")
+        
+        ' Retrieve the collection of subitems (clsEmail objects)
+        Set subItems = dummyData(i)(1)
+
+        ' Add each subitem (email details) under the main item
+        For Each email In subItems
+            tvw.Nodes.Add nodeItem, tvwChild, , _
+                "Sender: " & email.SenderId & vbCrLf & _
+                "Receiver: " & email.ReceiverId & vbCrLf & _
+                "Subject: " & email.Subject & vbCrLf & _
+                "Date: " & Format(email.EmailDate, "dd-mmm-yyyy") & vbCrLf & _
+                "Body: " & email.Body
+        Next email
+    Next i
+End Sub
+
+
+---
+
+Explanation of Changes
+
+1. Retrieve Subitems:
+
+Set subItems = dummyData(i)(1) retrieves the Collection of clsEmail objects for the current main item.
+
+
+
+2. Add Subitems:
+
+For each clsEmail object in the Collection, a new child node is added under the main item node.
+
+The subitem details (e.g., SenderId, ReceiverId, Subject, EmailDate, and Body) are concatenated into a single string using vbCrLf to display multiple lines.
+
+
+
+3. Dynamic Subitems:
+
+This logic accommodates a dynamic number of subitems, unlike the hardcoded "5 subitems" in the original code.
+
+
+
+
+
+---
+
+Prerequisites
+
+1. dummyData Structure:
+
+Ensure each item in dummyData is an array where:
+
+dummyData(i)(0) is the main item's text (e.g., "Item 1").
+
+dummyData(i)(1) is a Collection of clsEmail objects.
+
+
+
+
+2. clsEmail Class:
+
+Ensure the clsEmail class is defined with properties: SenderId, ReceiverId, Subject, EmailDate, and Body.
+
+
+
+
+
+---
+
+Example of InitializeDummyData
+
+Here's how the dummyData structure can be initialized:
+
+Private Sub InitializeDummyData()
+    ' Initialize dummy data
+    Set dummyData = New Collection
+    Dim i As Integer, email As clsEmail
+
+    For i = 1 To 100
+        Dim subItems As Collection
+        Set subItems = New Collection
+
+        ' Create email objects for each subitem
+        Dim j As Integer
+        For j = 1 To 5
+            Set email = New clsEmail
+            email.SenderId = "sender" & j & "@example.com"
+            email.ReceiverId = "receiver" & j & "@example.com"
+            email.Subject = "Subject " & j & " for Item " & i
+            email.EmailDate = DateAdd("d", -j, Date)
+            email.Body = "This is the body of SubItem " & j & " for Item " & i
+            subItems.Add email
+        Next j
+
+        ' Add main item with subitems (email objects)
+        dummyData.Add Array("Item " & i, subItems)
+    Next i
+
+    totalItems = dummyData.Count
+    totalPages = Int((totalItems - 1) / ITEMS_PER_PAGE) + 1
+End Sub
+
+
+---
+
+Validation Steps
+
+1. Run InitializeDummyData:
+
+Check if dummyData is populated with main items and Collection of clsEmail objects.
+
+
+
+2. Run LoadData:
+
+Ensure the TreeView displays main items and their subitems with email details.
+
+
+
+3. Debugging:
+
+Use breakpoints to step through the code and verify the content of dummyData and how nodes are added to the TreeView.
+
+
+
+
+Let me know if you need further assistance!
+
+
