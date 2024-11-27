@@ -426,3 +426,69 @@ Private Sub LoadData()
     Next i
 End Sub
 
+
+
+
+
+Private Sub btnExportToExcel_Click()
+    Dim excelApp As Object
+    Dim workbook As Object
+    Dim worksheet As Object
+    Dim tvw As Object
+    Dim Node As Object
+    Dim row As Integer
+
+    ' Set the TreeView control
+    Set tvw = Me.lvwData.Object
+
+    ' Create a new Excel application
+    On Error Resume Next
+    Set excelApp = CreateObject("Excel.Application")
+    If excelApp Is Nothing Then
+        MsgBox "Excel is not installed on this system.", vbExclamation
+        Exit Sub
+    End If
+    On Error GoTo 0
+
+    ' Add a new workbook
+    Set workbook = excelApp.Workbooks.Add
+    Set worksheet = workbook.Sheets(1)
+
+    ' Add headers to the Excel sheet
+    worksheet.Cells(1, 1).Value = "Item"
+    worksheet.Cells(1, 2).Value = "SubItem"
+    row = 2 ' Start populating from the second row
+
+    ' Loop through the TreeView nodes
+    For Each Node In tvw.Nodes
+        If Node.Parent Is Nothing Then
+            ' Main item
+            worksheet.Cells(row, 1).Value = Node.Text
+            row = row + 1
+        Else
+            ' Subitem
+            worksheet.Cells(row, 2).Value = Node.Text
+            row = row + 1
+        End If
+    Next Node
+
+    ' Autofit the columns for better readability
+    worksheet.Columns("A:B").AutoFit
+
+    ' Save the file
+    Dim filePath As String
+    filePath = Application.CurrentProject.Path & "\TreeViewExport.xlsx"
+    workbook.SaveAs filePath
+
+    ' Inform the user and clean up
+    MsgBox "Data exported to Excel successfully! File saved at: " & filePath, vbInformation
+    workbook.Close
+    excelApp.Quit
+
+    ' Release Excel objects
+    Set worksheet = Nothing
+    Set workbook = Nothing
+    Set excelApp = Nothing
+End Sub
+
+
