@@ -551,3 +551,140 @@ Private Sub btnExportAllToExcel_Click()
     Set excelApp = Nothing
 End Sub
 
+
+
+
+
+
+
+Private Sub InitializeDummyData()
+    ' Initialize dummy data
+    Set dummyData = New Collection
+    Dim i As Integer, email As clsEmail
+
+    For i = 1 To 100
+        Dim subItems As Collection
+        Set subItems = New Collection
+        
+        ' Create email objects for each subitem
+        Dim j As Integer
+        For j = 1 To 5
+            Set email = New clsEmail
+            email.SenderId = "sender" & j & "@example.com"
+            email.ReceiverId = "receiver" & j & "@example.com"
+            email.Subject = "Subject " & j & " for Item " & i
+            email.EmailDate = DateAdd("d", -j, Date) ' Example date logic
+            email.Body = "This is the body of SubItem " & j & " for Item " & i
+            subItems.Add email
+        Next j
+
+        ' Add main item with subitems (email objects)
+        dummyData.Add Array("Item " & i, subItems)
+    Next i
+
+    totalItems = dummyData.Count
+    totalPages = Int((totalItems - 1) / ITEMS_PER_PAGE) + 1
+End Sub
+
+
+
+
+Private Sub InitializeDummyData()
+    ' Initialize dummy data
+    Set dummyData = New Collection
+    Dim i As Integer, email As clsEmail
+
+    For i = 1 To 100
+        Dim subItems As Collection
+        Set subItems = New Collection
+        
+        ' Create email objects for each subitem
+        Dim j As Integer
+        For j = 1 To 5
+            Set email = New clsEmail
+            email.SenderId = "sender" & j & "@example.com"
+            email.ReceiverId = "receiver" & j & "@example.com"
+            email.Subject = "Subject " & j & " for Item " & i
+            email.EmailDate = DateAdd("d", -j, Date) ' Example date logic
+            email.Body = "This is the body of SubItem " & j & " for Item " & i
+            subItems.Add email
+        Next j
+
+        ' Add main item with subitems (email objects)
+        dummyData.Add Array("Item " & i, subItems)
+    Next i
+
+    totalItems = dummyData.Count
+    totalPages = Int((totalItems - 1) / ITEMS_PER_PAGE) + 1
+End Sub
+
+
+
+Private Sub btnExportAllToExcel_Click()
+    Dim excelApp As Object
+    Dim workbook As Object
+    Dim worksheet As Object
+    Dim row As Integer
+    Dim i As Integer
+    Dim email As clsEmail
+
+    ' Create a new Excel application
+    On Error Resume Next
+    Set excelApp = CreateObject("Excel.Application")
+    If excelApp Is Nothing Then
+        MsgBox "Excel is not installed on this system.", vbExclamation
+        Exit Sub
+    End If
+    On Error GoTo 0
+
+    ' Add a new workbook
+    Set workbook = excelApp.Workbooks.Add
+    Set worksheet = workbook.Sheets(1)
+
+    ' Add headers to the Excel sheet
+    worksheet.Cells(1, 1).Value = "Main Item"
+    worksheet.Cells(1, 2).Value = "SenderId"
+    worksheet.Cells(1, 3).Value = "ReceiverId"
+    worksheet.Cells(1, 4).Value = "Subject"
+    worksheet.Cells(1, 5).Value = "Date"
+    worksheet.Cells(1, 6).Value = "Body"
+    row = 2 ' Start populating from the second row
+
+    ' Loop through the entire dummy data collection
+    For i = 1 To dummyData.Count
+        Dim subItems As Collection
+        Dim j As Integer
+        
+        ' Write the main item
+        worksheet.Cells(row, 1).Value = dummyData(i)(0)
+
+        ' Write subitems (email details)
+        Set subItems = dummyData(i)(1)
+        For Each email In subItems
+            worksheet.Cells(row, 2).Value = email.SenderId
+            worksheet.Cells(row, 3).Value = email.ReceiverId
+            worksheet.Cells(row, 4).Value = email.Subject
+            worksheet.Cells(row, 5).Value = email.EmailDate
+            worksheet.Cells(row, 6).Value = email.Body
+            row = row + 1
+        Next email
+    Next i
+
+    ' Autofit the columns for better readability
+    worksheet.Columns("A:F").AutoFit
+
+    ' Save the file
+    Dim filePath As String
+    filePath = Application.CurrentProject.Path & "\EmailListViewExport.xlsx"
+    workbook.SaveAs filePath
+
+    ' Inform the user and clean up
+    MsgBox "All data exported to Excel successfully! File saved at: " & filePath, vbInformation
+    workbook.Close
+    excelApp.Quit
+
+    ' Release Excel objects
+    Set worksheet = Nothing
+    Set workbook = Nothing
+    Set excelApp = Nothing
+End Sub
