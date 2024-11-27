@@ -688,3 +688,46 @@ Private Sub btnExportAllToExcel_Click()
     Set workbook = Nothing
     Set excelApp = Nothing
 End Sub
+
+
+
+
+
+Private Sub LoadData()
+    ' Load data into the ListView control
+    Dim itm As ListItem
+    Dim startIndex As Integer
+    Dim endIndex As Integer
+    Dim i As Integer
+    Dim j As Integer
+    Dim email As clsEmail
+    Dim subItems As Collection
+
+    ' Clear the ListView
+    Me.lvwData.ListItems.Clear
+    Me.lvwData.AllowColumnReorder = True
+
+    ' Calculate the range of items to display on the current page
+    startIndex = (currentPage - 1) * ITEMS_PER_PAGE + 1
+    endIndex = startIndex + ITEMS_PER_PAGE - 1
+    If endIndex > totalItems Then endIndex = totalItems
+
+    ' Add items and subitems to the ListView
+    For i = startIndex To endIndex
+        ' Add the main item
+        Set itm = Me.lvwData.ListItems.Add(, , dummyData(i)(0)) ' Main item
+        
+        ' Retrieve the collection of subitems (email objects)
+        Set subItems = dummyData(i)(1)
+
+        ' Add each subitem as a separate row with email details
+        For Each email In subItems
+            Set itm = Me.lvwData.ListItems.Add(, , "") ' Blank main item column
+            itm.ListSubItems.Add , , "Sender: " & email.SenderId
+            itm.ListSubItems.Add , , "Receiver: " & email.ReceiverId
+            itm.ListSubItems.Add , , "Subject: " & email.Subject
+            itm.ListSubItems.Add , , "Date: " & Format(email.EmailDate, "dd-mmm-yyyy")
+            itm.ListSubItems.Add , , "Body: " & email.Body
+        Next email
+    Next i
+End Sub
