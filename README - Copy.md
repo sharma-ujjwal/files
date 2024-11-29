@@ -1,5 +1,64 @@
 Private Sub Form_Load()
 
+    ' Create the root item for the ListView (this will act as the parent)
+    AddTreeItem "Root Node", "Root Description", "2024-11-29", 0, True  ' True means initially expanded
+
+    ' Add a child node under the root node (collapsed by default)
+    AddTreeItem "Child Node 1", "Child Description", "2024-11-29", 1, False  ' False means collapsed initially
+
+    ' Add another child node under the root node (collapsed by default)
+    AddTreeItem "Child Node 2", "Child Description", "2024-11-29", 2, False
+
+End Sub
+
+' Function to Add Tree Items to the ListView
+Private Sub AddTreeItem(ItemText As String, ItemDesc As String, ItemDate As String, ItemID As Integer, IsExpanded As Boolean)
+    Dim newItem As ListItem
+    Set newItem = Me.ListView0.ListItems.Add(, , ItemText)
+    
+    ' Add subitems for ID, Description, Date
+    newItem.SubItems(1) = ItemID
+    newItem.SubItems(2) = ItemDesc
+    newItem.SubItems(3) = ItemDate
+    
+    ' Set initial icon or text for expand/collapse (using a simple text approach here)
+    If IsExpanded Then
+        newItem.Text = ItemText & " [-]" ' Initially expanded with minus icon
+    Else
+        newItem.Text = ItemText & " [+]" ' Initially collapsed with plus icon
+    End If
+    
+    ' Optionally, add more logic to manage child nodes
+    If IsExpanded Then
+        ' You can add child nodes under this item if it's expanded
+        ' For example, adding child nodes under root:
+        AddTreeItem "Child of " & ItemText, "Nested Child Description", "2024-11-29", ItemID + 1, False
+    End If
+End Sub
+
+Private Sub ListView0_ItemClick(ByVal Item As Object)
+
+    ' Handle the ItemClick event to toggle expand/collapse state
+    If InStr(Item.Text, "[+]") > 0 Then
+        ' If it's collapsed, expand it
+        Item.Text = Replace(Item.Text, "[+]", "[-]") ' Change [+] to [-]
+        ' Add child nodes (expand the item)
+        AddTreeItem "Child of " & Item.Text, "Nested Child Description", "2024-11-29", 1, False
+    ElseIf InStr(Item.Text, "[-]") > 0 Then
+        ' If it's expanded, collapse it
+        Item.Text = Replace(Item.Text, "[-]", "[+]") ' Change [-] to [+]
+        ' Remove child nodes (collapse the item)
+        ' Logic to hide or remove child nodes can be added here
+    End If
+End Sub
+
+
+
+
+
+
+Private Sub Form_Load()
+
     ' Create reference to ImageList control (ensure it's named ImageList0)
     Dim imgList As Object
     Set imgList = Me.Controls("ImageList0") ' Accessing ImageList0 control using Me.Controls
