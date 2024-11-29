@@ -1,3 +1,67 @@
+Private Sub LoadListViewData()
+    ' Clear existing items
+    Me.ListView1.ListItems.Clear
+
+    ' Add parent node (Past Due)
+    Dim parentItem As ListItem
+    Set parentItem = Me.ListView1.ListItems.Add(, "PastDue", "[+] Past Due")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Past Due
+    AddChildItem "1", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 1"
+    AddChildItem "2", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 2"
+
+    ' Add another parent node (Three Months)
+    Set parentItem = Me.ListView1.ListItems.Add(, "ThreeMonths", "[+] Three Months")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Three Months
+    AddChildItem "3", "12/13/2024", "12/12/2024", "Guillermo, Donald", "Peer Review Request"
+End Sub
+
+Private Sub AddChildItem(item As String, sessionDue As String, actionDate As String, assignedTo As String, activityStep As String)
+    Dim childItem As ListItem
+    Set childItem = Me.ListView1.ListItems.Add(, , item)
+    childItem.SubItems(1) = sessionDue
+    childItem.SubItems(2) = actionDate
+    childItem.SubItems(3) = assignedTo
+    childItem.SubItems(4) = activityStep
+    childItem.Visible = False ' Initially hide child items
+End Sub
+
+Private Sub ListView1_ItemClick(ByVal Item As Object)
+    If InStr(Item.Text, "[+]") > 0 Then
+        ' Expand the parent by showing child items and changing [+] to [-]
+        Item.Text = Replace(Item.Text, "[+]", "[-]") ' Change [+] to [-]
+        Item.Tag = "Expanded" ' Mark as expanded
+
+        ' Show child items
+        Dim child As ListItem
+        For Each child In Me.ListView1.ListItems
+            If child.Tag = Item.Key Then
+                child.Visible = True
+            End If
+        Next child
+    ElseIf InStr(Item.Text, "[-]") > 0 Then
+        ' Collapse the parent by hiding child items and changing [-] to [+]
+        Item.Text = Replace(Item.Text, "[-]", "[+]") ' Change [-] to [+]
+        Item.Tag = "Collapsed" ' Mark as collapsed
+
+        ' Hide child items
+        Dim child As ListItem
+        For Each child In Me.ListView1.ListItems
+            If child.Tag = Item.Key Then
+                child.Visible = False
+            End If
+        Next child
+    End If
+End Sub
+
+
+
+
+
+
 Private Sub Form_Load()
     ConfigureListView
     LoadListViewData
