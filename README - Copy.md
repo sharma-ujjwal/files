@@ -1,3 +1,118 @@
+Private Sub Form_Load()
+    ' Set up ListView columns
+    With Me.ListView0
+        ' Clear existing items
+        .Clear
+        
+        ' Add columns (Table headers)
+        .ColumnHeaders.Add , , "ID", 50
+        .ColumnHeaders.Add , , "Name", 150
+        .ColumnHeaders.Add , , "Description", 200
+        .ColumnHeaders.Add , , "Date", 100
+    End With
+End Sub
+
+
+Private Sub Form_Load()
+    ' Set up ListView columns
+    With Me.ListView0
+        ' Clear existing items
+        .Clear
+        
+        ' Add columns (Table headers)
+        .ColumnHeaders.Add , , "ID", 50
+        .ColumnHeaders.Add , , "Name", 150
+        .ColumnHeaders.Add , , "Description", 200
+        .ColumnHeaders.Add , , "Date", 100
+        
+        ' Add parent item (Root Node)
+        Dim parentItem As ListItem
+        Set parentItem = .Add(, , "1")
+        parentItem.SubItems(1) = "Root Item"
+        parentItem.SubItems(2) = "This is the root node."
+        parentItem.SubItems(3) = "2024-11-29"
+        parentItem.Icon = 1 ' Use a "+" icon for collapsed state
+
+        ' Add child items under the parent (initially hidden)
+        Dim childItem As ListItem
+        Set childItem = .Add(, , "1.1")
+        childItem.SubItems(1) = "Child Item 1"
+        childItem.SubItems(2) = "This is a child of Root Item."
+        childItem.SubItems(3) = "2024-11-30"
+        childItem.ListSubItems(0).Visible = False ' Initially hide child
+
+        Set childItem = .Add(, , "1.2")
+        childItem.SubItems(1) = "Child Item 2"
+        childItem.SubItems(2) = "Another child of Root Item."
+        childItem.SubItems(3) = "2024-12-01"
+        childItem.ListSubItems(0).Visible = False ' Initially hide child
+    End With
+End Sub
+
+Private Sub Form_Load()
+
+    ' Create reference to ImageList control
+    Dim imgList As Object
+    Set imgList = Me.ImageList0 ' Replace ImageList0 with your actual ImageList control name
+    
+    ' Clear any existing images
+    imgList.ListImages.Clear
+    
+    ' Add images to the ImageList (ensure the paths are correct)
+    ' Adding "+" and "-" icons for expand/collapse functionality
+    imgList.ListImages.Add , , "C:\Path\To\PlusIcon.ico"  ' "+" icon for collapsed state
+    imgList.ListImages.Add , , "C:\Path\To\MinusIcon.ico" ' "-" icon for expanded state
+    
+    ' Optionally, set the icon size for ListView
+    imgList.SmallIconSize = 16 ' Size in pixels
+    imgList.LargeIconSize = 32 ' Size in pixels
+    
+    ' Assign the ImageList to the ListView control
+    Me.ListView0.SmallIconList = imgList
+    Me.ListView0.LargeIconList = imgList
+    
+    ' Example of adding root item to the ListView
+    AddTreeItem "Root Node", 1 ' Root node with "+" icon (collapsed)
+    
+End Sub
+
+Private Sub AddTreeItem(ItemText As String, IconIndex As Integer)
+    Dim newItem As ListItem
+    ' Add a new item to the ListView with the given text and icon
+    Set newItem = Me.ListView0.ListItems.Add(, , ItemText)
+    newItem.Icon = IconIndex ' Set the icon to "+" (1) or "-" (2)
+    
+    ' Add subitems to the ListView (ID, Name, Description, Date)
+    newItem.SubItems(1) = "Sample ID"
+    newItem.SubItems(2) = "Sample Name"
+    newItem.SubItems(3) = "Sample Description"
+    newItem.SubItems(4) = "Sample Date"
+    
+    ' Optionally, add subitems for nested/child nodes
+    ' For example, adding a child item under the root node
+    ' You can add the child item conditionally if needed (e.g., based on state)
+    ' AddTreeItem "Child Node", 1 ' Uncomment to add a child node under the root node
+End Sub
+
+Private Sub ListView0_ItemClick(ByVal Item As Object)
+    ' Handle the ItemClick event to toggle expand/collapse state
+    Dim imgList As Object
+    Set imgList = Me.ImageList0 ' Reference to ImageList control
+    
+    ' Toggle the icon for expand/collapse when the root item is clicked
+    If Item.Icon = 1 Then ' If "+" icon (collapsed)
+        Item.Icon = 2 ' Change to "-" icon (expanded)
+        ' Add child nodes (expand the item)
+        AddTreeItem "Child Node 1", 2 ' Example child node under expanded item
+    ElseIf Item.Icon = 2 Then ' If "-" icon (expanded)
+        Item.Icon = 1 ' Change to "+" icon (collapsed)
+        ' Remove child nodes (collapse the item)
+        ' Logic to remove child nodes or hide them can be added here
+    End If
+End Sub
+
+
+
 To simulate grid and table functionality with hierarchical data in a TreeView control while maintaining the tree structure, you can combine the tree’s hierarchical nature with the ability to display multiple columns (simulated via subitems). Although TreeView doesn’t natively support grid-like features like ListView, you can still replicate the behavior by organizing the data effectively within the tree and simulating the columns using node labels and subitems.
 Key Concepts:
 
