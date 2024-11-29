@@ -1,4 +1,61 @@
 Private Sub Form_Load()
+    Dim lvw As ListView
+    Dim itm As ListItem
+    Dim imgList As Object
+
+    ' Set ListView object
+    Set lvw = Me.ListView0.Object ' Replace ListView0 with your ListView name
+
+    ' Configure ListView properties
+    With lvw
+        .View = lvwReport           ' Set to Report View for table-like layout
+        .HideColumnHeaders = False ' Show column headers
+        .Gridlines = True           ' Show gridlines
+        .FullRowSelect = True       ' Enable full row selection
+    End With
+
+    ' Add columns
+    lvw.ColumnHeaders.Add , "Col1", "Name", 150
+    lvw.ColumnHeaders.Add , "Col2", "Details", 200
+
+    ' Create an ImageList for icons (optional)
+    Set imgList = CreateObject("MSComctlLib.ImageList")
+    imgList.ListImages.Add , "Plus", LoadPicture("C:\Icons\Plus.ico")
+    imgList.ListImages.Add , "Minus", LoadPicture("C:\Icons\Minus.ico")
+    lvw.Icons = imgList
+
+    ' Add parent item
+    Set itm = lvw.ListItems.Add(, "Parent1", "Parent Node", "Plus")
+    itm.SubItems(1) = "Details about Parent Node"
+
+    ' Add child items (indented for hierarchy)
+    Set itm = lvw.ListItems.Add(, "Child1", "    Child Node 1", "Plus")
+    itm.SubItems(1) = "Details about Child Node 1"
+
+    Set itm = lvw.ListItems.Add(, "Child2", "    Child Node 2", "Plus")
+    itm.SubItems(1) = "Details about Child Node 2"
+End Sub
+
+
+
+
+
+Private Sub ListView0_NodeClick(ByVal Node As MSComctlLib.ListItem)
+    If Node.Icon = "Plus" Then
+        Node.Icon = "Minus"
+        ' Add logic to display child nodes
+    ElseIf Node.Icon = "Minus" Then
+        Node.Icon = "Plus"
+        ' Add logic to hide child nodes
+    End If
+End Sub
+
+
+
+
+
+
+Private Sub Form_Load()
 
     ' Create the root item for the ListView (this will act as the parent)
     AddTreeItem "Root Node", "Root Description", "2024-11-29", 0, True  ' True means initially expanded
