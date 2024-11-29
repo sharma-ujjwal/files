@@ -4,6 +4,67 @@ Private Sub Form_Load()
     Dim imgList As Object
     Set imgList = Me.Controls("ImageList0") ' Accessing ImageList0 control using Me.Controls
 
+    ' Clear any existing images in the ImageList
+    imgList.ListImages.Clear
+
+    ' Add images to the ImageList (ensure the paths are correct and images are the correct size)
+    imgList.ListImages.Add , , LoadPicture("C:\Path\To\PlusIcon.ico")  ' "+" icon for collapsed state
+    imgList.ListImages.Add , , LoadPicture("C:\Path\To\MinusIcon.ico") ' "-" icon for expanded state
+    
+    ' Assign the ImageList to the ListView control (make sure ListView0 is the correct name)
+    Me.ListView0.SmallIconList = imgList
+    Me.ListView0.LargeIconList = imgList
+    
+    ' Example of adding root item to the ListView
+    AddTreeItem "Root Node", 1 ' Root node with "+" icon (collapsed)
+    
+End Sub
+
+Private Sub AddTreeItem(ItemText As String, IconIndex As Integer)
+    Dim newItem As ListItem
+    ' Add a new item to the ListView with the given text and icon
+    Set newItem = Me.ListView0.ListItems.Add(, , ItemText)
+    
+    ' Set the icon for the item (this should reference the ImageList)
+    newItem.Icon = IconIndex ' Set the icon to "+" (1) or "-" (2)
+    
+    ' Add subitems to the ListView (ID, Name, Description, Date)
+    newItem.SubItems(1) = "Sample ID"
+    newItem.SubItems(2) = "Sample Name"
+    newItem.SubItems(3) = "Sample Description"
+    newItem.SubItems(4) = "Sample Date"
+    
+    ' Optionally, add subitems for nested/child nodes
+    ' For example, adding a child item under the root node
+    ' AddTreeItem "Child Node", 1 ' Uncomment to add a child node under the root node
+End Sub
+
+Private Sub ListView0_ItemClick(ByVal Item As Object)
+    ' Handle the ItemClick event to toggle expand/collapse state
+    Dim imgList As Object
+    Set imgList = Me.Controls("ImageList0") ' Accessing ImageList0 control
+    
+    ' Toggle the icon for expand/collapse when the root item is clicked
+    If Item.Icon = 1 Then ' If "+" icon (collapsed)
+        Item.Icon = 2 ' Change to "-" icon (expanded)
+        ' Add child nodes (expand the item)
+        AddTreeItem "Child Node 1", 2 ' Example child node under expanded item
+    ElseIf Item.Icon = 2 Then ' If "-" icon (expanded)
+        Item.Icon = 1 ' Change to "+" icon (collapsed)
+        ' Remove child nodes (collapse the item)
+        ' Logic to remove child nodes or hide them can be added here
+    End If
+End Sub
+
+
+
+
+Private Sub Form_Load()
+
+    ' Create reference to ImageList control (ensure it's named ImageList0)
+    Dim imgList As Object
+    Set imgList = Me.Controls("ImageList0") ' Accessing ImageList0 control using Me.Controls
+
     ' Clear any existing images
     imgList.ListImages.Clear
 
