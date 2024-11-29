@@ -8,6 +8,78 @@ Private Sub LoadListViewData()
     parentItem.Tag = "Collapsed" ' Mark as collapsed initially
 
     ' Add child rows under Past Due
+    AddChildItem "1", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 1", "PastDue"
+    AddChildItem "2", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 2", "PastDue"
+
+    ' Add another parent node (Three Months)
+    Set parentItem = Me.ListView1.ListItems.Add(, "ThreeMonths", "[+] Three Months")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Three Months
+    AddChildItem "3", "12/13/2024", "12/12/2024", "Guillermo, Donald", "Peer Review Request", "ThreeMonths"
+End Sub
+
+Private Sub AddChildItem(item As String, sessionDue As String, actionDate As String, assignedTo As String, activityStep As String, parentKey As String)
+    Dim childItem As ListItem
+    Set childItem = Me.ListView1.ListItems.Add(, , item)
+    childItem.SubItems(1) = sessionDue
+    childItem.SubItems(2) = actionDate
+    childItem.SubItems(3) = assignedTo
+    childItem.SubItems(4) = activityStep
+    childItem.Tag = parentKey ' Associate the child with its parent
+    childItem.Visible = False ' Initially hide child items
+End Sub
+
+
+Private Sub LoadListViewData()
+    ' Clear existing items
+    Me.ListView1.ListItems.Clear
+
+    ' Add parent node (Past Due)
+    Dim parentItem As ListItem
+    Set parentItem = Me.ListView1.ListItems.Add(, "PastDue", "[+] Past Due")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Past Due
+    AddChildItem "1", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 1", "PastDue"
+    AddChildItem "2", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 2", "PastDue"
+
+    ' Add another parent node (Three Months)
+    Set parentItem = Me.ListView1.ListItems.Add(, "ThreeMonths", "[+] Three Months")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Three Months
+    AddChildItem "3", "12/13/2024", "12/12/2024", "Guillermo, Donald", "Peer Review Request", "ThreeMonths"
+End Sub
+
+Private Sub AddChildItem(item As String, sessionDue As String, actionDate As String, assignedTo As String, activityStep As String, parentKey As String)
+    Dim childItem As ListItem
+    Set childItem = Me.ListView1.ListItems.Add(, , item)
+    childItem.SubItems(1) = sessionDue
+    childItem.SubItems(2) = actionDate
+    childItem.SubItems(3) = assignedTo
+    childItem.SubItems(4) = activityStep
+    childItem.Tag = parentKey ' Associate the child with its parent
+    childItem.Visible = False ' Initially hide child items
+End Sub
+
+
+
+
+
+
+
+
+Private Sub LoadListViewData()
+    ' Clear existing items
+    Me.ListView1.ListItems.Clear
+
+    ' Add parent node (Past Due)
+    Dim parentItem As ListItem
+    Set parentItem = Me.ListView1.ListItems.Add(, "PastDue", "[+] Past Due")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Past Due
     AddChildItem "1", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 1"
     AddChildItem "2", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 2"
 
