@@ -25,30 +25,24 @@ Private Sub Form_Load()
     ' Clear existing nodes
     Me.TreeView0.Nodes.Clear
     
-    ' Add the root node (first row)
-    Set rootNode = Me.TreeView0.Nodes.Add(, , "RootNode", "Root Node")
+    ' Add the root node (first row) with simulated columns
+    Set rootNode = Me.TreeView0.Nodes.Add(, , "RootNode", "Root Node" & vbTab & "Root Node Description" & vbTab & "Root Node Date")
     rootNode.EnsureVisible ' Ensure the root node is visible
     
-    ' Simulate columns for Root Node
-    rootNode.Text = "Root Node"
-    rootNode.ListItems.Add , , "Root Node Description", "Root Node Date"
-    
     ' Add child nodes (second row)
-    Set childNode = Me.TreeView0.Nodes.Add("RootNode", tvwChild, "ChildNode1", "Child Node 1")
-    childNode.Text = "Child Node 1"
-    childNode.ListItems.Add , , "Child Node 1 Description", "2024-11-29"
+    Set childNode = Me.TreeView0.Nodes.Add("RootNode", tvwChild, "ChildNode1", "Child Node 1" & vbTab & "Child Node 1 Description" & vbTab & "2024-11-29")
+    childNode.EnsureVisible ' Ensure it is visible
     
-    Set childNode = Me.TreeView0.Nodes.Add("RootNode", tvwChild, "ChildNode2", "Child Node 2")
-    childNode.Text = "Child Node 2"
-    childNode.ListItems.Add , , "Child Node 2 Description", "2024-11-30"
+    Set childNode = Me.TreeView0.Nodes.Add("RootNode", tvwChild, "ChildNode2", "Child Node 2" & vbTab & "Child Node 2 Description" & vbTab & "2024-11-30")
+    childNode.EnsureVisible ' Ensure it is visible
     
     ' Add sub-child node (third row)
-    Set subChildNode = Me.TreeView0.Nodes.Add("ChildNode1", tvwChild, "SubChildNode1", "Sub Child 1")
-    subChildNode.Text = "Sub Child 1"
-    subChildNode.ListItems.Add , , "Sub Child 1 Description", "2024-12-01"
+    Set subChildNode = Me.TreeView0.Nodes.Add("ChildNode1", tvwChild, "SubChildNode1", "Sub Child 1" & vbTab & "Sub Child 1 Description" & vbTab & "2024-12-01")
+    subChildNode.EnsureVisible ' Ensure it is visible
     
     ' Optionally, you can add more levels or data for further nodes
 End Sub
+
 
 Explanation of the Code:
 
@@ -80,11 +74,16 @@ You can add events like NodeClick or NodeExpanded to interact with the TreeView 
 Example of handling a node click:
 
 Private Sub TreeView0_NodeClick(ByVal Node As Object)
+    ' Split the node text by tab separator to extract column data
+    Dim columns() As String
+    columns = Split(Node.Text, vbTab)
+    
     ' Display the data for the clicked node
-    MsgBox "You selected: " & Node.Text & vbCrLf & _
-           "Column 2: " & Node.ListItems(1).Text & vbCrLf & _
-           "Column 3: " & Node.ListItems(2).Text
+    MsgBox "You selected: " & columns(0) & vbCrLf & _
+           "Column 2: " & columns(1) & vbCrLf & _
+           "Column 3: " & columns(2)
 End Sub
+
 
 Additional Customizations:
 
