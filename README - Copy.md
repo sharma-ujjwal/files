@@ -140,6 +140,55 @@ Private Sub LoadListViewData()
     
     ' Add another parent node (Three Months)
     Set parentItem = Me.ListView1.ListItems.Add(, "ThreeMonths", "[+] Three Months")
+    parentItem.Tag = "Collapsed"
+
+
+
+
+Option Compare Database
+
+Private childItems As Collection
+
+Private Sub Form_Load()
+    Set childItems = New Collection
+    ConfigureListView
+    LoadListViewData
+End Sub
+
+Private Sub ConfigureListView()
+    ' Clear existing columns
+    Me.ListView1.ColumnHeaders.Clear
+    
+    ' Configure columns
+    Dim colHeader As ColumnHeader
+    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Item", 100) ' Column 1
+    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Session Due", 100) ' Column 2
+    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Action Date", 100) ' Column 3
+    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Assigned To", 150) ' Column 4
+    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Activity Step", 200) ' Column 5
+    
+    ' Enable gridlines and full row select
+    Me.ListView1.GridLines = True
+    Me.ListView1.FullRowSelect = True
+    Me.ListView1.View = lvwReport
+End Sub
+
+Private Sub LoadListViewData()
+    ' Clear existing items
+    Me.ListView1.ListItems.Clear
+    Set childItems = New Collection
+    
+    ' Add parent node (Past Due)
+    Dim parentItem As ListItem
+    Set parentItem = Me.ListView1.ListItems.Add(, "PastDue", "[+] Past Due")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+    
+    ' Add child rows under Past Due
+    AddChildItem "PastDue", "1", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 1"
+    AddChildItem "PastDue", "2", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 2"
+    
+    ' Add another parent node (Three Months)
+    Set parentItem = Me.ListView1.ListItems.Add(, "ThreeMonths", "[+] Three Months")
     parentItem.Tag = "Collapsed" ' Mark as collapsed initially
     
     ' Add child rows under Three Months
@@ -170,6 +219,7 @@ Private Sub ListView1_ItemClick(ByVal Item As Object)
         ' Show child items
         For Each child In childItems
             If child.Tag = Item.Key Then
+                ' Add the child item to the ListView
                 Me.ListView1.ListItems.Add(, , child.Text) ' Add the child item to the ListView
                 child.EnsureVisible ' Ensure the child item is visible
             End If
@@ -179,11 +229,13 @@ Private Sub ListView1_ItemClick(ByVal Item As Object)
         Item.Text = Replace(Item.Text, "[-]", "[+]") ' Change [-] to [+]
         Item.Tag = "Collapsed" ' Mark as collapsed
         
-        ' Remove child items
+        ' Remove child items from the ListView
         For Each child In childItems
             If child.Tag = Item.Key Then
-                child.Remove ' Remove the child item from the ListView
+                ' Remove the child item from the ListView by its Key
+                Me.ListView1.ListItems.Remove child.Key
             End If
         Next child
     End If
 End Sub
+    
