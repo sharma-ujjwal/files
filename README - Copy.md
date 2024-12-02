@@ -381,5 +381,66 @@ Private Sub AddChildItem(parentKey As String, Item As String, sessionDue As Stri
     childItems.Add childData
 End Sub
 
+______________
+
+
+Private Sub ExpandParent(ByVal parentItem As listItem)
+    Dim childData As Object
+    Dim newItem As listItem
+    Dim insertIndex As Integer
+
+    ' Change text and tag to expanded state
+    parentItem.Text = Replace(parentItem.Text, "[+]", "[-]")
+    parentItem.Tag = "Expanded"
+
+    ' Determine the index to insert child items
+    insertIndex = parentItem.Index + 1
+
+    ' Loop through childItems and add matching children
+    For Each childData In childItems
+        If childData("ParentKey") = parentItem.Key Then
+            ' Add child item at the correct position
+            Set newItem = Me.ListView1.ListItems.Add(insertIndex, childData("Key"), childData("Text"))
+            newItem.subItems(1) = childData("SessionDue")
+            newItem.subItems(2) = childData("ActionDate")
+            newItem.subItems(3) = childData("AssignedTo")
+            newItem.subItems(4) = childData("ActivityStep")
+            newItem.ForeColor = childData("ForeColor")
+            newItem.Tag = parentItem.Key
+
+            ' Increment the insert index for the next child
+            insertIndex = insertIndex + 1
+        End If
+    Next childData
+End Sub
+
+
+Private Sub CollapseParent(ByVal parentItem As listItem)
+    Dim i As Integer
+
+    ' Change text and tag to collapsed state
+    parentItem.Text = Replace(parentItem.Text, "[-]", "[+]")
+    parentItem.Tag = "Collapsed"
+
+    ' Remove child items directly below the parent
+    For i = Me.ListView1.ListItems.Count To 1 Step -1
+        If Me.ListView1.ListItems(i).Tag = parentItem.Key Then
+            Me.ListView1.ListItems.Remove i
+        End If
+    Next i
+End Sub
+
+
+Private Sub ListView1_ItemClick(ByVal Item As listItem)
+    If InStr(Item.Text, "[+]") > 0 Then
+        ' Expand parent
+        ExpandParent Item
+    ElseIf InStr(Item.Text, "[-]") > 0 Then
+        ' Collapse parent
+        CollapseParent Item
+    End If
+End Sub
+
+
 
 
