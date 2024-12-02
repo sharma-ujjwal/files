@@ -200,3 +200,76 @@ Private Sub CollapseParent(ByVal parentItem As listItem)
     Next i
 End Sub
 
+
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+
+Private Sub ListView1_ItemClick(ByVal Item As Object)
+    If InStr(Item.Text, "[+]") > 0 Then
+        ExpandParent Item
+    ElseIf InStr(Item.Text, "[-]") > 0 Then
+        CollapseParent Item
+    End If
+End Sub
+
+Private Sub ExpandParent(ByVal parentItem As listItem)
+    Dim keyPrefix As String
+    Dim i As Integer
+
+    ' Change the parent node text to show expanded state
+    parentItem.Text = Replace(parentItem.Text, "[+]", "[-]")
+    parentItem.Tag = "Expanded" ' Mark the parent as expanded
+
+    ' Identify children by matching their keys
+    keyPrefix = parentItem.Key & "_"
+    For i = 1 To childItems.Count
+        If Left(childItems(i)("Key"), Len(keyPrefix)) = keyPrefix Then
+            Dim newItem As listItem
+            Set newItem = Me.ListView1.ListItems.Add(, childItems(i)("Key"), childItems(i)("Text"))
+            newItem.subItems(1) = childItems(i)("SessionDue")
+            newItem.subItems(2) = childItems(i)("ActionDate")
+            newItem.subItems(3) = childItems(i)("AssignedTo")
+            newItem.subItems(4) = childItems(i)("ActivityStep")
+            newItem.ForeColor = childItems(i)("ForeColor")
+            newItem.Tag = parentItem.Key
+        End If
+    Next i
+End Sub
+
+Private Sub CollapseParent(ByVal parentItem As listItem)
+    Dim i As Integer
+
+    ' Change the parent node text to show collapsed state
+    parentItem.Text = Replace(parentItem.Text, "[-]", "[+]")
+    parentItem.Tag = "Collapsed" ' Mark the parent as collapsed
+
+    ' Remove child items
+    For i = Me.ListView1.ListItems.Count To 1 Step -1
+        If Me.ListView1.ListItems(i).Tag = parentItem.Key Then
+            Me.ListView1.ListItems.Remove i
+        End If
+    Next i
+End Sub
+
+Private Sub AddChildItem(parentKey As String, Item As String, sessionDue As String, actionDate As String, assignedTo As String, activityStep As String)
+    Dim childData As Object
+    Set childData = CreateObject("Scripting.Dictionary")
+    
+    ' Store child item data
+    childData("Key") = parentKey & "_" & Item
+    childData("Text") = "   " & Item ' Indent child items
+    childData("SessionDue") = sessionDue
+    childData("ActionDate") = actionDate
+    childData("AssignedTo") = assignedTo
+    childData("ActivityStep") = activityStep
+    childData("ForeColor") = RGB(150, 150, 150)
+
+    ' Add to childItems collection
+    childItems.Add childData
+End Sub
+
+
+
