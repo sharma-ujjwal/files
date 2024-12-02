@@ -98,3 +98,52 @@ End Sub
 Private Sub ListView1_Updated(Code As Integer)
 
 End Sub
+
+
+
+Private Sub ListView1_ItemClick(ByVal Item As Object)
+    Dim child As listItem
+    Dim i As Integer
+
+    If InStr(Item.Text, "[+]") > 0 Then
+        ' Expand the parent by showing child items and changing [+] to [-]
+        Item.Text = Replace(Item.Text, "[+]", "[-]") ' Change [+] to [-]
+        Item.Tag = "Expanded" ' Mark as expanded
+        
+        ' Show child items
+        For Each child In childItems
+            If child.Tag = Item.Key Then
+                ' Add child item if not already in ListView
+                Dim exists As Boolean
+                exists = False
+                For i = 1 To Me.ListView1.ListItems.Count
+                    If Me.ListView1.ListItems(i).Key = child.Key Then
+                        exists = True
+                        Exit For
+                    End If
+                Next i
+                If Not exists Then
+                    Dim newItem As listItem
+                    Set newItem = Me.ListView1.ListItems.Add(, child.Key, child.Text)
+                    newItem.subItems(1) = child.subItems(1)
+                    newItem.subItems(2) = child.subItems(2)
+                    newItem.subItems(3) = child.subItems(3)
+                    newItem.subItems(4) = child.subItems(4)
+                    newItem.ForeColor = child.ForeColor
+                End If
+            End If
+        Next child
+
+    ElseIf InStr(Item.Text, "[-]") > 0 Then
+        ' Collapse the parent by hiding child items and changing [-] to [+]
+        Item.Text = Replace(Item.Text, "[-]", "[+]") ' Change [-] to [+]
+        Item.Tag = "Collapsed" ' Mark as collapsed
+        
+        ' Remove child items from the ListView
+        For i = Me.ListView1.ListItems.Count To 1 Step -1
+            If Me.ListView1.ListItems(i).Tag = Item.Key Then
+                Me.ListView1.ListItems.Remove i
+            End If
+        Next i
+    End If
+End Sub
