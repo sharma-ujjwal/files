@@ -11,7 +11,7 @@ End Sub
 Private Sub ConfigureListView()
     ' Clear existing columns
     Me.ListView1.ColumnHeaders.Clear
-
+    
     ' Configure columns
     Dim colHeader As ColumnHeader
     Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Item", 100) ' Column 1
@@ -19,7 +19,7 @@ Private Sub ConfigureListView()
     Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Action Date", 100) ' Column 3
     Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Assigned To", 150) ' Column 4
     Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Activity Step", 200) ' Column 5
-
+    
     ' Enable gridlines and full row select
     Me.ListView1.GridLines = True
     Me.ListView1.FullRowSelect = True
@@ -30,20 +30,20 @@ Private Sub LoadListViewData()
     ' Clear existing items
     Me.ListView1.ListItems.Clear
     Set childItems = New Collection
-
+    
     ' Add parent node (Past Due)
     Dim parentItem As listItem
     Set parentItem = Me.ListView1.ListItems.Add(, "PastDue", "[+] Past Due")
     parentItem.Tag = "Collapsed" ' Mark as collapsed initially
-
+    
     ' Add child rows under Past Due
     AddChildItem "PastDue", "1", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 1"
     AddChildItem "PastDue", "2", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 2"
-
+    
     ' Add another parent node (Three Months)
     Set parentItem = Me.ListView1.ListItems.Add(, "ThreeMonths", "[+] Three Months")
     parentItem.Tag = "Collapsed" ' Mark as collapsed initially
-
+    
     ' Add child rows under Three Months
     AddChildItem "ThreeMonths", "3", "12/13/2024", "12/12/2024", "Guillermo, Donald", "Peer Review Request"
 End Sub
@@ -61,155 +61,8 @@ Private Sub AddChildItem(parentKey As String, Item As String, sessionDue As Stri
 End Sub
 
 Private Sub ListView1_ItemClick(ByVal Item As Object)
-    If InStr(Item.Text, "[+]") > 0 Then
-        ' Expand the parent by showing child items and changing [+] to [-]
-        Item.Text = Replace(Item.Text, "[+]", "[-]") ' Change [+] to [-]
-        Item.Tag = "Expanded" ' Mark as expanded
-
-        ' Show child items
-        Dim child As listItem
-        For Each child In childItems
-            If child.Tag = Item.Key Then
-                child.EnsureVisible
-            End If
-        Next child
-    ElseIf InStr(Item.Text, "[-]") > 0 Then
-        ' Collapse the parent by hiding child items and changing [-] to [+]
-        Item.Text = Replace(Item.Text, "[-]", "[+]") ' Change [-] to [+]
-        Item.Tag = "Collapsed" ' Mark as collapsed
-
-        ' Hide child items
-        Dim child As listItem
-        For Each child In childItems
-            If child.Tag = Item.Key Then
-                child.Remove
-            End If
-        Next child
-    End If
-End Sub
-
-duplicate declaration in current scope on line Dim child As listItem
-
-
-
-
-
-
-
-Option Compare Database
-
-Private childItems As Collection
-
-Private Sub Form_Load()
-    Set childItems = New Collection
-    ConfigureListView
-    LoadListViewData
-End Sub
-
-Private Sub ConfigureListView()
-    ' Clear existing columns
-    Me.ListView1.ColumnHeaders.Clear
-    
-    ' Configure columns
-    Dim colHeader As ColumnHeader
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Item", 100) ' Column 1
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Session Due", 100) ' Column 2
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Action Date", 100) ' Column 3
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Assigned To", 150) ' Column 4
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Activity Step", 200) ' Column 5
-    
-    ' Enable gridlines and full row select
-    Me.ListView1.GridLines = True
-    Me.ListView1.FullRowSelect = True
-    Me.ListView1.View = lvwReport
-End Sub
-
-Private Sub LoadListViewData()
-    ' Clear existing items
-    Me.ListView1.ListItems.Clear
-    Set childItems = New Collection
-    
-    ' Add parent node (Past Due)
-    Dim parentItem As ListItem
-    Set parentItem = Me.ListView1.ListItems.Add(, "PastDue", "[+] Past Due")
-    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
-    
-    ' Add child rows under Past Due
-    AddChildItem "PastDue", "1", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 1"
-    AddChildItem "PastDue", "2", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 2"
-    
-    ' Add another parent node (Three Months)
-    Set parentItem = Me.ListView1.ListItems.Add(, "ThreeMonths", "[+] Three Months")
-    parentItem.Tag = "Collapsed"
-
-
-
-
-Option Compare Database
-
-Private childItems As Collection
-
-Private Sub Form_Load()
-    Set childItems = New Collection
-    ConfigureListView
-    LoadListViewData
-End Sub
-
-Private Sub ConfigureListView()
-    ' Clear existing columns
-    Me.ListView1.ColumnHeaders.Clear
-    
-    ' Configure columns
-    Dim colHeader As ColumnHeader
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Item", 100) ' Column 1
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Session Due", 100) ' Column 2
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Action Date", 100) ' Column 3
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Assigned To", 150) ' Column 4
-    Set colHeader = Me.ListView1.ColumnHeaders.Add(, , "Activity Step", 200) ' Column 5
-    
-    ' Enable gridlines and full row select
-    Me.ListView1.GridLines = True
-    Me.ListView1.FullRowSelect = True
-    Me.ListView1.View = lvwReport
-End Sub
-
-Private Sub LoadListViewData()
-    ' Clear existing items
-    Me.ListView1.ListItems.Clear
-    Set childItems = New Collection
-    
-    ' Add parent node (Past Due)
-    Dim parentItem As ListItem
-    Set parentItem = Me.ListView1.ListItems.Add(, "PastDue", "[+] Past Due")
-    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
-    
-    ' Add child rows under Past Due
-    AddChildItem "PastDue", "1", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 1"
-    AddChildItem "PastDue", "2", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 2"
-    
-    ' Add another parent node (Three Months)
-    Set parentItem = Me.ListView1.ListItems.Add(, "ThreeMonths", "[+] Three Months")
-    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
-    
-    ' Add child rows under Three Months
-    AddChildItem "ThreeMonths", "3", "12/13/2024", "12/12/2024", "Guillermo, Donald", "Peer Review Request"
-End Sub
-
-Private Sub AddChildItem(parentKey As String, Item As String, sessionDue As String, actionDate As String, assignedTo As String, activityStep As String)
-    Dim childItem As ListItem
-    Set childItem = Me.ListView1.ListItems.Add(, , "   " & Item) ' Indent child items
-    childItem.SubItems(1) = sessionDue
-    childItem.SubItems(2) = actionDate
-    childItem.SubItems(3) = assignedTo
-    childItem.SubItems(4) = activityStep
-    childItem.Tag = parentKey ' Associate child with parent
-    childItems.Add childItem, parentKey & "_" & Item ' Store child item in collection
-    childItem.ForeColor = RGB(150, 150, 150) ' Set child item text color to gray
-End Sub
-
-Private Sub ListView1_ItemClick(ByVal Item As Object)
     ' Declare child variable for loop
-    Dim child As ListItem
+    Dim child As listItem
     
     If InStr(Item.Text, "[+]") > 0 Then
         ' Expand the parent by showing child items and changing [+] to [-]
@@ -220,7 +73,8 @@ Private Sub ListView1_ItemClick(ByVal Item As Object)
         For Each child In childItems
             If child.Tag = Item.Key Then
                 ' Add the child item to the ListView
-                Me.ListView1.ListItems.Add(, , child.Text) ' Add the child item to the ListView
+                Me.ListView1.ListItems.Add , , child.Text ' Add the child item to the ListView
+
                 child.EnsureVisible ' Ensure the child item is visible
             End If
         Next child
@@ -233,9 +87,14 @@ Private Sub ListView1_ItemClick(ByVal Item As Object)
         For Each child In childItems
             If child.Tag = Item.Key Then
                 ' Remove the child item from the ListView by its Key
-                Me.ListView1.ListItems.Remove child.Key
+                Me.ListView1.ListItems.Remove child.Index
             End If
         Next child
     End If
 End Sub
     
+
+
+Private Sub ListView1_Updated(Code As Integer)
+
+End Sub
