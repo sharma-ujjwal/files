@@ -147,3 +147,56 @@ Private Sub ListView1_ItemClick(ByVal Item As Object)
         Next i
     End If
 End Sub
+
+
+Private Sub ListView1_ItemClick(ByVal Item As Object)
+    Dim child As listItem
+    Dim i As Integer
+
+    If InStr(Item.Text, "[+]") > 0 Then
+        ' Expand the parent node
+        ExpandParent Item
+    ElseIf InStr(Item.Text, "[-]") > 0 Then
+        ' Collapse the parent node
+        CollapseParent Item
+    End If
+End Sub
+
+Private Sub ExpandParent(ByVal parentItem As listItem)
+    Dim child As listItem
+    Dim newItem As listItem
+    
+    ' Change the parent node text to show expanded state
+    parentItem.Text = Replace(parentItem.Text, "[+]", "[-]")
+    parentItem.Tag = "Expanded" ' Mark the parent as expanded
+    
+    ' Add all associated child items from the childItems collection
+    For Each child In childItems
+        If child.Tag = parentItem.Key Then
+            ' Add child item to the ListView
+            Set newItem = Me.ListView1.ListItems.Add(, child.Key, child.Text)
+            newItem.subItems(1) = child.subItems(1)
+            newItem.subItems(2) = child.subItems(2)
+            newItem.subItems(3) = child.subItems(3)
+            newItem.subItems(4) = child.subItems(4)
+            newItem.ForeColor = child.ForeColor
+            newItem.Tag = parentItem.Key ' Link child to parent
+        End If
+    Next child
+End Sub
+
+Private Sub CollapseParent(ByVal parentItem As listItem)
+    Dim i As Integer
+    
+    ' Change the parent node text to show collapsed state
+    parentItem.Text = Replace(parentItem.Text, "[-]", "[+]")
+    parentItem.Tag = "Collapsed" ' Mark the parent as collapsed
+    
+    ' Remove all child items associated with the parent from the ListView
+    For i = Me.ListView1.ListItems.Count To 1 Step -1
+        If Me.ListView1.ListItems(i).Tag = parentItem.Key Then
+            Me.ListView1.ListItems.Remove i
+        End If
+    Next i
+End Sub
+
