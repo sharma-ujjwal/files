@@ -147,3 +147,34 @@ End Sub
 Private Sub ListView1_Updated(Code As Integer)
 
 End Sub
+
+
+Private Sub btnExpandAll_Click()
+    Dim i As Integer
+    Dim parentItem As listItem
+
+    ' Loop through all items in the ListView
+    For i = 1 To Me.ListView1.ListItems.Count
+        Set parentItem = Me.ListView1.ListItems(i)
+        
+        ' Expand only parent items that are collapsed
+        If InStr(parentItem.Text, "[+]") > 0 Then
+            ExpandParent parentItem
+        End If
+    Next i
+End Sub
+
+Private Sub btnCollapseAll_Click()
+    Dim i As Integer
+    Dim parentItem As listItem
+
+    ' Loop through all items in the ListView in reverse order
+    For i = Me.ListView1.ListItems.Count To 1 Step -1
+        Set parentItem = Me.ListView1.ListItems(i)
+        
+        ' Collapse only parent items that are expanded
+        If InStr(parentItem.Text, "[-]") > 0 Then
+            CollapseParent parentItem
+        End If
+    Next i
+End Sub
