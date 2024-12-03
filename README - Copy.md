@@ -148,20 +148,24 @@ Private Sub ListView1_Updated(Code As Integer)
 
 End Sub
 
-
 Private Sub btnExpandAll_Click()
+    Dim parentItems As Collection
     Dim i As Integer
     Dim parentItem As listItem
 
-    ' Loop through all items in the ListView
+    ' Collect all parent items in a collection
+    Set parentItems = New Collection
     For i = 1 To Me.ListView1.ListItems.Count
         Set parentItem = Me.ListView1.ListItems(i)
-        
-        ' Expand only parent items that are collapsed
         If InStr(parentItem.Text, "[+]") > 0 Then
-            ExpandParent parentItem
+            parentItems.Add parentItem
         End If
     Next i
+
+    ' Expand all parent items in the collection
+    For Each parentItem In parentItems
+        ExpandParent parentItem
+    Next parentItem
 End Sub
 
 Private Sub btnCollapseAll_Click()
