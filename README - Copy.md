@@ -182,3 +182,51 @@ Private Sub btnCollapseAll_Click()
         End If
     Next i
 End Sub
+
+
+
+Private Sub LoadListViewData()
+    ' Clear existing items
+    Me.ListView1.ListItems.Clear
+    Set childItems = New Collection
+
+    ' Add parent node (Past Due)
+    Dim parentItem As listItem
+    Set parentItem = Me.ListView1.ListItems.Add(, "PastDue", "[+] Past Due")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Past Due
+    AddChildItem "PastDue", "1", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 1"
+    AddChildItem "PastDue", "2", "09/15/2023", "10/11/2024", "Martel, Tina D", "Unspecified Letter 2"
+    AddChildItem "PastDue", "3", "09/18/2023", "10/12/2024", "Smith, John", "Follow-up Reminder"
+
+    ' Add another parent node (Three Months)
+    Set parentItem = Me.ListView1.ListItems.Add(, "ThreeMonths", "[+] Three Months")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Three Months
+    AddChildItem "ThreeMonths", "4", "12/01/2024", "12/02/2024", "Doe, Jane", "Review Submission"
+    AddChildItem "ThreeMonths", "5", "12/03/2024", "12/04/2024", "Guillermo, Donald", "Approval Needed"
+    AddChildItem "ThreeMonths", "6", "12/05/2024", "12/06/2024", "Brown, Emily", "Peer Review Request"
+
+    ' Add another parent node (Six Months)
+    Set parentItem = Me.ListView1.ListItems.Add(, "SixMonths", "[+] Six Months")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Six Months
+    AddChildItem "SixMonths", "7", "01/10/2024", "01/15/2024", "Martel, Tina D", "Progress Update"
+    AddChildItem "SixMonths", "8", "01/12/2024", "01/18/2024", "Doe, Jane", "Second Reminder"
+    AddChildItem "SixMonths", "9", "01/15/2024", "01/20/2024", "Smith, John", "Final Follow-up"
+
+    ' Add another parent node (Yearly)
+    Set parentItem = Me.ListView1.ListItems.Add(, "Yearly", "[+] Yearly")
+    parentItem.Tag = "Collapsed" ' Mark as collapsed initially
+
+    ' Add child rows under Yearly
+    AddChildItem "Yearly", "10", "03/15/2024", "03/20/2024", "Brown, Emily", "Annual Report"
+    AddChildItem "Yearly", "11", "03/18/2024", "03/22/2024", "Guillermo, Donald", "Budget Review"
+    AddChildItem "Yearly", "12", "03/20/2024", "03/25/2024", "Martel, Tina D", "Audit Preparation"
+
+    ' Adjust column widths
+    AutoFitColumns
+End Sub
