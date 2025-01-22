@@ -44,3 +44,59 @@ java.lang.NullPointerException: Cannot invoke "sunlife.us.dc.employer.service.Sy
 	at worker.org.gradle.process.internal.worker.GradleWorkerMain.main(GradleWorkerMain.java:74)
 
 
+
+
+package controller;
+
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import sunlife.us.dc.employer.controller.EmployerSystemAlertController;
+import sunlife.us.dc.employer.dto.generic.ResponseEntity;
+import sunlife.us.dc.employer.dto.generic.SystemAlertDTO;
+import sunlife.us.dc.employer.dto.response.SystemAlertResponseDTO;
+import sunlife.us.dc.employer.service.SystemAlertService;
+import util.TestUtil;
+
+import java.util.Collections;
+
+import static org.mockito.Mockito.when;
+
+
+public class TestEmployerSystemAlertController extends TestUtil {
+
+    @Mock
+    private SystemAlertService systemAlertService;
+    private EmployerSystemAlertController sysAlertController;
+
+    @Before
+    public void setUp() throws IllegalAccessException {
+        sysAlertController = new EmployerSystemAlertController();
+        FieldUtils.writeField(sysAlertController, "systemAlertService", systemAlertService, true);
+    }
+
+    @Test
+    public void testGetAllSystemAlerts() {
+        // Define the expected response
+        SystemAlertResponseDTO responseDTO = new SystemAlertResponseDTO();
+        SystemAlertDTO dto = new SystemAlertDTO();
+        dto.setSystemAlertCd("ERR55");
+        responseDTO.setSystemAlertDTOs(Collections.singletonList(dto));
+        ResponseEntity<SystemAlertResponseDTO> expectedResponse = new ResponseEntity<>();
+        expectedResponse.setSystemAlertDTOs(Collections.singletonList(dto));
+
+        // Define behavior of mock service
+        when(systemAlertService.getAllSystemAlerts()).thenReturn(expectedResponse);
+
+        // Call the method to test
+        ResponseEntity<SystemAlertResponseDTO> resp = sysAlertController.getAllSystemAlerts();
+
+        // Assert the response
+        Assert.assertNotNull("ERR55", resp.getSystemAlertDTOs().iterator().next().getSystemAlertCd());
+    }
+}
