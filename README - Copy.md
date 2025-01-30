@@ -1,10 +1,11 @@
 import java.math.BigDecimal;
 
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.component.UIInput;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.event.AjaxBehaviorEvent;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,53 +16,64 @@ class PaymentValidatorTest {
     private PaymentValidator paymentValidator;
     private FacesContext facesContext;
     private UIInput payAmountInput;
-    private AjaxBehaviorEvent event;
     private UIComponent component;
+    private AjaxBehaviorEvent event;
 
     @BeforeEach
     void setUp() {
         paymentValidator = new PaymentValidator();
-        facesContext = FacesContext.getCurrentInstance();  // If null, consider using FacesContext mock in a JSF testing framework
+
+        // Initialize FacesContext (Requires JSF Test Framework for full support)
+        facesContext = FacesContext.getCurrentInstance();
 
         // Initialize a real UIInput instance
         payAmountInput = new UIInput();
-        component = new UIComponent() {}; // Anonymous subclass to instantiate abstract class
+        
+        // Create a simple UIComponent instance
+        component = new UIComponent() {}; // Anonymous subclass since UIComponent is abstract
 
-        // Create a dummy AjaxBehaviorEvent with the component
+        // Manually create an AjaxBehaviorEvent with the component
         event = new AjaxBehaviorEvent(component) {};
     }
 
     @Test
     void testValidate_NullValue_ShouldShowErrorMessage() {
-        // Simulate no value being set
+        // Simulate a null value
         payAmountInput.getAttributes().put("value", null);
-        
-        // Manually invoke the method
+
+        // Invoke the method
         paymentValidator.validate(event);
 
-        // Dummy assertion (this part will depend on how messages are stored in FacesContext)
-        assertNotNull(facesContext.getMessageList());
+        // Verify that an error message was added
+        assertFalse(facesContext.getMessageList().isEmpty());
+
+        // Check the specific error message (Modify based on actual implementation)
+        FacesMessage message = facesContext.getMessageList().get(0);
+        assertEquals("Error: Payment amount is required.", message.getDetail());
     }
 
     @Test
     void testValidate_NegativeValue_ShouldShowErrorMessage() {
-        // Simulate negative value
+        // Simulate a negative value
         payAmountInput.getAttributes().put("value", new BigDecimal("-1"));
 
-        // Call the method
+        // Invoke the method
         paymentValidator.validate(event);
 
-        // Verify error message (adjust based on how your app stores FacesMessages)
+        // Verify that an error message was added
+        assertFalse(facesContext.getMessageList().isEmpty());
+
+        // Check the error message for negative values
         FacesMessage message = facesContext.getMessageList().get(0);
-        assertEquals("Negative payment amount is not allowed", message.getDetail());
+        assertEquals("Error: Negative payment amount is not allowed.", message.getDetail());
     }
 
     @Test
     void testValidate_ValidValue_ShouldNotShowErrorMessage() {
-        // Simulate valid value
+        // Simulate a valid payment amount
         payAmountInput.getAttributes().put("value", new BigDecimal("100"));
 
-        // Call the method
+        // Invoke the method
         paymentValidator.validate(event);
 
         // Ensure no error messages are added
