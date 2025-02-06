@@ -1,2341 +1,773 @@
-
-
-# files
-local files added in this repo
-
-      ## Xstream
-
-      XStream xstream = new XStream(new JettisonMappedXmlDriver());
-			xstream.alias("transactionReplyDTO", TransactionReplyDTO.class);
-			xstream.addImplicitCollection(TransactionReplyDTO.class, "events", TransactionEventDTO.class);
-			xstream.addPermission(NoTypePermission.NONE);
-			xstream.addPermission(NullPermission.NULL);
-			xstream.addPermission(PrimitiveTypePermission.PRIMITIVES);
-			xstream.allowTypesByWildcard(new String[] {
-					TransactionReplyDTO.class.getPackage().getName()+".*"
-			});
-
-     ##
-     grep -r 'oaemployerc'
-
-
-
-public ResponseWrapper<ByteWrapper> generateMcsForMember(MCSRequestDTO mcsRequest, ACOMSRequest acomsRequest, HttpServletRequest httpRequest) {
-        ResponseWrapper<ByteWrapper> responseWrapper;
-        try {
-            URIBuilder uriBuilder = new URIBuilder(getServiceUrl());
-            String path = uriBuilder.build().getPath() + "/billing/" +
-                    "mcs/" + "member/" +
-                    acomsRequest.getInsuranceSystem().name() + "/" +
-                    acomsRequest.getRole().name() + "/" +
-                    acomsRequest.getUserName() + "/" +
-                    acomsRequest.getSesnGuid() + "/" +
-                    acomsRequest.getCommunicationChnnl().name();
-
-            String reportName = mcsRequest.getReportName();
-            if (reportName == null) {
-                reportName = "";
-            }
-
-            uriBuilder.setPath(path)
-                    .addParameter("policyNumber", mcsRequest.getPolicyNumber())
-                    .addParameter("billGroups", mcsRequest.getBillGroupString())
-                    .addParameter("caseMemberKeys", mcsRequest.getCaseMemberKeysString())
-                    .addParameter("memberNumber", mcsRequest.getMemberNumber())
-                    .addParameter("deductionFrequencies", DeductionFrequency.getFrequenciesAsString(mcsRequest.getDeductionFrequencies()))
-                    .addParameter("effectiveDate", mcsRequest.getEffectiveDate())
-                    .addParameter("reportName", URLEncoder.encode(reportName, StandardCharsets.UTF_8))
-                    .addParameter("reportTypeName", mcsRequest.getReportType().name())
-                    .addParameter("externalViewable", String.valueOf(mcsRequest.isExternalViewable()))
-                    .addParameter("externalUser", String.valueOf(mcsRequest.isExternalUser()));
-
-            String baseReqUrl = uriBuilder.build().toURL().toString();
-
-
-            HttpUriRequest uriRequest = RequestBuilder.get().setUri(baseReqUrl).addHeader("Content-Type", "application/xml").addHeader("cookie", getSiteminderCookie(httpRequest)).build();
-
-            logger.info("URI for generateMcsForMember  : {}", uriRequest.getURI());
-            HttpClient defaultHttpClient = HttpClientBuilder.create().build();
-
-            HttpResponse httpResponse = defaultHttpClient.execute(uriRequest);
-
-            responseWrapper = handleResponse(httpResponse);
-
-            String payload = new String((responseWrapper.getPayload()).bytes);
-            int start = payload.indexOf("<bytes>");
-            int end = payload.indexOf("</bytes>");
-            String justPDF = payload.substring(start + "<bytes>".length(), end);
-            Base64 decoder = new Base64();
-            byte[] decodedPDF = decoder.decode(justPDF);
-            responseWrapper.setPayload(new ByteWrapper(decodedPDF));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return responseWrapper;
-    }
-
-
-
-
-    import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.apache.http.client.utils.URIBuilder;
-
-@RunWith(MockitoJUnitRunner.class)
-public class YourServiceTest {
-
-    @Mock
-    private HttpServletRequest httpRequest;
-
-    @Mock
-    private HttpClientBuilder httpClientBuilder;
-
-    @Mock
-    private HttpClient httpClient;
-
-    @Mock
-    private HttpResponse httpResponse;
-
-    @InjectMocks
-    private YourService yourService;
-
-    @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        when(httpClientBuilder.build()).thenReturn(httpClient);
-    }
-
-    @Test
-    public void testGenerateMcsForMember() throws Exception {
-        MCSRequestDTO mcsRequest = new MCSRequestDTO();
-        mcsRequest.setPolicyNumber("policyNumber123");
-        mcsRequest.setBillGroupString("billGroups");
-        mcsRequest.setCaseMemberKeysString("caseMemberKeys");
-        mcsRequest.setMemberNumber("memberNumber");
-        mcsRequest.setDeductionFrequencies(Arrays.asList(DeductionFrequency.MONTHLY));
-        mcsRequest.setEffectiveDate("2023-01-01");
-        mcsRequest.setReportName("reportName");
-        mcsRequest.setReportType(ReportType.MONTHLY);
-        mcsRequest.setExternalViewable(true);
-        mcsRequest.setExternalUser(false);
-
-        ACOMSRequest acomsRequest = new ACOMSRequest();
-        acomsRequest.setInsuranceSystem(InsuranceSystem.SOME_SYSTEM);
-        acomsRequest.setRole(Role.SOME_ROLE);
-        acomsRequest.setUserName("userName");
-        acomsRequest.setSesnGuid("sesnGuid");
-        acomsRequest.setCommunicationChnnl(CommunicationChnnl.EMAIL);
-
-        String expectedPayload = "<bytes>cGRmY29udGVudA==</bytes>";
-        String baseReqUrl = new URIBuilder(yourService.getServiceUrl())
-                .setPath("/billing/mcs/member/SOME_SYSTEM/SOME_ROLE/userName/sesnGuid/EMAIL")
-                .addParameter("policyNumber", mcsRequest.getPolicyNumber())
-                .addParameter("billGroups", mcsRequest.getBillGroupString())
-                .addParameter("caseMemberKeys", mcsRequest.getCaseMemberKeysString())
-                .addParameter("memberNumber", mcsRequest.getMemberNumber())
-                .addParameter("deductionFrequencies", DeductionFrequency.getFrequenciesAsString(mcsRequest.getDeductionFrequencies()))
-                .addParameter("effectiveDate", mcsRequest.getEffectiveDate())
-                .addParameter("reportName", URLEncoder.encode(mcsRequest.getReportName(), StandardCharsets.UTF_8.toString()))
-                .addParameter("reportTypeName", mcsRequest.getReportType().name())
-                .addParameter("externalViewable", String.valueOf(mcsRequest.isExternalViewable()))
-                .addParameter("externalUser", String.valueOf(mcsRequest.isExternalUser()))
-                .build().toURL().toString();
-
-        when(httpClient.execute(any(HttpUriRequest.class))).thenReturn(httpResponse);
-        when(EntityUtils.toString(httpResponse.getEntity())).thenReturn(expectedPayload);
-
-        ResponseWrapper responseWrapper = yourService.generateMcsForMember(mcsRequest, acomsRequest, httpRequest);
-
-        assertNotNull(responseWrapper);
-        assertNotNull(responseWrapper.getPayload());
-        assertEquals("pdfcontent", new String(responseWrapper.getPayload().bytes));
-
-        verify(httpClient, times(1)).execute(any(HttpUriRequest.class));
-        verify(httpRequest, times(1)).getHeader("cookie");
-    }
-}
-
-
-
-
-public String doSaveDependentEdits() {
-    if (validateDependent()) {
-		passedDpndntValidation = true;
-
-		return getAuthorizationHelperBean().getForwardAuthorization("navEnrollMemberSummary");
-	}
-
-	setTrackChanges(false);
-	return null;
-}
-
-
-
-
- import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-public class YourClassTest {
-
-    @InjectMocks
-    private YourClass yourClass;
-
-    @Mock
-    private AuthorizationHelperBean authorizationHelperBean;
-
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
-
-    @Test
-    public void testDoSaveDependentEdits_ValidationPasses() {
-        // Arrange
-        when(yourClass.validateDependent()).thenReturn(true);
-        when(authorizationHelperBean.getForwardAuthorization("navEnrollMemberSummary")).thenReturn("expectedForward");
-
-        // Act
-        String result = yourClass.doSaveDependentEdits();
-
-        // Assert
-        assertEquals("expectedForward", result);
-        assertTrue(yourClass.passedDpndntValidation);
-    }
-
-    @Test
-    public void testDoSaveDependentEdits_ValidationFails() {
-        // Arrange
-        when(yourClass.validateDependent()).thenReturn(false);
-
-        // Act
-        String result = yourClass.doSaveDependentEdits();
-
-        // Assert
-        assertNull(result);
-        verify(authorizationHelperBean, never()).getForwardAuthorization(anyString());
-    }
-}
-
-
-	public String getMiddlewareSrvcUrl() {
-		return middlewareSrvcUrl;
-	}
-
-	public String getApplicationExternalUrl() {
-		return applicationExternalUrl;
-	}
-
-	public String getApplicationInternalUrl() {
-		return applicationInternalUrl;
-	}
-
-	public boolean getProductionEnvironment() {
-		return productionEnvironment;
-	}
-
-	public String getMyProfileUrl() {
-		return myProfileUrl;
-	}
-
-	public String getCompassStatusMessage() {
-		return compassStatusMessage;
-	}
-
-	public Integer getManageBillsMemberDetailsPaginationSize() {
-		return manageBillsMemberDetailsPaginationSize;
-	}
-
-	public Integer getPremiumReconMemberDetailsPaginationSize() {
-		return premiumReconMemberDetailsPaginationSize;
-	}
-
-	public String getSolarServiceUrl() {
-		return solarServiceUrl;
-	}
-
-	public Integer getSolarServicePort() {
-		return solarServicePort;
-	}
-
-	public String getAcomsUrl() {
-		return acomsUrl;
-	}
-
-	public String getGroupFactsUrl() {
-		return groupFactsUrl;
-	}
-
-	public String getGhUrl() {
-		return ghUrl;
-	}
-
-	public String getvResMemberReporting() {
-		return vResMemberReporting;
-	}
-
-	public String getDocViewerUrl() {
-		return docViewerUrl;
-	}
-
-	public String getMdrHelpUrl() {
-		return mdrHelpUrl;
-	}
-
-	public String getMcsHelpUrl() {
-		return mcsHelpUrl;
-	}
-
-	public Integer getMcsMembersPaginationSize() {
-		return mcsMembersPaginationSize;
-	}
-
-	public String getMemberCoverageStatementEnabled() {
-		return memberCoverageStatementEnabled;
-	}
-
-	public String getClaimsReportingEnabled() {
-		return claimsReportingEnabled;
-	}
-
-	public String getOrdersWildeUrl() {
-		return ordersWildeUrl;
-	}
-
-	public String getWebinar() {
-		return webinar;
-	}
-
-	public String getUserGuide() {
-		return userGuide;
-	}
-
-	public String getMemberRegistrationGuide() {
-		return memberRegistrationGuide;
-	}
-
-	public String getHomeContactUsUrl() {
-		return homeContactUsUrl;
-	}
-
-	public String getPolicyFormsUrl() {
-		return policyFormsUrl;
-	}
-
-	public String getGenericPolicyFormsUrl() {
-		return genericPolicyFormsUrl;
-	}
-
-	public String getEmployerLogoutUrl() {
-		return employerLogoutUrl;
-	}
-
-	public String getForEmployersHomeUrl() {
-		return forEmployersHomeUrl;
-	}
-
-	public String getBoxiRequesterId() {
-		return boxiRequesterId;
-	}
-
-	public String getBoxiRequesterToken() {
-		return boxiRequesterToken;
-	}
-
-	public String getBoxiBusinessObjectsUserGroupId() {
-		return boxiBusinessObjectsUserGroupId;
-	}
-
-	public String getBoxiLanguage() {
-		return boxiLanguage;
-	}
-
-	public String getBoxiAuthenticationType() {
-		return boxiAuthenticationType;
-	}
-
-	public String getBoxiAuthenticationServerUrl() {
-		return boxiAuthenticationServerUrl;
-	}
-
-	public String getBoxiServerUrl() {
-		return boxiServerUrl;
-	}
-
-	public String getBoxiReportHost() {
-		return boxiReportHost;
-	}
-
-	public String getBoxiDisabilityClaimsReportObjectId() {
-		return boxiDisabilityClaimsReportObjectId;
-	}
-
-	public Integer getBoxiMonitorScheduledRequestWaitTime() {
-		return boxiMonitorScheduledRequestWaitTime;
-	}
-
-	public Integer getBoxiMonitorScheduledRequestRepetitions() {
-		return boxiMonitorScheduledRequestRepetitions;
-	}
-
-	public String getBrokerLandingUrlId() {
-		return brokerLandingUrlId;
-	}
-
-	public String getBrokerMessageUrlId() {
-		return brokerMessageUrlId;
-	}
-
-	public String getReCaptchaSiteKey() {
-		return reCaptchaSiteKey;
-	}
-
-	public String getDocumentOutputServiceUrl() {
-		return documentOutputServiceUrl;
-	}
-
-	public String getIocDentalIdCardsDisplayable() {
-		return iocDentalIdCardsDisplayable;
-	}
-
-	public String getXpressionUser() {
-		return xpressionUser;
-	}
-
-	public String getXpressionPassword() {
-		return xpressionPassword;
-	}
-
-	public Integer getBenefitInfoPageRequestLimit() {
-		return benefitInfoPageRequestLimit;
-	}
-
-	public String getStaticContentPath() {
-		return staticContentPath;
-	}
-
-	public String getEmployerStaticContentPath() {
-		return employerStaticContentPath;
-	}
-
-	public String getBannerNewsPath() {
-		return bannerNewsPath;
-	}
-
-	public String getJndiBoxiBillingReportObjectId() {
-		return jndiBoxiBillingReportObjectId;
-	}
-
-	public RequestBuilderFactory getBoxiRequestBuilderFactory() {
-		return boxiRequestBuilderFactory;
-	}
-
-	public ResponseBuilderFactory getResponseBuilderFactory() {
-		return responseBuilderFactory;
-	}
-
-	public ReportHelper getReportHelper() {
-		return reportHelper;
-	}
-
-
-	public String getUnleashAppName() {
-		return unleashAppName;
-	}
-
-	public void setUnleashAppName(String unleashAppName) {
-		this.unleashAppName = unleashAppName;
-	}
-
-	public String getUnleashInstanceId() {
-		return unleashInstanceId;
-	}
-
-	public void setUnleashInstanceId(String unleashInstanceId) {
-		this.unleashInstanceId = unleashInstanceId;
-	}
-
-	public String getUnleashEnvironment() {
-		return unleashEnvironment;
-	}
-
-	public void setUnleashEnvironment(String unleashEnvironment) {
-		this.unleashEnvironment = unleashEnvironment;
-	}
-
-	public String getUnleashApiUrl() {
-		return unleashApiUrl;
-	}
-
-	public void setUnleashApiUrl(String unleashApiUrl) {
-		this.unleashApiUrl = unleashApiUrl;
-	}
-
-	public String getUnleashAuthHeader() {
-		return unleashAuthHeader;
-	}
-
-	public void setUnleashAuthHeader(String unleashAuthHeader) {
-		this.unleashAuthHeader = unleashAuthHeader;
-	}
-
-
-     import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-public class YourClassTest {
-    
-    private YourClass yourClass;
-
-    @BeforeEach
-    public void setUp() {
-        yourClass = new YourClass();
-        // Set up initial values for fields if necessary
-        // e.g., yourClass.setMiddlewareSrvcUrl("http://example.com");
-    }
-
-    @Test
-    public void testGetMiddlewareSrvcUrl() {
-        String expected = "http://example.com";
-        yourClass.setMiddlewareSrvcUrl(expected);
-        assertEquals(expected, yourClass.getMiddlewareSrvcUrl());
-    }
-
-    @Test
-    public void testGetApplicationExternalUrl() {
-        String expected = "http://external.example.com";
-        yourClass.setApplicationExternalUrl(expected);
-        assertEquals(expected, yourClass.getApplicationExternalUrl());
-    }
-
-    @Test
-    public void testGetApplicationInternalUrl() {
-        String expected = "http://internal.example.com";
-        yourClass.setApplicationInternalUrl(expected);
-        assertEquals(expected, yourClass.getApplicationInternalUrl());
-    }
-
-    @Test
-    public void testGetProductionEnvironment() {
-        boolean expected = true;
-        yourClass.setProductionEnvironment(expected);
-        assertEquals(expected, yourClass.getProductionEnvironment());
-    }
-
-    @Test
-    public void testGetMyProfileUrl() {
-        String expected = "http://profile.example.com";
-        yourClass.setMyProfileUrl(expected);
-        assertEquals(expected, yourClass.getMyProfileUrl());
-    }
-
-    @Test
-    public void testGetCompassStatusMessage() {
-        String expected = "Status message";
-        yourClass.setCompassStatusMessage(expected);
-        assertEquals(expected, yourClass.getCompassStatusMessage());
-    }
-
-    @Test
-    public void testGetManageBillsMemberDetailsPaginationSize() {
-        Integer expected = 10;
-        yourClass.setManageBillsMemberDetailsPaginationSize(expected);
-        assertEquals(expected, yourClass.getManageBillsMemberDetailsPaginationSize());
-    }
-
-    @Test
-    public void testGetPremiumReconMemberDetailsPaginationSize() {
-        Integer expected = 20;
-        yourClass.setPremiumReconMemberDetailsPaginationSize(expected);
-        assertEquals(expected, yourClass.getPremiumReconMemberDetailsPaginationSize());
-    }
-
-    @Test
-    public void testGetSolarServiceUrl() {
-        String expected = "http://solar.example.com";
-        yourClass.setSolarServiceUrl(expected);
-        assertEquals(expected, yourClass.getSolarServiceUrl());
-    }
-
-    @Test
-    public void testGetSolarServicePort() {
-        Integer expected = 8080;
-        yourClass.setSolarServicePort(expected);
-        assertEquals(expected, yourClass.getSolarServicePort());
-    }
-
-    @Test
-    public void testGetAcomsUrl() {
-        String expected = "http://acoms.example.com";
-        yourClass.setAcomsUrl(expected);
-        assertEquals(expected, yourClass.getAcomsUrl());
-    }
-
-    @Test
-    public void testGetGroupFactsUrl() {
-        String expected = "http://groupfacts.example.com";
-        yourClass.setGroupFactsUrl(expected);
-        assertEquals(expected, yourClass.getGroupFactsUrl());
-    }
-
-    @Test
-    public void testGetGhUrl() {
-        String expected = "http://gh.example.com";
-        yourClass.setGhUrl(expected);
-        assertEquals(expected, yourClass.getGhUrl());
-    }
-
-    @Test
-    public void testGetvResMemberReporting() {
-        String expected = "http://vres.example.com";
-        yourClass.setvResMemberReporting(expected);
-        assertEquals(expected, yourClass.getvResMemberReporting());
-    }
-
-    @Test
-    public void testGetDocViewerUrl() {
-        String expected = "http://docviewer.example.com";
-        yourClass.setDocViewerUrl(expected);
-        assertEquals(expected, yourClass.getDocViewerUrl());
-    }
-
-    @Test
-    public void testGetMdrHelpUrl() {
-        String expected = "http://mdrhelp.example.com";
-        yourClass.setMdrHelpUrl(expected);
-        assertEquals(expected, yourClass.getMdrHelpUrl());
-    }
-
-    @Test
-    public void testGetMcsHelpUrl() {
-        String expected = "http://mcshelp.example.com";
-        yourClass.setMcsHelpUrl(expected);
-        assertEquals(expected, yourClass.getMcsHelpUrl());
-    }
-
-    @Test
-    public void testGetMcsMembersPaginationSize() {
-        Integer expected = 30;
-        yourClass.setMcsMembersPaginationSize(expected);
-        assertEquals(expected, yourClass.getMcsMembersPaginationSize());
-    }
-
-    @Test
-    public void testGetMemberCoverageStatementEnabled() {
-        String expected = "true";
-        yourClass.setMemberCoverageStatementEnabled(expected);
-        assertEquals(expected, yourClass.getMemberCoverageStatementEnabled());
-    }
-
-    @Test
-    public void testGetClaimsReportingEnabled() {
-        String expected = "true";
-        yourClass.setClaimsReportingEnabled(expected);
-        assertEquals(expected, yourClass.getClaimsReportingEnabled());
-    }
-
-    @Test
-    public void testGetOrdersWildeUrl() {
-        String expected = "http://orderswilde.example.com";
-        yourClass.setOrdersWildeUrl(expected);
-        assertEquals(expected, yourClass.getOrdersWildeUrl());
-    }
-
-    @Test
-    public void testGetWebinar() {
-        String expected = "http://webinar.example.com";
-        yourClass.setWebinar(expected);
-        assertEquals(expected, yourClass.getWebinar());
-    }
-
-    @Test
-    public void testGetUserGuide() {
-        String expected = "http://userguide.example.com";
-        yourClass.setUserGuide(expected);
-        assertEquals(expected, yourClass.getUserGuide());
-    }
-
-    @Test
-    public void testGetMemberRegistrationGuide() {
-        String expected = "http://memberregistrationguide.example.com";
-        yourClass.setMemberRegistrationGuide(expected);
-        assertEquals(expected, yourClass.getMemberRegistrationGuide());
-    }
-
-    @Test
-    public void testGetHomeContactUsUrl() {
-        String expected = "http://homecontactus.example.com";
-        yourClass.setHomeContactUsUrl(expected);
-        assertEquals(expected, yourClass.getHomeContactUsUrl());
-    }
-
-    @Test
-    public void testGetPolicyFormsUrl() {
-        String expected = "http://policyforms.example.com";
-        yourClass.setPolicyFormsUrl(expected);
-        assertEquals(expected, yourClass.getPolicyFormsUrl());
-    }
-
-    @Test
-    public void testGetGenericPolicyFormsUrl() {
-        String expected = "http://genericpolicyforms.example.com";
-        yourClass.setGenericPolicyFormsUrl(expected);
-        assertEquals(expected, yourClass.getGenericPolicyFormsUrl());
-    }
-
-    @Test
-    public void testGetEmployerLogoutUrl() {
-        String expected = "http://employerlogout.example.com";
-        yourClass.setEmployerLogoutUrl(expected);
-        assertEquals(expected, yourClass.getEmployerLogoutUrl());
-    }
-
-    @Test
-    public void testGetForEmployersHomeUrl() {
-        String expected = "http://foremployershome.example.com";
-        yourClass.setForEmployersHomeUrl(expected);
-        assertEquals(expected, yourClass.getForEmployersHomeUrl());
-    }
-
-    @Test
-    public void testGetBoxiRequesterId() {
-        String expected = "requesterId";
-        yourClass.setBoxiRequesterId(expected);
-        assertEquals(expected, yourClass.getBoxiRequesterId());
-    }
-
-    @Test
-    public void testGetBoxiRequesterToken() {
-        String expected = "requesterToken";
-        yourClass.setBoxiRequesterToken(expected);
-        assertEquals(expected, yourClass.getBoxiRequesterToken());
-    }
-
-    @Test
-    public void testGetBoxiBusinessObjectsUserGroupId() {
-        String expected = "userGroupId";
-        yourClass.setBoxiBusinessObjectsUserGroupId(expected);
-        assertEquals(expected, yourClass.getBoxiBusinessObjectsUserGroupId());
-    }
-
-    @Test
-    public void testGetBoxiLanguage() {
-        String expected = "en";
-        yourClass.setBoxiLanguage(expected);
-        assertEquals(expected, yourClass.getBoxiLanguage());
-    }
-
-    @Test
-    public void testGetBoxiAuthenticationType() {
-        String expected = "authType";
-        yourClass.setBoxiAuthenticationType(expected);
-        assertEquals(expected, yourClass.getBoxiAuthenticationType());
-    }
-
-    @Test
-    public void testGetBoxiAuthenticationServerUrl() {
-        String expected = "http://boxiauthserver.example.com";
-        yourClass.setBoxiAuthenticationServerUrl(expected);
-        assertEquals(expected, yourClass.getBoxiAuthenticationServerUrl());
-    }
-
-    @Test
-    public void testGetBoxiServerUrl() {
-        String expected = "http://boxiserver.example.com";
-        yourClass.setBoxiServerUrl(expected);
-        assertEquals(expected, yourClass.getBoxiServerUrl());
-    }
-
-    @Test
-    public void testGetBoxiReportHost() {
-        String expected = "reportHost";
-        yourClass.setBoxiReportHost(expected);
-        assertEquals(expected, yourClass.getBoxiReportHost());
-    }
-
-    @Test
-    public void testGetBoxiDisabilityClaimsReportObjectId() {
-        String expected = "disabilityClaimsReportObjectId";
-        yourClass.setBoxiDisabilityClaimsReportObjectId(expected);
-        assertEquals(expected, yourClass.getBoxi
-
-============================================================================================================
-
-	public boolean resendSecondaryUserInvitation(SecondaryUserDataBean secondaryUser) {
-		ResendSecondaryEmployerAccessRequestDTO request = new ResendSecondaryEmployerAccessRequestDTO();
-		request.setRequestUser(getUserBean().getUserName());
-		request.setRequestApplication(DeleteSecondaryEmployerAccessRequestDTO.APPLICATION_OA_C);
-		request.setRequestDate(new Date());
-		request.setInvitationKey(secondaryUser.getInvitationKey());
-		request.setEmailAddress(secondaryUser.getEmailAddress());
-		logger.trace("Resend secondary user invitation: {}", request.toString());
-		EmployerMiddlewareServiceJsonExecutor executor = new EmployerMiddlewareServiceJsonExecutor(getMiddlewareServiceUrl());
-		try {
-			if (EmployerMiddlewareServiceJsonExecutor.RETURN_CODE_ERROR == executor.executeRequest(request)) {
-				logger.error("Error executing employer middleware manager: {}", executor.getReturnMessage());
-				return false;
-			}
-		} catch (JSONException e) {
-			logger.error("JSONException executing employer middleware manager: {}", e);
-			return false;
-		} catch (IOException e) {
-			logger.error("IOException executing employer middleware manager: {}", e);
-			return false;
-		}
-		ResendSecondaryEmployerAccessResponseDTO response;
-		try {
-			 response = new ResendSecondaryEmployerAccessResponseDTO(executor.getResultJson());
-			if (!response.isSuccess()) {
-				logger.error("Failed to resend secondary user invitation: {}", request.toString());
-				return false;
-			}
-		}catch (Exception e) {
-			logger.error("IOException executing employer middleware manager: {}", e);
-			return false;
-		}
-		getSecondaryUserDataBean().setInvitationStatus(SecondaryUserHelperBean.buildInvitationStatus(response.getSecondaryEmployerUser()));
-		logger.trace("Resend secondary user invitation completed: {}", response.toString());
-		return true;
-	}
-	
-		/*
-	 * Copyright (c) 2009 - $(year), Assurant Employee Benefits, All rights reserved.
-	 */
-		package com.assurant.inc.employer.middleware.services.executor;
-
-		import java.io.IOException;
-		import java.io.InputStream;
-		import java.io.PrintWriter;
-		import java.net.URL;
-		import java.net.URLConnection;
-
-		import org.apache.commons.lang3.StringUtils;
-		import org.json.JSONException;
-		import org.json.JSONObject;
-
-		import com.assurant.inc.employer.middleware.services.data.request.generic.IEmployerMiddlewareRequestDTO;
-
-		/**
-		 * EmployerMiddlewareServiceJsonExecutor is used to execute requests to the
-		 * Employer Middleware Service.
-		 */
-		public class EmployerMiddlewareServiceJsonExecutor {
-			public static final int RETURN_CODE_ERROR = -1;
-			public static final int RETURN_CODE_SUCCESS = 0;
-			public static final int RETURN_CODE_WARNING = 1;
-
-			private String employerMiddlewareServiceUrl;
-
-			private int returnCode;
-			private String returnMessage;
-			private JSONObject resultObject;
-
-			public EmployerMiddlewareServiceJsonExecutor(String employerMiddlewareServiceUrl) {
-				this.employerMiddlewareServiceUrl = employerMiddlewareServiceUrl;
-			}
-
-			/**
-			 * Execute the request to Employer Middleware Service.
-			 * 
-			 * @param request
-			 *            the request DTO
-			 * @return the return code
-			 * @throws JSONException
-			 * @throws IOException
-			 */
-			public int executeRequest(IEmployerMiddlewareRequestDTO request) throws JSONException, IOException {
-				returnCode = RETURN_CODE_ERROR;
-				returnMessage = "An unknown error has occurred while processing request.";
-				resultObject = null;
-
-				PrintWriter printWriter = null;
-				InputStream inputStream = null;
-
-				try {
-					URL url = new URL(employerMiddlewareServiceUrl);
-					URLConnection connection = url.openConnection();
-
-					connection.setDoOutput(true);
-
-					printWriter = new PrintWriter(connection.getOutputStream());
-					printWriter.print("message=" + encode(request.getJsonRequestString()));
-					printWriter.flush();
-					byte[] read = new byte[1024];
-					inputStream = connection.getInputStream();
-					int amtRead = inputStream.read(read);
-					StringBuilder responseString = new StringBuilder();
-					while (amtRead > -1) {
-						responseString.append(new String(read, 0, amtRead));
-						read = new byte[1024];
-						amtRead = inputStream.read(read);
-					}
-
-					if (StringUtils.isEmpty(responseString.toString())) {
-						returnCode = RETURN_CODE_WARNING;
-						returnMessage = "No response for request.";
-						resultObject = null;
-					} else {
-						deserialize(responseString.toString());
-					}
-				} finally {
-					if (printWriter != null) {
-						printWriter.close();
-					}
-					if (inputStream != null) {
-						try {
-							inputStream.close();
-						} catch (IOException e) {
-						}
-					}
-				}
-
-				return returnCode;
-			}
-
-			/**
-			 * Encode the request string to deal with special characters.
-			 * 
-			 * @param request
-			 *            the request string
-			 * @return the encoded string
-			 */
-			private static String encode(String request) {
-				StringBuilder encodedString = new StringBuilder(request.length() + 30);
-				for (int i = 0; i < request.length(); ++i) {
-					if (request.charAt(i) == '%') {
-						encodedString.append("%25");
-					} else if (request.charAt(i) == '$') {
-						encodedString.append("%24");
-					} else if (request.charAt(i) == '&') {
-						encodedString.append("%26");
-					} else if (request.charAt(i) == '+') {
-						encodedString.append("%2B");
-					} else if (request.charAt(i) == ',') {
-						encodedString.append("%2C");
-					} else if (request.charAt(i) == '/') {
-						encodedString.append("%2F");
-					} else if (request.charAt(i) == ':') {
-						encodedString.append("%3A");
-					} else if (request.charAt(i) == ';') {
-						encodedString.append("%3B");
-					} else if (request.charAt(i) == '=') {
-						encodedString.append("%3D");
-					} else if (request.charAt(i) == '?') {
-						encodedString.append("%3F");
-					} else if (request.charAt(i) == '@') {
-						encodedString.append("%40");
-					} else if (request.charAt(i) == '\'') {
-						encodedString.append("%27");
-					} else {
-						encodedString.append(request.charAt(i));
-					}
-				}
-				return encodedString.toString();
-			}
-
-			/**
-			 * Deserialize the serialized response string.
-			 * 
-			 * @param serializedResponseString
-			 *            the serialized response string
-			 * @throws JSONException
-			 */
-			private void deserialize(String serializedResponseString) throws JSONException {
-				JSONObject result = new JSONObject(serializedResponseString);
-				/*
-				 * If the result does not have a returnCode something happened that
-				 * should not have so just error out.
-				 */
-				if (!result.has("returnCode")) {
-					returnCode = RETURN_CODE_ERROR;
-					returnMessage = "Request had no Return Code.";
-					resultObject = null;
-					return;
-				}
-
-				returnCode = result.optInt("returnCode", RETURN_CODE_ERROR);
-
-				if (result.has("returnMessage")) {
-					returnMessage = result.optString("returnMessage");
-				}
-
-				if (result.has("resultSet")) {
-					resultObject = result.optJSONObject("resultSet");
-				}
-			}
-
-			public String getEmployerMiddlewareServiceUrl() {
-				return employerMiddlewareServiceUrl;
-			}
-
-			public void setEmployerMiddlewareServiceUrl(String employerMiddlewareServiceUrl) {
-				this.employerMiddlewareServiceUrl = employerMiddlewareServiceUrl;
-			}
-
-			public int getReturnCode() {
-				return returnCode;
-			}
-
-			public void setReturnCode(int returnCode) {
-				this.returnCode = returnCode;
-			}
-
-			public String getReturnMessage() {
-				return returnMessage;
-			}
-
-			public void setReturnMessage(String returnMessage) {
-				this.returnMessage = returnMessage;
-			}
-
-			public JSONObject getResultJson() {
-				if (resultObject != null) {
-					return resultObject;
-				}
-
-				return new JSONObject();
-			}
-		}
-		
-				/*
-		 * Copyright (c) 2009 - $(year), Assurant Employee Benefits, All rights reserved.
-		 */
-		package com.assurant.inc.employer.middleware.services.data.response;
-
-		import java.io.Serializable;
-
-		import org.apache.commons.lang3.builder.ToStringBuilder;
-		import org.apache.commons.lang3.builder.ToStringStyle;
-		import org.json.JSONException;
-		import org.json.JSONObject;
-
-		import com.assurant.inc.employer.middleware.services.data.generic.IEmployerMiddlewareServiceDTO;
-		import com.assurant.inc.employer.middleware.services.data.object.SecondaryEmployerUserDTO;
-
-		/**
-		 * The Class ResendSecondaryEmployerAccessResponseDTO.
-		 */
-		public class ResendSecondaryEmployerAccessResponseDTO implements IEmployerMiddlewareServiceDTO, Serializable {
-			/** The Constant serialVersionUID. */
-			private static final long serialVersionUID = 1L;
-
-			/** The Constant JSON_LABEL_IS_SUCCESS. */
-			private static final String JSON_LABEL_IS_SUCCESS = "isSuccess";
-			/** The Constant JSON_LABEL_EXPIRATION_DATE. */
-			private static final String JSON_LABEL_SECONDARY_EMPLOYER_USER = "secondaryEmployerUser";
-
-			/** The is success. */
-			private boolean isSuccess = false;
-			private SecondaryEmployerUserDTO secondaryEmployerUser;
-
-			/**
-			 * Instantiates a new resend secondary employer access response dto.
-			 */
-			public ResendSecondaryEmployerAccessResponseDTO(){
-			}
-
-			/**
-			 * Instantiates a new resend secondary employer access response dto.
-			 * 
-			 * @param resendSecondaryEmployerAccessResponseJson
-			 *            the resend secondary employer access response json
-			 */
-			public ResendSecondaryEmployerAccessResponseDTO(JSONObject resendSecondaryEmployerAccessResponseJson){
-				isSuccess = resendSecondaryEmployerAccessResponseJson.optBoolean(JSON_LABEL_IS_SUCCESS);
-
-				secondaryEmployerUser = new SecondaryEmployerUserDTO(resendSecondaryEmployerAccessResponseJson.optJSONObject(JSON_LABEL_SECONDARY_EMPLOYER_USER));
-			}
-
-			/* (non-Javadoc)
-			 * @see com.assurant.inc.employer.middleware.services.data.generic.IEmployerMiddlewareServiceDTO#getJsonValue()
-			 */
-			public JSONObject getJsonValue() throws JSONException {
-				JSONObject jsonValue = new JSONObject();
-
-				jsonValue.put(JSON_LABEL_IS_SUCCESS, isSuccess);
-
-				if (secondaryEmployerUser != null) {
-					jsonValue.put(JSON_LABEL_SECONDARY_EMPLOYER_USER, secondaryEmployerUser.getJsonValue());
-				}
-
-				return jsonValue;
-			}
-
-			public boolean isSuccess() {
-				return isSuccess;
-			}
-			public void setSuccess(boolean isSuccess) {
-				this.isSuccess = isSuccess;
-			}
-
-			public SecondaryEmployerUserDTO getSecondaryEmployerUser() {
-				return secondaryEmployerUser;
-			}
-			public void setSecondaryEmployerUser(SecondaryEmployerUserDTO secondaryEmployerUser) {
-				this.secondaryEmployerUser = secondaryEmployerUser;
-			}
-
-			/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#toString()
-			 */
-			@Override
-			public String toString() {
-				return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-			}
-		}
-
-
-
-# files
-local files added in this repo
-
-      ## Xstream
-
-      XStream xstream = new XStream(new JettisonMappedXmlDriver());
-			xstream.alias("transactionReplyDTO", TransactionReplyDTO.class);
-			xstream.addImplicitCollection(TransactionReplyDTO.class, "events", TransactionEventDTO.class);
-			xstream.addPermission(NoTypePermission.NONE);
-			xstream.addPermission(NullPermission.NULL);
-			xstream.addPermission(PrimitiveTypePermission.PRIMITIVES);
-			xstream.allowTypesByWildcard(new String[] {
-					TransactionReplyDTO.class.getPackage().getName()+".*"
-			});
-
-     ##
-     grep -r 'oaemployerc'
-
-
-
-public ResponseWrapper<ByteWrapper> generateMcsForMember(MCSRequestDTO mcsRequest, ACOMSRequest acomsRequest, HttpServletRequest httpRequest) {
-        ResponseWrapper<ByteWrapper> responseWrapper;
-        try {
-            URIBuilder uriBuilder = new URIBuilder(getServiceUrl());
-            String path = uriBuilder.build().getPath() + "/billing/" +
-                    "mcs/" + "member/" +
-                    acomsRequest.getInsuranceSystem().name() + "/" +
-                    acomsRequest.getRole().name() + "/" +
-                    acomsRequest.getUserName() + "/" +
-                    acomsRequest.getSesnGuid() + "/" +
-                    acomsRequest.getCommunicationChnnl().name();
-
-            String reportName = mcsRequest.getReportName();
-            if (reportName == null) {
-                reportName = "";
-            }
-
-            uriBuilder.setPath(path)
-                    .addParameter("policyNumber", mcsRequest.getPolicyNumber())
-                    .addParameter("billGroups", mcsRequest.getBillGroupString())
-                    .addParameter("caseMemberKeys", mcsRequest.getCaseMemberKeysString())
-                    .addParameter("memberNumber", mcsRequest.getMemberNumber())
-                    .addParameter("deductionFrequencies", DeductionFrequency.getFrequenciesAsString(mcsRequest.getDeductionFrequencies()))
-                    .addParameter("effectiveDate", mcsRequest.getEffectiveDate())
-                    .addParameter("reportName", URLEncoder.encode(reportName, StandardCharsets.UTF_8))
-                    .addParameter("reportTypeName", mcsRequest.getReportType().name())
-                    .addParameter("externalViewable", String.valueOf(mcsRequest.isExternalViewable()))
-                    .addParameter("externalUser", String.valueOf(mcsRequest.isExternalUser()));
-
-            String baseReqUrl = uriBuilder.build().toURL().toString();
-
-
-            HttpUriRequest uriRequest = RequestBuilder.get().setUri(baseReqUrl).addHeader("Content-Type", "application/xml").addHeader("cookie", getSiteminderCookie(httpRequest)).build();
-
-            logger.info("URI for generateMcsForMember  : {}", uriRequest.getURI());
-            HttpClient defaultHttpClient = HttpClientBuilder.create().build();
-
-            HttpResponse httpResponse = defaultHttpClient.execute(uriRequest);
-
-            responseWrapper = handleResponse(httpResponse);
-
-            String payload = new String((responseWrapper.getPayload()).bytes);
-            int start = payload.indexOf("<bytes>");
-            int end = payload.indexOf("</bytes>");
-            String justPDF = payload.substring(start + "<bytes>".length(), end);
-            Base64 decoder = new Base64();
-            byte[] decodedPDF = decoder.decode(justPDF);
-            responseWrapper.setPayload(new ByteWrapper(decodedPDF));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return responseWrapper;
-    }
-
-
-
-
-    import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.util.EntityUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.apache.http.client.utils.URIBuilder;
-
-@RunWith(MockitoJUnitRunner.class)
-public class YourServiceTest {
-
-    @Mock
-    private HttpServletRequest httpRequest;
-
-    @Mock
-    private HttpClientBuilder httpClientBuilder;
-
-    @Mock
-    private HttpClient httpClient;
-
-    @Mock
-    private HttpResponse httpResponse;
-
-    @InjectMocks
-    private YourService yourService;
-
-    @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        when(httpClientBuilder.build()).thenReturn(httpClient);
-    }
-
-    @Test
-    public void testGenerateMcsForMember() throws Exception {
-        MCSRequestDTO mcsRequest = new MCSRequestDTO();
-        mcsRequest.setPolicyNumber("policyNumber123");
-        mcsRequest.setBillGroupString("billGroups");
-        mcsRequest.setCaseMemberKeysString("caseMemberKeys");
-        mcsRequest.setMemberNumber("memberNumber");
-        mcsRequest.setDeductionFrequencies(Arrays.asList(DeductionFrequency.MONTHLY));
-        mcsRequest.setEffectiveDate("2023-01-01");
-        mcsRequest.setReportName("reportName");
-        mcsRequest.setReportType(ReportType.MONTHLY);
-        mcsRequest.setExternalViewable(true);
-        mcsRequest.setExternalUser(false);
-
-        ACOMSRequest acomsRequest = new ACOMSRequest();
-        acomsRequest.setInsuranceSystem(InsuranceSystem.SOME_SYSTEM);
-        acomsRequest.setRole(Role.SOME_ROLE);
-        acomsRequest.setUserName("userName");
-        acomsRequest.setSesnGuid("sesnGuid");
-        acomsRequest.setCommunicationChnnl(CommunicationChnnl.EMAIL);
-
-        String expectedPayload = "<bytes>cGRmY29udGVudA==</bytes>";
-        String baseReqUrl = new URIBuilder(yourService.getServiceUrl())
-                .setPath("/billing/mcs/member/SOME_SYSTEM/SOME_ROLE/userName/sesnGuid/EMAIL")
-                .addParameter("policyNumber", mcsRequest.getPolicyNumber())
-                .addParameter("billGroups", mcsRequest.getBillGroupString())
-                .addParameter("caseMemberKeys", mcsRequest.getCaseMemberKeysString())
-                .addParameter("memberNumber", mcsRequest.getMemberNumber())
-                .addParameter("deductionFrequencies", DeductionFrequency.getFrequenciesAsString(mcsRequest.getDeductionFrequencies()))
-                .addParameter("effectiveDate", mcsRequest.getEffectiveDate())
-                .addParameter("reportName", URLEncoder.encode(mcsRequest.getReportName(), StandardCharsets.UTF_8.toString()))
-                .addParameter("reportTypeName", mcsRequest.getReportType().name())
-                .addParameter("externalViewable", String.valueOf(mcsRequest.isExternalViewable()))
-                .addParameter("externalUser", String.valueOf(mcsRequest.isExternalUser()))
-                .build().toURL().toString();
-
-        when(httpClient.execute(any(HttpUriRequest.class))).thenReturn(httpResponse);
-        when(EntityUtils.toString(httpResponse.getEntity())).thenReturn(expectedPayload);
-
-        ResponseWrapper responseWrapper = yourService.generateMcsForMember(mcsRequest, acomsRequest, httpRequest);
-
-        assertNotNull(responseWrapper);
-        assertNotNull(responseWrapper.getPayload());
-        assertEquals("pdfcontent", new String(responseWrapper.getPayload().bytes));
-
-        verify(httpClient, times(1)).execute(any(HttpUriRequest.class));
-        verify(httpRequest, times(1)).getHeader("cookie");
-    }
-}
-
-
-
-
-public String doSaveDependentEdits() {
-    if (validateDependent()) {
-		passedDpndntValidation = true;
-
-		return getAuthorizationHelperBean().getForwardAuthorization("navEnrollMemberSummary");
-	}
-
-	setTrackChanges(false);
-	return null;
-}
-
-
-
-
- import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-public class YourClassTest {
-
-    @InjectMocks
-    private YourClass yourClass;
-
-    @Mock
-    private AuthorizationHelperBean authorizationHelperBean;
-
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
-
-    @Test
-    public void testDoSaveDependentEdits_ValidationPasses() {
-        // Arrange
-        when(yourClass.validateDependent()).thenReturn(true);
-        when(authorizationHelperBean.getForwardAuthorization("navEnrollMemberSummary")).thenReturn("expectedForward");
-
-        // Act
-        String result = yourClass.doSaveDependentEdits();
-
-        // Assert
-        assertEquals("expectedForward", result);
-        assertTrue(yourClass.passedDpndntValidation);
-    }
-
-    @Test
-    public void testDoSaveDependentEdits_ValidationFails() {
-        // Arrange
-        when(yourClass.validateDependent()).thenReturn(false);
-
-        // Act
-        String result = yourClass.doSaveDependentEdits();
-
-        // Assert
-        assertNull(result);
-        verify(authorizationHelperBean, never()).getForwardAuthorization(anyString());
-    }
-}
-
-
-	public String getMiddlewareSrvcUrl() {
-		return middlewareSrvcUrl;
-	}
-
-	public String getApplicationExternalUrl() {
-		return applicationExternalUrl;
-	}
-
-	public String getApplicationInternalUrl() {
-		return applicationInternalUrl;
-	}
-
-	public boolean getProductionEnvironment() {
-		return productionEnvironment;
-	}
-
-	public String getMyProfileUrl() {
-		return myProfileUrl;
-	}
-
-	public String getCompassStatusMessage() {
-		return compassStatusMessage;
-	}
-
-	public Integer getManageBillsMemberDetailsPaginationSize() {
-		return manageBillsMemberDetailsPaginationSize;
-	}
-
-	public Integer getPremiumReconMemberDetailsPaginationSize() {
-		return premiumReconMemberDetailsPaginationSize;
-	}
-
-	public String getSolarServiceUrl() {
-		return solarServiceUrl;
-	}
-
-	public Integer getSolarServicePort() {
-		return solarServicePort;
-	}
-
-	public String getAcomsUrl() {
-		return acomsUrl;
-	}
-
-	public String getGroupFactsUrl() {
-		return groupFactsUrl;
-	}
-
-	public String getGhUrl() {
-		return ghUrl;
-	}
-
-	public String getvResMemberReporting() {
-		return vResMemberReporting;
-	}
-
-	public String getDocViewerUrl() {
-		return docViewerUrl;
-	}
-
-	public String getMdrHelpUrl() {
-		return mdrHelpUrl;
-	}
-
-	public String getMcsHelpUrl() {
-		return mcsHelpUrl;
-	}
-
-	public Integer getMcsMembersPaginationSize() {
-		return mcsMembersPaginationSize;
-	}
-
-	public String getMemberCoverageStatementEnabled() {
-		return memberCoverageStatementEnabled;
-	}
-
-	public String getClaimsReportingEnabled() {
-		return claimsReportingEnabled;
-	}
-
-	public String getOrdersWildeUrl() {
-		return ordersWildeUrl;
-	}
-
-	public String getWebinar() {
-		return webinar;
-	}
-
-	public String getUserGuide() {
-		return userGuide;
-	}
-
-	public String getMemberRegistrationGuide() {
-		return memberRegistrationGuide;
-	}
-
-	public String getHomeContactUsUrl() {
-		return homeContactUsUrl;
-	}
-
-	public String getPolicyFormsUrl() {
-		return policyFormsUrl;
-	}
-
-	public String getGenericPolicyFormsUrl() {
-		return genericPolicyFormsUrl;
-	}
-
-	public String getEmployerLogoutUrl() {
-		return employerLogoutUrl;
-	}
-
-	public String getForEmployersHomeUrl() {
-		return forEmployersHomeUrl;
-	}
-
-	public String getBoxiRequesterId() {
-		return boxiRequesterId;
-	}
-
-	public String getBoxiRequesterToken() {
-		return boxiRequesterToken;
-	}
-
-	public String getBoxiBusinessObjectsUserGroupId() {
-		return boxiBusinessObjectsUserGroupId;
-	}
-
-	public String getBoxiLanguage() {
-		return boxiLanguage;
-	}
-
-	public String getBoxiAuthenticationType() {
-		return boxiAuthenticationType;
-	}
-
-	public String getBoxiAuthenticationServerUrl() {
-		return boxiAuthenticationServerUrl;
-	}
-
-	public String getBoxiServerUrl() {
-		return boxiServerUrl;
-	}
-
-	public String getBoxiReportHost() {
-		return boxiReportHost;
-	}
-
-	public String getBoxiDisabilityClaimsReportObjectId() {
-		return boxiDisabilityClaimsReportObjectId;
-	}
-
-	public Integer getBoxiMonitorScheduledRequestWaitTime() {
-		return boxiMonitorScheduledRequestWaitTime;
-	}
-
-	public Integer getBoxiMonitorScheduledRequestRepetitions() {
-		return boxiMonitorScheduledRequestRepetitions;
-	}
-
-	public String getBrokerLandingUrlId() {
-		return brokerLandingUrlId;
-	}
-
-	public String getBrokerMessageUrlId() {
-		return brokerMessageUrlId;
-	}
-
-	public String getReCaptchaSiteKey() {
-		return reCaptchaSiteKey;
-	}
-
-	public String getDocumentOutputServiceUrl() {
-		return documentOutputServiceUrl;
-	}
-
-	public String getIocDentalIdCardsDisplayable() {
-		return iocDentalIdCardsDisplayable;
-	}
-
-	public String getXpressionUser() {
-		return xpressionUser;
-	}
-
-	public String getXpressionPassword() {
-		return xpressionPassword;
-	}
-
-	public Integer getBenefitInfoPageRequestLimit() {
-		return benefitInfoPageRequestLimit;
-	}
-
-	public String getStaticContentPath() {
-		return staticContentPath;
-	}
-
-	public String getEmployerStaticContentPath() {
-		return employerStaticContentPath;
-	}
-
-	public String getBannerNewsPath() {
-		return bannerNewsPath;
-	}
-
-	public String getJndiBoxiBillingReportObjectId() {
-		return jndiBoxiBillingReportObjectId;
-	}
-
-	public RequestBuilderFactory getBoxiRequestBuilderFactory() {
-		return boxiRequestBuilderFactory;
-	}
-
-	public ResponseBuilderFactory getResponseBuilderFactory() {
-		return responseBuilderFactory;
-	}
-
-	public ReportHelper getReportHelper() {
-		return reportHelper;
-	}
-
-
-	public String getUnleashAppName() {
-		return unleashAppName;
-	}
-
-	public void setUnleashAppName(String unleashAppName) {
-		this.unleashAppName = unleashAppName;
-	}
-
-	public String getUnleashInstanceId() {
-		return unleashInstanceId;
-	}
-
-	public void setUnleashInstanceId(String unleashInstanceId) {
-		this.unleashInstanceId = unleashInstanceId;
-	}
-
-	public String getUnleashEnvironment() {
-		return unleashEnvironment;
-	}
-
-	public void setUnleashEnvironment(String unleashEnvironment) {
-		this.unleashEnvironment = unleashEnvironment;
-	}
-
-	public String getUnleashApiUrl() {
-		return unleashApiUrl;
-	}
-
-	public void setUnleashApiUrl(String unleashApiUrl) {
-		this.unleashApiUrl = unleashApiUrl;
-	}
-
-	public String getUnleashAuthHeader() {
-		return unleashAuthHeader;
-	}
-
-	public void setUnleashAuthHeader(String unleashAuthHeader) {
-		this.unleashAuthHeader = unleashAuthHeader;
-	}
-
-
-     import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-public class YourClassTest {
-    
-    private YourClass yourClass;
-
-    @BeforeEach
-    public void setUp() {
-        yourClass = new YourClass();
-        // Set up initial values for fields if necessary
-        // e.g., yourClass.setMiddlewareSrvcUrl("http://example.com");
-    }
-
-    @Test
-    public void testGetMiddlewareSrvcUrl() {
-        String expected = "http://example.com";
-        yourClass.setMiddlewareSrvcUrl(expected);
-        assertEquals(expected, yourClass.getMiddlewareSrvcUrl());
-    }
-
-    @Test
-    public void testGetApplicationExternalUrl() {
-        String expected = "http://external.example.com";
-        yourClass.setApplicationExternalUrl(expected);
-        assertEquals(expected, yourClass.getApplicationExternalUrl());
-    }
-
-    @Test
-    public void testGetApplicationInternalUrl() {
-        String expected = "http://internal.example.com";
-        yourClass.setApplicationInternalUrl(expected);
-        assertEquals(expected, yourClass.getApplicationInternalUrl());
-    }
-
-    @Test
-    public void testGetProductionEnvironment() {
-        boolean expected = true;
-        yourClass.setProductionEnvironment(expected);
-        assertEquals(expected, yourClass.getProductionEnvironment());
-    }
-
-    @Test
-    public void testGetMyProfileUrl() {
-        String expected = "http://profile.example.com";
-        yourClass.setMyProfileUrl(expected);
-        assertEquals(expected, yourClass.getMyProfileUrl());
-    }
-
-    @Test
-    public void testGetCompassStatusMessage() {
-        String expected = "Status message";
-        yourClass.setCompassStatusMessage(expected);
-        assertEquals(expected, yourClass.getCompassStatusMessage());
-    }
-
-    @Test
-    public void testGetManageBillsMemberDetailsPaginationSize() {
-        Integer expected = 10;
-        yourClass.setManageBillsMemberDetailsPaginationSize(expected);
-        assertEquals(expected, yourClass.getManageBillsMemberDetailsPaginationSize());
-    }
-
-    @Test
-    public void testGetPremiumReconMemberDetailsPaginationSize() {
-        Integer expected = 20;
-        yourClass.setPremiumReconMemberDetailsPaginationSize(expected);
-        assertEquals(expected, yourClass.getPremiumReconMemberDetailsPaginationSize());
-    }
-
-    @Test
-    public void testGetSolarServiceUrl() {
-        String expected = "http://solar.example.com";
-        yourClass.setSolarServiceUrl(expected);
-        assertEquals(expected, yourClass.getSolarServiceUrl());
-    }
-
-    @Test
-    public void testGetSolarServicePort() {
-        Integer expected = 8080;
-        yourClass.setSolarServicePort(expected);
-        assertEquals(expected, yourClass.getSolarServicePort());
-    }
-
-    @Test
-    public void testGetAcomsUrl() {
-        String expected = "http://acoms.example.com";
-        yourClass.setAcomsUrl(expected);
-        assertEquals(expected, yourClass.getAcomsUrl());
-    }
-
-    @Test
-    public void testGetGroupFactsUrl() {
-        String expected = "http://groupfacts.example.com";
-        yourClass.setGroupFactsUrl(expected);
-        assertEquals(expected, yourClass.getGroupFactsUrl());
-    }
-
-    @Test
-    public void testGetGhUrl() {
-        String expected = "http://gh.example.com";
-        yourClass.setGhUrl(expected);
-        assertEquals(expected, yourClass.getGhUrl());
-    }
-
-    @Test
-    public void testGetvResMemberReporting() {
-        String expected = "http://vres.example.com";
-        yourClass.setvResMemberReporting(expected);
-        assertEquals(expected, yourClass.getvResMemberReporting());
-    }
-
-    @Test
-    public void testGetDocViewerUrl() {
-        String expected = "http://docviewer.example.com";
-        yourClass.setDocViewerUrl(expected);
-        assertEquals(expected, yourClass.getDocViewerUrl());
-    }
-
-    @Test
-    public void testGetMdrHelpUrl() {
-        String expected = "http://mdrhelp.example.com";
-        yourClass.setMdrHelpUrl(expected);
-        assertEquals(expected, yourClass.getMdrHelpUrl());
-    }
-
-    @Test
-    public void testGetMcsHelpUrl() {
-        String expected = "http://mcshelp.example.com";
-        yourClass.setMcsHelpUrl(expected);
-        assertEquals(expected, yourClass.getMcsHelpUrl());
-    }
-
-    @Test
-    public void testGetMcsMembersPaginationSize() {
-        Integer expected = 30;
-        yourClass.setMcsMembersPaginationSize(expected);
-        assertEquals(expected, yourClass.getMcsMembersPaginationSize());
-    }
-
-    @Test
-    public void testGetMemberCoverageStatementEnabled() {
-        String expected = "true";
-        yourClass.setMemberCoverageStatementEnabled(expected);
-        assertEquals(expected, yourClass.getMemberCoverageStatementEnabled());
-    }
-
-    @Test
-    public void testGetClaimsReportingEnabled() {
-        String expected = "true";
-        yourClass.setClaimsReportingEnabled(expected);
-        assertEquals(expected, yourClass.getClaimsReportingEnabled());
-    }
-
-    @Test
-    public void testGetOrdersWildeUrl() {
-        String expected = "http://orderswilde.example.com";
-        yourClass.setOrdersWildeUrl(expected);
-        assertEquals(expected, yourClass.getOrdersWildeUrl());
-    }
-
-    @Test
-    public void testGetWebinar() {
-        String expected = "http://webinar.example.com";
-        yourClass.setWebinar(expected);
-        assertEquals(expected, yourClass.getWebinar());
-    }
-
-    @Test
-    public void testGetUserGuide() {
-        String expected = "http://userguide.example.com";
-        yourClass.setUserGuide(expected);
-        assertEquals(expected, yourClass.getUserGuide());
-    }
-
-    @Test
-    public void testGetMemberRegistrationGuide() {
-        String expected = "http://memberregistrationguide.example.com";
-        yourClass.setMemberRegistrationGuide(expected);
-        assertEquals(expected, yourClass.getMemberRegistrationGuide());
-    }
-
-    @Test
-    public void testGetHomeContactUsUrl() {
-        String expected = "http://homecontactus.example.com";
-        yourClass.setHomeContactUsUrl(expected);
-        assertEquals(expected, yourClass.getHomeContactUsUrl());
-    }
-
-    @Test
-    public void testGetPolicyFormsUrl() {
-        String expected = "http://policyforms.example.com";
-        yourClass.setPolicyFormsUrl(expected);
-        assertEquals(expected, yourClass.getPolicyFormsUrl());
-    }
-
-    @Test
-    public void testGetGenericPolicyFormsUrl() {
-        String expected = "http://genericpolicyforms.example.com";
-        yourClass.setGenericPolicyFormsUrl(expected);
-        assertEquals(expected, yourClass.getGenericPolicyFormsUrl());
-    }
-
-    @Test
-    public void testGetEmployerLogoutUrl() {
-        String expected = "http://employerlogout.example.com";
-        yourClass.setEmployerLogoutUrl(expected);
-        assertEquals(expected, yourClass.getEmployerLogoutUrl());
-    }
-
-    @Test
-    public void testGetForEmployersHomeUrl() {
-        String expected = "http://foremployershome.example.com";
-        yourClass.setForEmployersHomeUrl(expected);
-        assertEquals(expected, yourClass.getForEmployersHomeUrl());
-    }
-
-    @Test
-    public void testGetBoxiRequesterId() {
-        String expected = "requesterId";
-        yourClass.setBoxiRequesterId(expected);
-        assertEquals(expected, yourClass.getBoxiRequesterId());
-    }
-
-    @Test
-    public void testGetBoxiRequesterToken() {
-        String expected = "requesterToken";
-        yourClass.setBoxiRequesterToken(expected);
-        assertEquals(expected, yourClass.getBoxiRequesterToken());
-    }
-
-    @Test
-    public void testGetBoxiBusinessObjectsUserGroupId() {
-        String expected = "userGroupId";
-        yourClass.setBoxiBusinessObjectsUserGroupId(expected);
-        assertEquals(expected, yourClass.getBoxiBusinessObjectsUserGroupId());
-    }
-
-    @Test
-    public void testGetBoxiLanguage() {
-        String expected = "en";
-        yourClass.setBoxiLanguage(expected);
-        assertEquals(expected, yourClass.getBoxiLanguage());
-    }
-
-    @Test
-    public void testGetBoxiAuthenticationType() {
-        String expected = "authType";
-        yourClass.setBoxiAuthenticationType(expected);
-        assertEquals(expected, yourClass.getBoxiAuthenticationType());
-    }
-
-    @Test
-    public void testGetBoxiAuthenticationServerUrl() {
-        String expected = "http://boxiauthserver.example.com";
-        yourClass.setBoxiAuthenticationServerUrl(expected);
-        assertEquals(expected, yourClass.getBoxiAuthenticationServerUrl());
-    }
-
-    @Test
-    public void testGetBoxiServerUrl() {
-        String expected = "http://boxiserver.example.com";
-        yourClass.setBoxiServerUrl(expected);
-        assertEquals(expected, yourClass.getBoxiServerUrl());
-    }
-
-    @Test
-    public void testGetBoxiReportHost() {
-        String expected = "reportHost";
-        yourClass.setBoxiReportHost(expected);
-        assertEquals(expected, yourClass.getBoxiReportHost());
-    }
-
-    @Test
-    public void testGetBoxiDisabilityClaimsReportObjectId() {
-        String expected = "disabilityClaimsReportObjectId";
-        yourClass.setBoxiDisabilityClaimsReportObjectId(expected);
-        assertEquals(expected, yourClass.getBoxi
-
-============================================================================================================
-
-	public boolean resendSecondaryUserInvitation(SecondaryUserDataBean secondaryUser) {
-		ResendSecondaryEmployerAccessRequestDTO request = new ResendSecondaryEmployerAccessRequestDTO();
-		request.setRequestUser(getUserBean().getUserName());
-		request.setRequestApplication(DeleteSecondaryEmployerAccessRequestDTO.APPLICATION_OA_C);
-		request.setRequestDate(new Date());
-		request.setInvitationKey(secondaryUser.getInvitationKey());
-		request.setEmailAddress(secondaryUser.getEmailAddress());
-		logger.trace("Resend secondary user invitation: {}", request.toString());
-		EmployerMiddlewareServiceJsonExecutor executor = new EmployerMiddlewareServiceJsonExecutor(getMiddlewareServiceUrl());
-		try {
-			if (EmployerMiddlewareServiceJsonExecutor.RETURN_CODE_ERROR == executor.executeRequest(request)) {
-				logger.error("Error executing employer middleware manager: {}", executor.getReturnMessage());
-				return false;
-			}
-		} catch (JSONException e) {
-			logger.error("JSONException executing employer middleware manager: {}", e);
-			return false;
-		} catch (IOException e) {
-			logger.error("IOException executing employer middleware manager: {}", e);
-			return false;
-		}
-		ResendSecondaryEmployerAccessResponseDTO response;
-		try {
-			 response = new ResendSecondaryEmployerAccessResponseDTO(executor.getResultJson());
-			if (!response.isSuccess()) {
-				logger.error("Failed to resend secondary user invitation: {}", request.toString());
-				return false;
-			}
-		}catch (Exception e) {
-			logger.error("IOException executing employer middleware manager: {}", e);
-			return false;
-		}
-		getSecondaryUserDataBean().setInvitationStatus(SecondaryUserHelperBean.buildInvitationStatus(response.getSecondaryEmployerUser()));
-		logger.trace("Resend secondary user invitation completed: {}", response.toString());
-		return true;
-	}
-	
-		/*
-	 * Copyright (c) 2009 - $(year), Assurant Employee Benefits, All rights reserved.
-	 */
-		package com.assurant.inc.employer.middleware.services.executor;
-
-		import java.io.IOException;
-		import java.io.InputStream;
-		import java.io.PrintWriter;
-		import java.net.URL;
-		import java.net.URLConnection;
-
-		import org.apache.commons.lang3.StringUtils;
-		import org.json.JSONException;
-		import org.json.JSONObject;
-
-		import com.assurant.inc.employer.middleware.services.data.request.generic.IEmployerMiddlewareRequestDTO;
-
-		/**
-		 * EmployerMiddlewareServiceJsonExecutor is used to execute requests to the
-		 * Employer Middleware Service.
-		 */
-		public class EmployerMiddlewareServiceJsonExecutor {
-			public static final int RETURN_CODE_ERROR = -1;
-			public static final int RETURN_CODE_SUCCESS = 0;
-			public static final int RETURN_CODE_WARNING = 1;
-
-			private String employerMiddlewareServiceUrl;
-
-			private int returnCode;
-			private String returnMessage;
-			private JSONObject resultObject;
-
-			public EmployerMiddlewareServiceJsonExecutor(String employerMiddlewareServiceUrl) {
-				this.employerMiddlewareServiceUrl = employerMiddlewareServiceUrl;
-			}
-
-			/**
-			 * Execute the request to Employer Middleware Service.
-			 * 
-			 * @param request
-			 *            the request DTO
-			 * @return the return code
-			 * @throws JSONException
-			 * @throws IOException
-			 */
-			public int executeRequest(IEmployerMiddlewareRequestDTO request) throws JSONException, IOException {
-				returnCode = RETURN_CODE_ERROR;
-				returnMessage = "An unknown error has occurred while processing request.";
-				resultObject = null;
-
-				PrintWriter printWriter = null;
-				InputStream inputStream = null;
-
-				try {
-					URL url = new URL(employerMiddlewareServiceUrl);
-					URLConnection connection = url.openConnection();
-
-					connection.setDoOutput(true);
-
-					printWriter = new PrintWriter(connection.getOutputStream());
-					printWriter.print("message=" + encode(request.getJsonRequestString()));
-					printWriter.flush();
-					byte[] read = new byte[1024];
-					inputStream = connection.getInputStream();
-					int amtRead = inputStream.read(read);
-					StringBuilder responseString = new StringBuilder();
-					while (amtRead > -1) {
-						responseString.append(new String(read, 0, amtRead));
-						read = new byte[1024];
-						amtRead = inputStream.read(read);
-					}
-
-					if (StringUtils.isEmpty(responseString.toString())) {
-						returnCode = RETURN_CODE_WARNING;
-						returnMessage = "No response for request.";
-						resultObject = null;
-					} else {
-						deserialize(responseString.toString());
-					}
-				} finally {
-					if (printWriter != null) {
-						printWriter.close();
-					}
-					if (inputStream != null) {
-						try {
-							inputStream.close();
-						} catch (IOException e) {
-						}
-					}
-				}
-
-				return returnCode;
-			}
-
-			/**
-			 * Encode the request string to deal with special characters.
-			 * 
-			 * @param request
-			 *            the request string
-			 * @return the encoded string
-			 */
-			private static String encode(String request) {
-				StringBuilder encodedString = new StringBuilder(request.length() + 30);
-				for (int i = 0; i < request.length(); ++i) {
-					if (request.charAt(i) == '%') {
-						encodedString.append("%25");
-					} else if (request.charAt(i) == '$') {
-						encodedString.append("%24");
-					} else if (request.charAt(i) == '&') {
-						encodedString.append("%26");
-					} else if (request.charAt(i) == '+') {
-						encodedString.append("%2B");
-					} else if (request.charAt(i) == ',') {
-						encodedString.append("%2C");
-					} else if (request.charAt(i) == '/') {
-						encodedString.append("%2F");
-					} else if (request.charAt(i) == ':') {
-						encodedString.append("%3A");
-					} else if (request.charAt(i) == ';') {
-						encodedString.append("%3B");
-					} else if (request.charAt(i) == '=') {
-						encodedString.append("%3D");
-					} else if (request.charAt(i) == '?') {
-						encodedString.append("%3F");
-					} else if (request.charAt(i) == '@') {
-						encodedString.append("%40");
-					} else if (request.charAt(i) == '\'') {
-						encodedString.append("%27");
-					} else {
-						encodedString.append(request.charAt(i));
-					}
-				}
-				return encodedString.toString();
-			}
-
-			/**
-			 * Deserialize the serialized response string.
-			 * 
-			 * @param serializedResponseString
-			 *            the serialized response string
-			 * @throws JSONException
-			 */
-			private void deserialize(String serializedResponseString) throws JSONException {
-				JSONObject result = new JSONObject(serializedResponseString);
-				/*
-				 * If the result does not have a returnCode something happened that
-				 * should not have so just error out.
-				 */
-				if (!result.has("returnCode")) {
-					returnCode = RETURN_CODE_ERROR;
-					returnMessage = "Request had no Return Code.";
-					resultObject = null;
-					return;
-				}
-
-				returnCode = result.optInt("returnCode", RETURN_CODE_ERROR);
-
-				if (result.has("returnMessage")) {
-					returnMessage = result.optString("returnMessage");
-				}
-
-				if (result.has("resultSet")) {
-					resultObject = result.optJSONObject("resultSet");
-				}
-			}
-
-			public String getEmployerMiddlewareServiceUrl() {
-				return employerMiddlewareServiceUrl;
-			}
-
-			public void setEmployerMiddlewareServiceUrl(String employerMiddlewareServiceUrl) {
-				this.employerMiddlewareServiceUrl = employerMiddlewareServiceUrl;
-			}
-
-			public int getReturnCode() {
-				return returnCode;
-			}
-
-			public void setReturnCode(int returnCode) {
-				this.returnCode = returnCode;
-			}
-
-			public String getReturnMessage() {
-				return returnMessage;
-			}
-
-			public void setReturnMessage(String returnMessage) {
-				this.returnMessage = returnMessage;
-			}
-
-			public JSONObject getResultJson() {
-				if (resultObject != null) {
-					return resultObject;
-				}
-
-				return new JSONObject();
-			}
-		}
-		
-				/*
-		 * Copyright (c) 2009 - $(year), Assurant Employee Benefits, All rights reserved.
-		 */
-		package com.assurant.inc.employer.middleware.services.data.response;
-
-		import java.io.Serializable;
-
-		import org.apache.commons.lang3.builder.ToStringBuilder;
-		import org.apache.commons.lang3.builder.ToStringStyle;
-		import org.json.JSONException;
-		import org.json.JSONObject;
-
-		import com.assurant.inc.employer.middleware.services.data.generic.IEmployerMiddlewareServiceDTO;
-		import com.assurant.inc.employer.middleware.services.data.object.SecondaryEmployerUserDTO;
-
-		/**
-		 * The Class ResendSecondaryEmployerAccessResponseDTO.
-		 */
-		public class ResendSecondaryEmployerAccessResponseDTO implements IEmployerMiddlewareServiceDTO, Serializable {
-			/** The Constant serialVersionUID. */
-			private static final long serialVersionUID = 1L;
-
-			/** The Constant JSON_LABEL_IS_SUCCESS. */
-			private static final String JSON_LABEL_IS_SUCCESS = "isSuccess";
-			/** The Constant JSON_LABEL_EXPIRATION_DATE. */
-			private static final String JSON_LABEL_SECONDARY_EMPLOYER_USER = "secondaryEmployerUser";
-
-			/** The is success. */
-			private boolean isSuccess = false;
-			private SecondaryEmployerUserDTO secondaryEmployerUser;
-
-			/**
-			 * Instantiates a new resend secondary employer access response dto.
-			 */
-			public ResendSecondaryEmployerAccessResponseDTO(){
-			}
-
-			/**
-			 * Instantiates a new resend secondary employer access response dto.
-			 * 
-			 * @param resendSecondaryEmployerAccessResponseJson
-			 *            the resend secondary employer access response json
-			 */
-			public ResendSecondaryEmployerAccessResponseDTO(JSONObject resendSecondaryEmployerAccessResponseJson){
-				isSuccess = resendSecondaryEmployerAccessResponseJson.optBoolean(JSON_LABEL_IS_SUCCESS);
-
-				secondaryEmployerUser = new SecondaryEmployerUserDTO(resendSecondaryEmployerAccessResponseJson.optJSONObject(JSON_LABEL_SECONDARY_EMPLOYER_USER));
-			}
-
-			/* (non-Javadoc)
-			 * @see com.assurant.inc.employer.middleware.services.data.generic.IEmployerMiddlewareServiceDTO#getJsonValue()
-			 */
-			public JSONObject getJsonValue() throws JSONException {
-				JSONObject jsonValue = new JSONObject();
-
-				jsonValue.put(JSON_LABEL_IS_SUCCESS, isSuccess);
-
-				if (secondaryEmployerUser != null) {
-					jsonValue.put(JSON_LABEL_SECONDARY_EMPLOYER_USER, secondaryEmployerUser.getJsonValue());
-				}
-
-				return jsonValue;
-			}
-
-			public boolean isSuccess() {
-				return isSuccess;
-			}
-			public void setSuccess(boolean isSuccess) {
-				this.isSuccess = isSuccess;
-			}
-
-			public SecondaryEmployerUserDTO getSecondaryEmployerUser() {
-				return secondaryEmployerUser;
-			}
-			public void setSecondaryEmployerUser(SecondaryEmployerUserDTO secondaryEmployerUser) {
-				this.secondaryEmployerUser = secondaryEmployerUser;
-			}
-
-			/*
-			 * (non-Javadoc)
-			 *
-			 * @see java.lang.Object#toString()
-			 */
-			@Override
-			public String toString() {
-				return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-			}
-		}
-
-
-
-     import static org.mockito.Mockito.*;
-     import static org.junit.Assert.*;
-
-import java.io.IOException;
-import java.util.Date;
-
-import org.json.JSONException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.slf4j.Logger;
-
-@RunWith(MockitoJUnitRunner.class)
-public class YourClassTest {
-    
-    @Mock
-    private Logger logger;
-
-    @Mock
-    private EmployerMiddlewareServiceJsonExecutor executor;
-
-    @Mock
-    private SecondaryUserDataBean secondaryUserDataBean;
-
-    @InjectMocks
-    private YourClass yourClass;
-
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-        when(yourClass.getUserBean().getUserName()).thenReturn("testUser");
-        when(yourClass.getMiddlewareServiceUrl()).thenReturn("http://test.url");
-    }
-
-    @Test
-    public void testResendSecondaryUserInvitationSuccess() throws JSONException, IOException {
-        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
-        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
-        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
-
-        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenReturn(EmployerMiddlewareServiceJsonExecutor.RETURN_CODE_SUCCESS);
-        
-        ResendSecondaryEmployerAccessResponseDTO response = mock(ResendSecondaryEmployerAccessResponseDTO.class);
-        when(response.isSuccess()).thenReturn(true);
-        when(executor.getResultJson()).thenReturn(new JSONObject("{ \"isSuccess\": true }"));
-
-        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
-        
-        assertTrue(result);
-        verify(logger).trace("Resend secondary user invitation: {}", anyString());
-        verify(logger).trace("Resend secondary user invitation completed: {}", anyString());
-    }
-
-    @Test
-    public void testResendSecondaryUserInvitationExecutorError() throws JSONException, IOException {
-        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
-        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
-        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
-
-        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenReturn(EmployerMiddlewareServiceJsonExecutor.RETURN_CODE_ERROR);
-
-        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
-        
-        assertFalse(result);
-        verify(logger).error("Error executing employer middleware manager: {}", anyString());
-    }
-
-    @Test
-    public void testResendSecondaryUserInvitationJSONException() throws JSONException, IOException {
-        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
-        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
-        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
-
-        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenThrow(new JSONException("JSON error"));
-
-        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
-        
-        assertFalse(result);
-        verify(logger).error("JSONException executing employer middleware manager: {}", any(JSONException.class));
-    }
-
-    @Test
-    public void testResendSecondaryUserInvitationIOException() throws JSONException, IOException {
-        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
-        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
-        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
-
-        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenThrow(new IOException("IO error"));
-
-        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
-        
-        assertFalse(result);
-        verify(logger).error("IOException executing employer middleware manager: {}", any(IOException.class));
-    }
-
-    @Test
-    public void testResendSecondaryUserInvitationResponseFailure() throws JSONException, IOException {
-        SecondaryUserDataBean secondaryUser = mock(SecondaryUserDataBean.class);
-        when(secondaryUser.getInvitationKey()).thenReturn("invitationKey");
-        when(secondaryUser.getEmailAddress()).thenReturn("email@example.com");
-
-        when(executor.executeRequest(any(ResendSecondaryEmployerAccessRequestDTO.class))).thenReturn(EmployerMiddlewareServiceJsonExecutor.RETURN_CODE_SUCCESS);
-        
-        ResendSecondaryEmployerAccessResponseDTO response = mock(ResendSecondaryEmployerAccessResponseDTO.class);
-        when(response.isSuccess()).thenReturn(false);
-        when(executor.getResultJson()).thenReturn(new JSONObject("{ \"isSuccess\": false }"));
-
-        boolean result = yourClass.resendSecondaryUserInvitation(secondaryUser);
-        
-        assertFalse(result);
-        verify(logger).error("Failed to resend secondary user invitation: {}", anyString());
-    }
-}
+Imports System
+Imports System.Drawing
+Imports System.Runtime.InteropServices
+Imports System.Windows.Forms
+Imports C1.Win.C1FlexGrid.Classic
+Imports C1.Win.C1FlexGrid
+
+
+<ComVisible(True)>
+<Guid("B2F88B13-7327-4AD4-8F39-281A6877B651")>
+<InterfaceType(ComInterfaceType.InterfaceIsIDispatch)>
+Public Interface IFlexGridWrapper
+    Sub AddItem(ByVal item As String)
+
+    Property CellChecked(ByVal row As Integer, ByVal col As Integer) As Boolean
+
+    Event RowDoubleClick()
+
+    Sub Clear()
+    Sub ShowGrid()
+    Property Rows As Integer
+    Property Cols As Integer
+    Function GetCellValue(ByVal row As Integer, ByVal col As Integer) As Object
+    Sub SetCellValue(ByVal row As Integer, ByVal col As Integer, ByVal value As Object)
+    Property FixedRows As Integer
+    Property FixedCols As Integer
+    Property AllowEditing As Boolean
+    Sub AutoSizeCols()
+    Property ThreeDLight As Boolean
+    Sub AutoSizeRows()
+    Sub RemoveItem(ByVal row As Integer)
+    Sub Sort(ByVal col As Integer, ByVal ascending As Boolean)
+
+    Sub DoubleClick(ByVal sender As Object, ByVal e As EventArgs)
+    Function FindRow(ByVal text As String, ByVal startRow As Integer, ByVal col As Integer, ByVal wholeCell As Boolean) As Integer
+    Property GridLines As Integer
+    Property SelectionMode As Integer
+    Property AllowSorting As Boolean
+    Property AllowDragging As Boolean
+    Property DataSource As Object
+    Property DataMember As String
+    Sub Redraw()
+    Sub SaveGrid(ByVal fileName As String)
+    Sub LoadGrid(ByVal fileName As String)
+    Sub ApplySearch(ByVal searchText As String)
+    Sub AutoSize()
+    Sub Refresh()
+    Sub Copy()
+
+    Property MergedCells As Boolean
+
+    Property ExtendLastCol As Boolean
+    Property WordWrap As Boolean
+    Property AllowSelection As Boolean
+    Property AllowUserResizing As Boolean
+    Property AutoResize As Boolean
+    Property BackColorSel As System.Drawing.Color
+    Property BackColor As System.Drawing.Color
+    Property Ellipsis As Boolean
+    Property FontName As String
+    Property FontSize As Single
+    Property ForeColorSel As System.Drawing.Color
+    Property TabBehavior As String
+    Property TopRow As Integer
+    Property LeftCol As Integer
+    Property ExplorerBar As Boolean
+
+    ' New events
+    Event AfterCollapse()
+    Event AfterEdit()
+    Event AfterRowColChange()
+    Event KeyDown()
+    Event KeyUp()
+    Event AfterSort()
+    Event AfterUserResize()
+    Event BeforeEdit()
+    Event BeforeMouseDown()
+    Event BeforeMoveColumn()
+    Event BeforeRowColChange()
+    Event BeforeScroll()
+    Event CellButtonClick()
+    Event CellChanged()
+    Event ChangeEdit()
+    Event Click()
+    Event ComboCloseUp()
+
+    Event KeyDownEdit()
+    Event KeyUpEdit()
+    Event MouseDown()
+    Event MouseUp()
+    Event OLECompleteDrag()
+    Event RowColChange()
+    Event GridCheckboxChange()
+
+    Property GridStyle As Integer
+
+    Property BorderStyle As Integer
+
+    Property PictureAlignment As Integer
+
+    Property Collapsed(ByVal row As Integer) As Boolean
+
+    'Sub DblClickEventHandler(sender As Object, e As EventArgs)
+
+    Event ButtonClick(ByVal rowIndex As Integer)
+
+End Interface
+
+<ComVisible(True)>
+<Guid("0ABBE17C-CD4E-4B6C-B5B7-A9E70E6845E1")>
+<ClassInterface(ClassInterfaceType.None)>
+Public Class FlexGridWrapper
+    Implements IFlexGridWrapper
+
+    Public WithEvents flexGrid As C1FlexGridClassic
+
+    Private form As System.Windows.Forms.Form
+    Private _explorerBar As ExplorerBarSettings ' Custom field
+
+    Public Sub New()
+        flexGrid = New C1FlexGridClassic()
+
+        form = New System.Windows.Forms.Form()
+        form.Controls.Add(flexGrid)
+        flexGrid.Dock = System.Windows.Forms.DockStyle.Fill
+
+    End Sub
+
+    Public Sub AddItem(ByVal item As String) Implements IFlexGridWrapper.AddItem
+        flexGrid.AddItem(item)
+        AddButtonToRow(flexGrid.Rows - 1)
+    End Sub
+
+    Private Sub AddButtonToRow(ByVal rowIndex As Integer)
+        Dim button As New System.Windows.Forms.Button()
+        button.Text = "Click"
+        button.Tag = rowIndex
+        AddHandler button.Click, AddressOf OnButtonClick
+        flexGrid.Controls.Add(button)
+        button.Location = flexGrid.GetCellRect(rowIndex, flexGrid.Cols - 1).Location
+    End Sub
+
+    Private Sub OnButtonClick(sender As Object, e As EventArgs)
+        Dim button As System.Windows.Forms.Button = CType(sender, System.Windows.Forms.Button)
+        Dim rowIndex As Integer = CType(button.Tag, Integer)
+        RaiseEvent ButtonClick(rowIndex)
+    End Sub
+
+    Public Event ButtonClick(ByVal rowIndex As Integer) Implements IFlexGridWrapper.ButtonClick
+
+    Public Property Collapsed(ByVal row As Integer) As Boolean Implements IFlexGridWrapper.Collapsed
+        Get
+            Return True
+        End Get
+        Set(ByVal value As Boolean)
+
+        End Set
+    End Property
+
+    Public Property PictureAlignment As Integer Implements IFlexGridWrapper.PictureAlignment
+        Get
+            Return 1
+        End Get
+        Set(ByVal value As Integer)
+
+        End Set
+    End Property
+
+    Public Sub Clear() Implements IFlexGridWrapper.Clear
+        flexGrid.Clear()
+    End Sub
+
+    Public Property CellChecked(ByVal row As Integer, ByVal col As Integer) As Boolean Implements IFlexGridWrapper.CellChecked
+        Get
+            Return flexGrid.get_Cell(CellPropertySettings.flexcpChecked, row, col)
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.set_Cell(CellPropertySettings.flexcpChecked, row, col, value)
+        End Set
+    End Property
+
+    Public Property ThreeDLight As Boolean Implements IFlexGridWrapper.ThreeDLight
+        Get
+            Return True
+        End Get
+        Set(ByVal value As Boolean)
+
+        End Set
+    End Property
+
+
+
+    Public Property GridStyle As Integer Implements IFlexGridWrapper.GridStyle
+        Get
+            Return flexGrid.GridLines
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.GridLines = value
+        End Set
+    End Property
+
+    Public Sub ShowGrid() Implements IFlexGridWrapper.ShowGrid
+        form.ShowDialog()
+    End Sub
+
+    Public Property BorderStyle As Integer Implements IFlexGridWrapper.BorderStyle
+        Get
+            Return flexGrid.BorderStyle
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.BorderStyle = value
+        End Set
+    End Property
+
+    Public Property Rows As Integer Implements IFlexGridWrapper.Rows
+        Get
+            Return flexGrid.Rows
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.Rows = value
+        End Set
+    End Property
+
+
+
+    Public Property Cols As Integer Implements IFlexGridWrapper.Cols
+        Get
+            Return flexGrid.Cols
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.Cols = value
+        End Set
+    End Property
+
+    Public Function GetCellValue(ByVal row As Integer, ByVal col As Integer) As Object Implements IFlexGridWrapper.GetCellValue
+        Return flexGrid.get_TextMatrix(row, col)
+    End Function
+
+    Public Sub SetCellValue(ByVal row As Integer, ByVal col As Integer, ByVal value As Object) Implements IFlexGridWrapper.SetCellValue
+        flexGrid.set_TextMatrix(row, col, value.ToString())
+    End Sub
+
+    Public Property FixedRows As Integer Implements IFlexGridWrapper.FixedRows
+        Get
+            Return flexGrid.FixedRows
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.FixedRows = value
+        End Set
+    End Property
+
+    Public Property FixedCols As Integer Implements IFlexGridWrapper.FixedCols
+        Get
+            Return flexGrid.FixedCols
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.FixedCols = value
+        End Set
+    End Property
+
+    Public Sub TextMatrix(ByVal i As Integer, ByVal j As Integer)
+        flexGrid.set_TextMatrix(i, j, "")
+    End Sub
+
+    Public Property AllowEditing As Boolean Implements IFlexGridWrapper.AllowEditing
+        Get
+            Return flexGrid.AllowEditing
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.AllowEditing = value
+        End Set
+    End Property
+
+    Public Sub AutoSizeCols() Implements IFlexGridWrapper.AutoSizeCols
+        flexGrid.AutoSizeCols()
+    End Sub
+
+    Public Sub AutoSizeRows() Implements IFlexGridWrapper.AutoSizeRows
+        flexGrid.AutoSizeRows()
+    End Sub
+
+    Public Sub RemoveItem(ByVal row As Integer) Implements IFlexGridWrapper.RemoveItem
+        flexGrid.RemoveItem(row)
+    End Sub
+
+
+    'Public Sub OnDoubleClick(ByVal e As EventArgs)
+    '    'MessageBox.Show("Selected range")
+    '    ' Use reflection to call the protected OnDoubleClick method
+    '    Dim methodInfo = flexGrid.GetType().GetMethod("OnDoubleClick", Reflection.BindingFlags.Instance Or Reflection.BindingFlags.NonPublic)
+    '    If methodInfo IsNot Nothing Then
+    '        methodInfo.Invoke(flexGrid, New Object() {e})
+    '    End If
+    'End Sub
+
+
+    Public Sub Sort(ByVal col As Integer, ByVal ascending As Boolean) Implements IFlexGridWrapper.Sort
+        flexGrid.Sort = If(ascending, SortSettings.flexSortGenericAscending, SortSettings.flexSortGenericDescending)
+    End Sub
+
+    Public Sub _flex_BeforeDoubleClick(ByVal sender As Object, ByVal e As EventArgs) Implements IFlexGridWrapper.DoubleClick
+        Dim cr As C1.Win.C1FlexGrid.CellRange
+        cr = flexGrid.Selection
+        MessageBox.Show("Selected range" & vbLf & cr.r1 & ":" & cr.c1 & " to " & cr.r2 & ":" & cr.c2)
+
+        ' Perform an action to show it is working
+        If cr.r1 = cr.r2 And cr.c1 = cr.c2 Then
+            ' Highlight the entire row
+            For col As Integer = 0 To flexGrid.Cols - 1
+                flexGrid.Cell(cr.r1, col, CellPropertySettings.flexcpBackColor) = Color.Yellow
+            Next
+        End If
+    End Sub
+
+    Public Sub OnRowDoubleClick(sender As Object, e As EventArgs)
+        RaiseEvent RowDoubleClick()
+    End Sub
+
+    Public Event RowDoubleClick() Implements IFlexGridWrapper.RowDoubleClick
+
+    Public Function FindRow(ByVal text As String, ByVal startRow As Integer, ByVal col As Integer, ByVal wholeCell As Boolean) As Integer Implements IFlexGridWrapper.FindRow
+        Return flexGrid.FindRow(text, startRow, col, wholeCell)
+    End Function
+
+    Public Property GridLines As Integer Implements IFlexGridWrapper.GridLines
+        Get
+            Return flexGrid.GridLines
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.GridLines = value
+        End Set
+    End Property
+
+    Public Property SelectionMode As Integer Implements IFlexGridWrapper.SelectionMode
+        Get
+            Return flexGrid.SelectionMode
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.SelectionMode = value
+        End Set
+    End Property
+
+    Public Property AllowSorting As Boolean Implements IFlexGridWrapper.AllowSorting
+        Get
+            Return flexGrid.AllowSorting
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.AllowSorting = value
+        End Set
+    End Property
+
+    Public Sub SetAllColumnWidths(ByVal width As Integer)
+        For col As Integer = 0 To flexGrid.Cols - 1
+            flexGrid.set_ColWidth(col, width)
+        Next
+    End Sub
+
+    Public Property AllowDragging As Boolean Implements IFlexGridWrapper.AllowDragging
+        Get
+            Return flexGrid.AllowDragging
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.AllowDragging = value
+        End Set
+    End Property
+
+    Public Property DataSource As Object Implements IFlexGridWrapper.DataSource
+        Get
+            Return flexGrid.DataSource
+        End Get
+        Set(ByVal value As Object)
+            flexGrid.DataSource = value
+        End Set
+    End Property
+
+    Public Property DataMember As String Implements IFlexGridWrapper.DataMember
+        Get
+            Return flexGrid.DataMember
+        End Get
+        Set(ByVal value As String)
+            flexGrid.DataMember = value
+        End Set
+    End Property
+
+    Public Sub Redraw() Implements IFlexGridWrapper.Redraw
+        flexGrid.Redraw = True
+    End Sub
+
+    Public Sub Refresh() Implements IFlexGridWrapper.Refresh
+        flexGrid.Refresh()
+    End Sub
+
+    Public Sub SaveGrid(ByVal fileName As String) Implements IFlexGridWrapper.SaveGrid
+        ' SaveGrid is not a member of C1FlexGridClassic, so this needs to be implemented differently
+        Throw New NotImplementedException("SaveGrid is not implemented.")
+    End Sub
+
+    Public Sub LoadGrid(ByVal fileName As String) Implements IFlexGridWrapper.LoadGrid
+        ' LoadGrid is not a member of C1FlexGridClassic, so this needs to be implemented differently
+        Throw New NotImplementedException("LoadGrid is not implemented.")
+    End Sub
+
+    Public Sub ApplySearch(ByVal searchText As String) Implements IFlexGridWrapper.ApplySearch
+        ' Clear previous search highlights
+        For row As Integer = 1 To flexGrid.Rows - 1
+            For col As Integer = 0 To flexGrid.Cols - 1
+                flexGrid.Cell(row, col, CellPropertySettings.flexcpBackColor) = System.Drawing.Color.White
+            Next
+        Next
+
+        ' Apply search and highlight matching cells
+        For row As Integer = 1 To flexGrid.Rows - 1
+            For col As Integer = 0 To flexGrid.Cols - 1
+                If flexGrid.get_TextMatrix(row, col).ToString().Contains(searchText) Then
+                    flexGrid.Cell(row, col, CellPropertySettings.flexcpBackColor) = System.Drawing.Color.Yellow
+                End If
+            Next
+        Next
+    End Sub
+
+    Public Sub AutoSize() Implements IFlexGridWrapper.AutoSize
+        flexGrid.AutoSizeCols()
+        flexGrid.AutoSizeRows()
+    End Sub
+
+    ' New properties
+    Public Property MergedCells As Boolean Implements IFlexGridWrapper.MergedCells
+        Get
+            Return flexGrid.MergeCells
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.MergeCells = value
+        End Set
+    End Property
+
+    Public Property ExplorerBar As Boolean Implements IFlexGridWrapper.ExplorerBar
+        Get
+            Return flexGrid.ExplorerBar
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.ExplorerBar = value
+        End Set
+    End Property
+
+    'Public Property ExplorerBar As ExplorerBarSettings Implements IFlexGridWrapper.ExplorerBar
+    '    Get
+    '        Return _explorerBar
+    '    End Get
+    '    Set(ByVal value As ExplorerBarSettings)
+    '        _explorerBar = value
+    '        ' Implement custom behavior for ExplorerBar here
+    '        ' For example, you can change the appearance or behavior of the grid
+    '        Select Case _explorerBar
+    '            Case ExplorerBarSettings.flexExNone
+    '                ' Implement behavior for flexExNone
+    '            Case ExplorerBarSettings.flexExMove
+    '                ' Implement behavior for flexExMove
+    '            Case ExplorerBarSettings.flexExSortAndMove
+    '                ' Implement behavior for flexExSortAndMove
+    '            Case ExplorerBarSettings.flexExSortShowAndMove
+    '                ' Implement behavior for flexExSortShowAndMove
+    '        End Select
+    '    End Set
+    'End Property
+
+
+    Public Property ExtendLastCol As Boolean Implements IFlexGridWrapper.ExtendLastCol
+        Get
+            Return flexGrid.ExtendLastCol
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.ExtendLastCol = value
+        End Set
+    End Property
+
+    Public Property WordWrap As Boolean Implements IFlexGridWrapper.WordWrap
+        Get
+            Return flexGrid.WordWrap
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.WordWrap = value
+        End Set
+    End Property
+
+    Public Property AllowSelection As Boolean Implements IFlexGridWrapper.AllowSelection
+        Get
+            Return flexGrid.AllowSelection
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.AllowSelection = value
+        End Set
+    End Property
+
+    Public Property AllowUserResizing As Boolean Implements IFlexGridWrapper.AllowUserResizing
+        Get
+            Return flexGrid.AllowUserResizing
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.AllowUserResizing = value
+        End Set
+    End Property
+
+    Public Property AutoResize As Boolean Implements IFlexGridWrapper.AutoResize
+        Get
+            Return flexGrid.AutoResize
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.AutoResize = value
+        End Set
+    End Property
+
+    Public Property BackColorSel As System.Drawing.Color Implements IFlexGridWrapper.BackColorSel
+        Get
+            Return flexGrid.BackColorSel
+        End Get
+        Set(ByVal value As System.Drawing.Color)
+            flexGrid.BackColorSel = value
+        End Set
+    End Property
+
+    Public Property BackColor As System.Drawing.Color Implements IFlexGridWrapper.BackColor
+        Get
+            Return flexGrid.BackColor
+        End Get
+        Set(ByVal value As System.Drawing.Color)
+            flexGrid.BackColor = value
+        End Set
+    End Property
+
+    Public Property Ellipsis As Boolean Implements IFlexGridWrapper.Ellipsis
+        Get
+            Return flexGrid.Ellipsis
+        End Get
+        Set(ByVal value As Boolean)
+            flexGrid.Ellipsis = value
+        End Set
+    End Property
+
+    Public Property FontName As String Implements IFlexGridWrapper.FontName
+        Get
+            Return flexGrid.Font.Name
+        End Get
+        Set(ByVal value As String)
+            flexGrid.Font = New System.Drawing.Font(value, flexGrid.Font.Size)
+        End Set
+    End Property
+
+    Public Property FontSize As Single Implements IFlexGridWrapper.FontSize
+        Get
+            Return flexGrid.Font.Size
+        End Get
+        Set(ByVal value As Single)
+            flexGrid.Font = New System.Drawing.Font(flexGrid.Font.Name, value)
+        End Set
+    End Property
+
+    Public Property ForeColorSel As System.Drawing.Color Implements IFlexGridWrapper.ForeColorSel
+        Get
+            Return flexGrid.ForeColorSel
+        End Get
+        Set(ByVal value As System.Drawing.Color)
+            flexGrid.ForeColorSel = value
+        End Set
+    End Property
+
+    Public Property TabBehavior As String Implements IFlexGridWrapper.TabBehavior
+        Get
+            Return flexGrid.TabBehavior
+        End Get
+        Set(ByVal value As String)
+            flexGrid.TabBehavior = value
+        End Set
+    End Property
+
+    Public Property TopRow As Integer Implements IFlexGridWrapper.TopRow
+        Get
+            Return flexGrid.TopRow
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.TopRow = value
+        End Set
+    End Property
+
+    Public Property LeftCol As Integer Implements IFlexGridWrapper.LeftCol
+        Get
+            Return flexGrid.LeftCol
+        End Get
+        Set(ByVal value As Integer)
+            flexGrid.LeftCol = value
+        End Set
+    End Property
+
+    ' New events
+    Public Event AfterCollapse() Implements IFlexGridWrapper.AfterCollapse
+    Public Event AfterEdit() Implements IFlexGridWrapper.AfterEdit
+    Public Event AfterRowColChange() Implements IFlexGridWrapper.AfterRowColChange
+    Public Event KeyDown() Implements IFlexGridWrapper.KeyDown
+    Public Event KeyUp() Implements IFlexGridWrapper.KeyUp
+    Public Event AfterSort() Implements IFlexGridWrapper.AfterSort
+    Public Event AfterUserResize() Implements IFlexGridWrapper.AfterUserResize
+    Public Event BeforeEdit() Implements IFlexGridWrapper.BeforeEdit
+    Public Event BeforeMouseDown() Implements IFlexGridWrapper.BeforeMouseDown
+    Public Event BeforeMoveColumn() Implements IFlexGridWrapper.BeforeMoveColumn
+    Public Event BeforeRowColChange() Implements IFlexGridWrapper.BeforeRowColChange
+    Public Event BeforeScroll() Implements IFlexGridWrapper.BeforeScroll
+    Public Event CellButtonClick() Implements IFlexGridWrapper.CellButtonClick
+    Public Event CellChanged() Implements IFlexGridWrapper.CellChanged
+    Public Event ChangeEdit() Implements IFlexGridWrapper.ChangeEdit
+    Public Event Click() Implements IFlexGridWrapper.Click
+    Public Event ComboCloseUp() Implements IFlexGridWrapper.ComboCloseUp
+    Public Event KeyDownEdit() Implements IFlexGridWrapper.KeyDownEdit
+    Public Event KeyUpEdit() Implements IFlexGridWrapper.KeyUpEdit
+    Public Event MouseDown() Implements IFlexGridWrapper.MouseDown
+    Public Event MouseUp() Implements IFlexGridWrapper.MouseUp
+    Public Event OLECompleteDrag() Implements IFlexGridWrapper.OLECompleteDrag
+    Public Event RowColChange() Implements IFlexGridWrapper.RowColChange
+    Public Event GridCheckboxChange() Implements IFlexGridWrapper.GridCheckboxChange
+
+    ' Event handlers
+    Private Sub OnAfterCollapse()
+        RaiseEvent AfterCollapse()
+    End Sub
+
+    Private Sub OnAfterEdit()
+        RaiseEvent AfterEdit()
+    End Sub
+
+    Private Sub OnAfterRowColChange()
+        RaiseEvent AfterRowColChange()
+    End Sub
+
+    Private Sub OnKeyDown()
+        RaiseEvent KeyDown()
+    End Sub
+
+    Private Sub OnKeyUp()
+        RaiseEvent KeyUp()
+    End Sub
+
+    Private Sub OnAfterSort()
+        RaiseEvent AfterSort()
+    End Sub
+
+    Private Sub OnAfterUserResize()
+        RaiseEvent AfterUserResize()
+    End Sub
+
+    Private Sub OnBeforeEdit()
+        RaiseEvent BeforeEdit()
+    End Sub
+
+    Private Sub OnBeforeMouseDown()
+        RaiseEvent BeforeMouseDown()
+    End Sub
+
+    Private Sub OnBeforeMoveColumn()
+        RaiseEvent BeforeMoveColumn()
+    End Sub
+
+    Private Sub OnBeforeRowColChange()
+        RaiseEvent BeforeRowColChange()
+    End Sub
+
+    Private Sub OnBeforeScroll()
+        RaiseEvent BeforeScroll()
+    End Sub
+
+    Private Sub OnCellButtonClick()
+        RaiseEvent CellButtonClick()
+    End Sub
+
+    Private Sub OnCellChanged()
+        RaiseEvent CellChanged()
+    End Sub
+
+    Private Sub OnChangeEdit()
+        RaiseEvent ChangeEdit()
+    End Sub
+
+    Private Sub OnClick()
+        RaiseEvent Click()
+    End Sub
+
+
+
+
+    Public Sub Copy() Implements IFlexGridWrapper.Copy
+        Dim selectedText As New System.Text.StringBuilder()
+        Dim rowStart As Integer = Math.Min(flexGrid.Row, flexGrid.RowSel)
+        Dim rowEnd As Integer = Math.Max(flexGrid.Row, flexGrid.RowSel)
+        Dim colStart As Integer = Math.Min(flexGrid.Col, flexGrid.ColSel)
+        Dim colEnd As Integer = Math.Max(flexGrid.Col, flexGrid.ColSel)
+
+        For row As Integer = rowStart To rowEnd
+            For col As Integer = colStart To colEnd
+                selectedText.Append(flexGrid.get_TextMatrix(row, col))
+                If col < colEnd Then
+                    selectedText.Append(vbTab)
+                End If
+            Next
+            If row < rowEnd Then
+                selectedText.AppendLine()
+            End If
+        Next
+        Clipboard.SetText(selectedText.ToString())
+    End Sub
+
+    Public Sub PopulateGridData(ByVal GridSource As String, ByVal SysCols As String, ByVal HideCols As String)
+        ' Clear the grid
+        flexGrid.Clear()
+
+        ' Split the SysCols and HideCols into arrays
+        Dim sysColsArray() As String = SysCols.Split(";"c)
+        Dim hideColsArray() As String = HideCols.Split(";"c)
+
+        ' Set the number of columns based on SysCols
+        flexGrid.Cols = sysColsArray.Length
+
+        ' Set the column headers
+        For i As Integer = 0 To sysColsArray.Length - 1
+            flexGrid.set_TextMatrix(0, i, sysColsArray(i))
+        Next
+
+        ' Fetch data from the data source (GridSource)
+        ' This is a placeholder for actual data fetching logic
+        ' You need to replace this with your actual data fetching logic
+        Dim data As DataTable = FetchData(GridSource)
+
+        ' Populate the grid with data
+        flexGrid.Rows = data.Rows.Count + 1 ' +1 for the header row
+        For row As Integer = 0 To data.Rows.Count - 1
+            For col As Integer = 0 To data.Columns.Count - 1
+                flexGrid.set_TextMatrix(row + 1, col, data.Rows(row)(col).ToString())
+            Next
+        Next
+
+        ' Hide specified columns
+        For Each colName As String In hideColsArray
+            For col As Integer = 0 To flexGrid.Cols - 1
+                If flexGrid.get_TextMatrix(0, col) = colName Then
+                    flexGrid.set_ColWidth(col, 0)
+                    Exit For
+                End If
+            Next
+        Next
+    End Sub
+
+
+
+    Private Function FetchData(ByVal query As String) As DataTable
+        ' Placeholder function to fetch data from a data source
+        ' Replace this with your actual data fetching logic
+        Dim dt As New DataTable()
+        ' Add columns
+        dt.Columns.Add("Step #")
+        dt.Columns.Add("Step Name")
+        dt.Columns.Add("Owner")
+        dt.Columns.Add("Avg")
+        dt.Columns.Add("StDev")
+        dt.Columns.Add("Runs")
+        dt.Columns.Add("Will Run")
+        dt.Columns.Add("Duration")
+        dt.Columns.Add("Result")
+        ' Add sample data
+        dt.Rows.Add("001", "Sample Step", "John Doe", "5.0", "0.5", "10", "Yes", "50", "Success")
+        Return dt
+    End Function
+
+    'Public Sub DblClickEventHandler(sender As Object, e As EventArgs) Implements IFlexGridWrapper.DblClickEventHandler
+    '    Throw New NotImplementedException()
+    'End Sub
+
+End Class
