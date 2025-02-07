@@ -40,3 +40,6 @@ Public Class FlexGridWrapper
         End Try
     End Sub
 End Class
+
+
+Could not resolve COM reference "4affc9a0-5f99-101b-af4e-00aa003f0f07" version 9.0. Object reference not set to an instance of an object.
