@@ -1,26 +1,12 @@
 
 ```
 Imports System.Runtime.InteropServices
-Imports Microsoft.Office.Interop.Access ' ✅ Add Access Interop
 
 <ComVisible(True)>
 <Guid("0ABBE17C-CD4E-4B6C-B5B7-A9E70E6845E1")>
 <ClassInterface(ClassInterfaceType.None)>
 Public Class FlexGridWrapper
     Implements IFlexGridWrapper
-
-    Private accessApp As Application ' ✅ Declare Access application
-
-    ' Constructor to attach to the running Access instance
-    Public Sub New()
-        Try
-            ' Attach to the currently open Access instance
-            accessApp = Marshal.GetActiveObject("Access.Application")
-        Catch ex As Exception
-            ' Handle the case where Access is not running
-            Throw New Exception("Could not find an open instance of MS Access.")
-        End Try
-    End Sub
 
     ' Double-click event handler
     Private Sub flexGrid_DoubleClick(sender As Object, e As EventArgs) Handles flexGrid.DoubleClick
@@ -32,18 +18,21 @@ Public Class FlexGridWrapper
             rowData &= flexGrid.get_TextMatrix(selectedRow, col).ToString() & ";"
         Next
 
-        ' Open the MS Access form and pass the row data
+        ' Open MS Access and pass data
         OpenAccessForm("frmBatchDialog", rowData)
     End Sub
 
-    ' Function to open MS Access form
+    ' Open MS Access form
     Private Sub OpenAccessForm(ByVal formName As String, ByVal rowData As String)
         Try
-            ' Open the form
-            accessApp.DoCmd.OpenForm(formName, Microsoft.Office.Interop.Access.AcFormView.acNormal)
+            ' Create Access instance (late binding, no reference needed)
+            Dim accessApp As Object = Marshal.GetActiveObject("Access.Application")
 
-            ' Set the value of txtRowData in the opened form
-            Dim accessForm As Form = accessApp.Forms(formName)
+            ' Open the form
+            accessApp.DoCmd.OpenForm(formName, 0) ' 0 = acNormal view
+
+            ' Set form field
+            Dim accessForm As Object = accessApp.Forms(formName)
             accessForm.Controls("txtRowData").Value = rowData
 
         Catch ex As Exception
