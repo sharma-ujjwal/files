@@ -80,3 +80,5 @@ class PaymentValidatorTest {
         assertTrue(facesContext.getMessageList().isEmpty());
     }
 }
+
+Public Sub BatchStepOpenForm(ByVal Textbox As Textbox, ByVal DataMode As AcFormOpenDataMode, Optional ByVal BatchID As Variant = Null)
