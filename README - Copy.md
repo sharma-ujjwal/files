@@ -133,13 +133,24 @@ End Class
     ' Method to call a VBA function in MS Access
     Public Sub CallVBAFunction(ByVal functionName As String)
         Try
-            ' Get the running Access instance
+            ' Get the running MS Access instance
             Dim accessApp As Object = Marshal.GetActiveObject("Access.Application")
 
-            ' Call the VBA method
-            accessApp.Run(functionName)
+            ' Open the hidden form containing the required TextBox
+            Dim formName As String = "frmHiddenForm" ' Replace with an actual form that contains the textbox
+            accessApp.DoCmd.OpenForm(formName, 0) ' 0 = acNormal view
+
+            ' Get a reference to the TextBox control
+            Dim txtBox As Object = accessApp.Forms(formName).Controls("txtYourTextbox") ' Replace with actual textbox name
+
+            ' Set the desired DataMode (acFormAdd, acFormEdit, etc.)
+            Dim dataMode As Integer = 2 ' Example: acFormEdit (1=acFormAdd, 2=acFormEdit, 3=acFormReadOnly)
+
+            ' Call the VBA function with the parameters
+            accessApp.Run(functionName, txtBox, dataMode, Null) ' Pass Null for BatchID if not needed
 
         Catch ex As Exception
             Throw New Exception("Error calling VBA function: " & ex.Message)
         End Try
+    End Sub
 ```
