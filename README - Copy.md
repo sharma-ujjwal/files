@@ -122,4 +122,24 @@ Public Class FlexGridWrapper
         End Try
     End Sub
 End Class
+
+
+' Double-click event handler
+    Private Sub flexGrid_DoubleClick(sender As Object, e As EventArgs) Handles flexGrid.DoubleClick
+        ' Call the VBA method from OpenFormRoutines module
+        CallVBAFunction("OpenFormRoutines.BatchStepOpenForm")
+    End Sub
+
+    ' Method to call a VBA function in MS Access
+    Public Sub CallVBAFunction(ByVal functionName As String)
+        Try
+            ' Get the running Access instance
+            Dim accessApp As Object = Marshal.GetActiveObject("Access.Application")
+
+            ' Call the VBA method
+            accessApp.Run(functionName)
+
+        Catch ex As Exception
+            Throw New Exception("Error calling VBA function: " & ex.Message)
+        End Try
 ```
