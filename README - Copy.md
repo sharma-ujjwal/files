@@ -82,3 +82,44 @@ class PaymentValidatorTest {
 }
 
 Public Sub BatchStepOpenForm(ByVal Textbox As Textbox, ByVal DataMode As AcFormOpenDataMode, Optional ByVal BatchID As Variant = Null)
+
+```
+Imports System.Runtime.InteropServices
+Imports Microsoft.Office.Interop.Access
+
+<ComVisible(True)>
+<Guid("0ABBE17C-CD4E-4B6C-B5B7-A9E70E6845E1")>
+<ClassInterface(ClassInterfaceType.None)>
+Public Class FlexGridWrapper
+    Implements IFlexGridWrapper
+
+    ' Double-click event handler
+    Private Sub flexGrid_DoubleClick(sender As Object, e As EventArgs) Handles flexGrid.DoubleClick
+        Dim selectedRow As Integer = flexGrid.Row
+        Dim batchID As String = flexGrid.get_TextMatrix(selectedRow, 0) ' Assuming BatchID is in the first column
+
+        ' Call the VBA method
+        CallVBAFunction("BatchStepOpenForm", batchID)
+    End Sub
+
+    ' Method to call a VBA function in MS Access
+    Public Sub CallVBAFunction(ByVal functionName As String, ByVal batchID As String)
+        Try
+            ' Get the running Access instance
+            Dim accessApp As Object = Marshal.GetActiveObject("Access.Application")
+
+            ' Open a hidden Access form that contains the target textbox (Replace 'frmHiddenForm' with the actual form name)
+            accessApp.DoCmd.OpenForm "frmHiddenForm", AcFormView.acDesign
+
+            ' Get the textbox control reference
+            Dim txtBox As Object = accessApp.Forms("frmHiddenForm").Controls("txtYourTextbox")
+
+            ' Call the VBA method with parameters
+            accessApp.Run(functionName, txtBox, AcFormOpenDataMode.acFormEdit, batchID)
+
+        Catch ex As Exception
+            Throw New Exception("Error calling VBA function: " & ex.Message)
+        End Try
+    End Sub
+End Class
+```
