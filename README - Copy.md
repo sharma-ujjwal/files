@@ -154,3 +154,70 @@ End Class
         End Try
     End Sub
 ```
+
+```
+<dependency>
+			<groupId>org.richfaces.framework</groupId>
+			<artifactId>richfaces-api</artifactId>
+			<version>3.1.5.GA</version>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.faces</groupId>
+					<artifactId>jsf-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.faces</groupId>
+					<artifactId>jsf-impl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.richfaces.framework</groupId>
+			<artifactId>richfaces-impl</artifactId>
+			<version>3.1.5.GA</version>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.faces</groupId>
+					<artifactId>jsf-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.faces</groupId>
+					<artifactId>jsf-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.faces</groupId>
+					<artifactId>jsf-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.faces</groupId>
+					<artifactId>jsf-impl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.richfaces.ui</groupId>
+			<artifactId>richfaces-ui</artifactId>
+			<version>3.1.5.GA</version>
+			<!-- <scope>compile</scope> -->
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.faces</groupId>
+					<artifactId>jsf-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.faces</groupId>
+					<artifactId>jsf-impl</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.faces</groupId>
+					<artifactId>jsf-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>javax.faces</groupId>
+					<artifactId>jsf-impl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+```
