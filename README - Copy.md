@@ -34,4 +34,30 @@ Caused by: com.ibm.wsspi.injectionengine.InjectionException: SRVE8061E: Unable t
 	at com.ibm.ws.webcontainer.osgi.webapp.WebApp.injectAndPostConstruct(WebApp.java:1361)
 	at com.ibm.wsspi.webcontainer.annotation.AnnotationHelper.inject(AnnotationHelper.java:52)
 	... 24 more
+
+
+
+ An error occured while initializing MyFaces: class org.apache.myfaces.webapp.ManagedBeanDestroyerListener cannot be cast to class org.apache.myfaces.webapp.ManagedBeanDestroyerListener (org.apache.myfaces.webapp.ManagedBeanDestroyerListener is in unnamed module of loader com.ibm.ws.classloading.internal.AppClassLoader @73ca6c13; org.apache.myfaces.webapp.ManagedBeanDestroyerListener is in unnamed module of loader org.eclipse.osgi.internal.loader.EquinoxClassLoader @3403938f)
+java.lang.ClassCastException: class org.apache.myfaces.webapp.ManagedBeanDestroyerListener cannot be cast to class org.apache.myfaces.webapp.ManagedBeanDestroyerListener (org.apache.myfaces.webapp.ManagedBeanDestroyerListener is in unnamed module of loader com.ibm.ws.classloading.internal.AppClassLoader @73ca6c13; org.apache.myfaces.webapp.ManagedBeanDestroyerListener is in unnamed module of loader org.eclipse.osgi.internal.loader.EquinoxClassLoader @3403938f)
+	at org.apache.myfaces.config.FacesConfigurator.configureManagedBeanDestroyer(FacesConfigurator.java:1489)
+	at org.apache.myfaces.config.FacesConfigurator.configure(FacesConfigurator.java:573)
+	at org.apache.myfaces.webapp.AbstractFacesInitializer.buildConfiguration(AbstractFacesInitializer.java:456)
+	at org.apache.myfaces.webapp.Jsp21FacesInitializer.initContainerIntegration(Jsp21FacesInitializer.java:70)
+	at org.apache.myfaces.webapp.AbstractFacesInitializer.initFaces(AbstractFacesInitializer.java:190)
+	at org.apache.myfaces.webapp.StartupServletContextListener.contextInitialized(StartupServletContextListener.java:103)
+	at com.ibm.ws.webcontainer.webapp.WebApp.notifyServletContextCreated(WebApp.java:2464)
+	at com.ibm.ws.webcontainer31.osgi.webapp.WebApp31.notifyServletContextCreated(WebApp31.java:512)
+	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:1062)
+	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:6722)
+	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApp(DynamicVirtualHost.java:484)
+	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApplication(DynamicVirtualHost.java:479)
+	at com.ibm.ws.webcontainer.osgi.WebContainer.startWebApplication(WebContainer.java:1208)
+	at com.ibm.ws.webcontainer.osgi.WebContainer.access$100(WebContainer.java:113)
+	at com.ibm.ws.webcontainer.osgi.WebContainer$3.run(WebContainer.java:996)
+	at com.ibm.ws.threading.internal.ExecutorServiceImpl$RunnableWrapper.run(ExecutorServiceImpl.java:298)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:833)
 ```
