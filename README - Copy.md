@@ -60,4 +60,27 @@ java.lang.ClassCastException: class org.apache.myfaces.webapp.ManagedBeanDestroy
 	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
 	at java.base/java.lang.Thread.run(Thread.java:833)
+
+[3/3/25, 19:29:42:001 IST] 0000002b com.ibm.ws.webcontainer.webapp                               E SRVE0276E: Error while initializing Servlet [SpringContextServlet]: javax.servlet.UnavailableException: SRVE0201E: Servlet [org.springframework.web.context.ContextCleanupListener]: not a servlet class
+	at com.ibm.ws.webcontainer.servlet.ServletWrapper$1.run(ServletWrapper.java:1564)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:569)
+	at com.ibm.ws.webcontainer.servlet.ServletWrapper.loadServlet(ServletWrapper.java:1519)
+	at com.ibm.ws.webcontainer.servlet.ServletWrapper.loadOnStartupCheck(ServletWrapper.java:1397)
+	at com.ibm.ws.webcontainer.webapp.WebApp.doLoadOnStartupActions(WebApp.java:1228)
+	at com.ibm.ws.webcontainer.webapp.WebApp.commonInitializationFinally(WebApp.java:1196)
+	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:1094)
+	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:6722)
+	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApp(DynamicVirtualHost.java:484)
+	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApplication(DynamicVirtualHost.java:479)
+	at com.ibm.ws.webcontainer.osgi.WebContainer.startWebApplication(WebContainer.java:1208)
+	at com.ibm.ws.webcontainer.osgi.WebContainer.access$100(WebContainer.java:113)
+	at com.ibm.ws.webcontainer.osgi.WebContainer$3.run(WebContainer.java:996)
+	at com.ibm.ws.threading.internal.ExecutorServiceImpl$RunnableWrapper.run(ExecutorServiceImpl.java:298)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:833)
+
+
 ```
