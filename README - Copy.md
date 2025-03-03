@@ -1,76 +1,934 @@
 ```
-java.lang.ClassNotFoundException: org.springframework.web.jsf.DelegatingVariableResolver cannot be found by com.ibm.ws.org.apache.myfaces.2.3_1.0.98.cl250220250209-1902
-	at org.eclipse.osgi.internal.loader.BundleLoader.generateException(BundleLoader.java:562)
-	at org.eclipse.osgi.internal.loader.BundleLoader.findClass0(BundleLoader.java:557)
-	at org.eclipse.osgi.internal.loader.BundleLoader.findClass(BundleLoader.java:434)
-	at org.eclipse.osgi.internal.loader.ModuleClassLoader.loadClass(ModuleClassLoader.java:193)
-	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:520)
-	at java.base/java.lang.Class.forName0(Native Method)
-	at java.base/java.lang.Class.forName(Class.java:467)
-	at org.apache.myfaces.shared.util.ClassUtils.classForName(ClassUtils.java:191)
-	at org.apache.myfaces.shared.util.ClassUtils.simpleClassForName(ClassUtils.java:224)
-	at org.apache.myfaces.shared.util.ClassUtils.simpleClassForName(ClassUtils.java:207)
-	at org.apache.myfaces.shared.util.ClassUtils.buildApplicationObject(ClassUtils.java:562)
-	at org.apache.myfaces.shared.util.ClassUtils.buildApplicationObject(ClassUtils.java:534)
-	at org.apache.myfaces.config.FacesConfigurator.configureApplication(FacesConfigurator.java:871)
-	at org.apache.myfaces.config.FacesConfigurator.configure(FacesConfigurator.java:561)
-	at org.apache.myfaces.webapp.AbstractFacesInitializer.buildConfiguration(AbstractFacesInitializer.java:456)
-	at org.apache.myfaces.webapp.Jsp21FacesInitializer.initContainerIntegration(Jsp21FacesInitializer.java:70)
-	at org.apache.myfaces.webapp.AbstractFacesInitializer.initFaces(AbstractFacesInitializer.java:190)
-	at org.apache.myfaces.webapp.StartupServletContextListener.contextInitialized(StartupServletContextListener.java:103)
-	at com.ibm.ws.webcontainer.webapp.WebApp.notifyServletContextCreated(WebApp.java:2464)
-	at com.ibm.ws.webcontainer31.osgi.webapp.WebApp31.notifyServletContextCreated(WebApp31.java:512)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:1062)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:6722)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApp(DynamicVirtualHost.java:484)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApplication(DynamicVirtualHost.java:479)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.startWebApplication(WebContainer.java:1208)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.access$100(WebContainer.java:113)
-	at com.ibm.ws.webcontainer.osgi.WebContainer$3.run(WebContainer.java:996)
-	at com.ibm.ws.threading.internal.ExecutorServiceImpl$RunnableWrapper.run(ExecutorServiceImpl.java:298)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
-	at java.base/java.lang.Thread.run(Thread.java:833)
+<faces-config
+        xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd"
+        version="2.2">
 
-[3/3/25, 15:16:53:244 IST] 00000033 org.apache.myfaces.webapp.AbstractFacesInitializer           E An error occured while initializing MyFaces: java.lang.ClassNotFoundException: org.springframework.web.jsf.DelegatingVariableResolver cannot be found by com.ibm.ws.org.apache.myfaces.2.3_1.0.98.cl250220250209-1902
-javax.faces.FacesException: java.lang.ClassNotFoundException: org.springframework.web.jsf.DelegatingVariableResolver cannot be found by com.ibm.ws.org.apache.myfaces.2.3_1.0.98.cl250220250209-1902
-	at org.apache.myfaces.shared.util.ClassUtils.simpleClassForName(ClassUtils.java:231)
-	at org.apache.myfaces.shared.util.ClassUtils.simpleClassForName(ClassUtils.java:207)
-	at org.apache.myfaces.shared.util.ClassUtils.buildApplicationObject(ClassUtils.java:562)
-	at org.apache.myfaces.shared.util.ClassUtils.buildApplicationObject(ClassUtils.java:534)
-	at org.apache.myfaces.config.FacesConfigurator.configureApplication(FacesConfigurator.java:871)
-	at org.apache.myfaces.config.FacesConfigurator.configure(FacesConfigurator.java:561)
-	at org.apache.myfaces.webapp.AbstractFacesInitializer.buildConfiguration(AbstractFacesInitializer.java:456)
-	at org.apache.myfaces.webapp.Jsp21FacesInitializer.initContainerIntegration(Jsp21FacesInitializer.java:70)
-	at org.apache.myfaces.webapp.AbstractFacesInitializer.initFaces(AbstractFacesInitializer.java:190)
-	at org.apache.myfaces.webapp.StartupServletContextListener.contextInitialized(StartupServletContextListener.java:103)
-	at com.ibm.ws.webcontainer.webapp.WebApp.notifyServletContextCreated(WebApp.java:2464)
-	at com.ibm.ws.webcontainer31.osgi.webapp.WebApp31.notifyServletContextCreated(WebApp31.java:512)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:1062)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:6722)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApp(DynamicVirtualHost.java:484)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApplication(DynamicVirtualHost.java:479)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.startWebApplication(WebContainer.java:1208)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.access$100(WebContainer.java:113)
-	at com.ibm.ws.webcontainer.osgi.WebContainer$3.run(WebContainer.java:996)
-	at com.ibm.ws.threading.internal.ExecutorServiceImpl$RunnableWrapper.run(ExecutorServiceImpl.java:298)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
-	at java.base/java.lang.Thread.run(Thread.java:833)
-Caused by: java.lang.ClassNotFoundException: org.springframework.web.jsf.DelegatingVariableResolver cannot be found by com.ibm.ws.org.apache.myfaces.2.3_1.0.98.cl250220250209-1902
-	at org.eclipse.osgi.internal.loader.BundleLoader.generateException(BundleLoader.java:562)
-	at org.eclipse.osgi.internal.loader.BundleLoader.findClass0(BundleLoader.java:557)
-	at org.eclipse.osgi.internal.loader.BundleLoader.findClass(BundleLoader.java:434)
-	at org.eclipse.osgi.internal.loader.ModuleClassLoader.loadClass(ModuleClassLoader.java:193)
-	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:520)
-	at java.base/java.lang.Class.forName0(Native Method)
-	at java.base/java.lang.Class.forName(Class.java:467)
-	at org.apache.myfaces.shared.util.ClassUtils.classForName(ClassUtils.java:191)
-	at org.apache.myfaces.shared.util.ClassUtils.simpleClassForName(ClassUtils.java:224)
-	... 24 more
+    <managed-bean>
+        <managed-bean-name>applicationBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.ApplicationDataBean</managed-bean-class>
+        <managed-bean-scope>application</managed-bean-scope>
+        <managed-property>
+            <property-name>codeService</property-name>
+            <value>#{codeService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>conflictTypeService</property-name>
+            <value>#{conflictTypeService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>applicationService</property-name>
+            <value>#{applicationService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>globalActionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.GlobalActionBean</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>sessionDataBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.SessionDataBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>closeReviewBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.CloseReviewBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewService</property-name>
+            <value>#{reviewService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>allTaskListBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.tasklist.AllTaskListBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewerTaskListService</property-name>
+            <value>#{reviewerTaskListService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewBundleService</property-name>
+            <value>#{reviewBundleService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewService</property-name>
+            <value>#{reviewService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>applicationBean</property-name>
+            <value>#{applicationBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>bigBrotherTaskListBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.tasklist.BigBrotherTaskListBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewerTaskListService</property-name>
+            <value>#{reviewerTaskListService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewBundleService</property-name>
+            <value>#{reviewBundleService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewService</property-name>
+            <value>#{reviewService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>applicationBean</property-name>
+            <value>#{applicationBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>myTaskListBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.tasklist.MyTaskListBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>myTaskListService</property-name>
+            <value>#{myTaskListService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewerTaskListService</property-name>
+            <value>#{reviewerTaskListService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewBundleService</property-name>
+            <value>#{reviewBundleService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewService</property-name>
+            <value>#{reviewService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>lockService</property-name>
+            <value>#{lockService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>applicationBean</property-name>
+            <value>#{applicationBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>rejectedAccessesTaskListBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.tasklist.RejectedAccessesTaskListBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>myTaskListService</property-name>
+            <value>#{myTaskListService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>userActionRequiredService</property-name>
+            <value>#{userActionRequiredService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>lockService</property-name>
+            <value>#{lockService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>applicationBean</property-name>
+            <value>#{applicationBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>userActionRequiredBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.UserActionRequiredBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>userActionRequiredService</property-name>
+            <value>#{userActionRequiredService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>rejectedUserBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.RejectedUserBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>userActionRequiredService</property-name>
+            <value>#{userActionRequiredService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewUserService</property-name>
+            <value>#{reviewUserService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>createReviewBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.CreateReviewBean</managed-bean-class>
+        <managed-bean-scope>request</managed-bean-scope>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewService</property-name>
+            <value>#{reviewService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>createBundleBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.CreateBundleBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewBundleService</property-name>
+            <value>#{reviewBundleService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewService</property-name>
+            <value>#{reviewService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>reviewBundleSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.ReviewBundleSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewBundleService</property-name>
+            <value>#{reviewBundleService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>reviewDetailsBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.reviewdetails.ReviewDetailsBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewService</property-name>
+            <value>#{reviewService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewBundleService</property-name>
+            <value>#{reviewBundleService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>employeeListBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.reviewerreport.EmployeeListBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewUserService</property-name>
+            <value>#{reviewUserService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>accessListBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.reviewerreport.AccessListBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewUserAccessService</property-name>
+            <value>#{reviewUserAccessService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewUserService</property-name>
+            <value>#{reviewUserService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--
+        Selection beans used for modals on create bundle page
+    -->
+    <managed-bean>
+        <managed-bean-name>managerSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.ManagerSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>applicationSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.ApplicationSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>individualSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.IndividualSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>sourceNameSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.SourceNameSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <!--                                                      -->
+    <managed-bean>
+        <managed-bean-name>applctnSelectionBean</managed-bean-name>
+        <!--made this change-->
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.ApplicationSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>conflictSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.ConflictSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>departmentSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.DepartmentSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>divisionSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.DivisionSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <!--                                     	-->
+    <managed-bean>
+        <managed-bean-name>privDescriptionSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.PrivDescriptionSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>privValueSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.PrivValueSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>costCenterSelectionBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.review.selectmodals.CostCenterSelectionBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>metaDataService</property-name>
+            <value>#{metaDataService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>createBundleBean</property-name>
+            <value>#{createBundleBean}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>reviewManagementDashboardBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.dashboard.ReviewManagementDashboardBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewService</property-name>
+            <value>#{reviewService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>reviewDashboardBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.dashboard.ReviewDashboardBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewBundleService</property-name>
+            <value>#{reviewBundleService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>reviewUserDashboardBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.dashboard.ReviewUserDashboardBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewUserService</property-name>
+            <value>#{reviewUserService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewBundleService</property-name>
+            <value>#{reviewBundleService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>reviewerService</property-name>
+            <value>#{reviewerService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>adminConsoleBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.AdminConsoleBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>systemUser</property-name>
+            <value>#{systemUser}</value>
+        </managed-property>
+    </managed-bean>
+    <!--		Reference Table Bean                    	-->
+    <managed-bean>
+        <managed-bean-name>tableMaintenanceBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.TableMaintenanceBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+    </managed-bean>
+    <!--		  Application                               	-->
+    <managed-bean>
+        <managed-bean-name>applicationSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.ApplicationSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>applicationService</property-name>
+            <value>#{applicationService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--              Conflict                               -->
+    <managed-bean>
+        <managed-bean-name>conflictSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.ConflictSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>conflictService</property-name>
+            <value>#{conflictService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--        		Conflict Type                           	-->
+    <managed-bean>
+        <managed-bean-name>conflictTypeSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.ConflictTypeSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>conflictTypeService</property-name>
+            <value>#{conflictTypeService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--		          Department	                           -->
+    <managed-bean>
+        <managed-bean-name>departmentSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.DepartmentSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>departmentService</property-name>
+            <value>#{departmentService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--	                	Division	                        -->
+    <managed-bean>
+        <managed-bean-name>divisionSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.DivisionSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>divisionService</property-name>
+            <value>#{divisionService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+    </managed-bean>
+    <!--                 		Environment                   -->
+    <managed-bean>
+        <managed-bean-name>environmentSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.EnvironmentSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>environmentService</property-name>
+            <value>#{environmentService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--	                      Function Duty	                      -->
+    <managed-bean>
+        <managed-bean-name>functionDutySummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.FunctionDutySummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>functionDutyService</property-name>
+            <value>#{functionDutyService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>applicationService</property-name>
+            <value>#{applicationService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--	                         Review Owner         	-->
+    <managed-bean>
+        <managed-bean-name>sodOwnerSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.SodOwnerSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>sodOwnerSummaryService</property-name>
+            <value>#{sodOwnerSummaryService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>dataOwnerSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.DataOwnerSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>dataOwnerSummaryService</property-name>
+            <value>#{dataOwnerSummaryService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>reviewOwnerSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.ReviewOwnerSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>reviewOwnerSummaryService</property-name>
+            <value>#{reviewOwnerSummaryService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>applicationService</property-name>
+            <value>#{applicationService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--	                           SoxConcern	           -->
+    <managed-bean>
+        <managed-bean-name>soxConcernSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.SoxConcernSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>soxConcernService</property-name>
+            <value>#{soxConcernService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--                           		UserStatus                    -->
+    <managed-bean>
+        <managed-bean-name>userStatusSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.UserStatusSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>userStatusService</property-name>
+            <value>#{userStatusService}</value>
+        </managed-property>
+    </managed-bean>
+    <!--                                   UserType                  -->
+    <managed-bean>
+        <managed-bean-name>userTypeSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.UserTypeSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>userTypeService</property-name>
+            <value>#{userTypeService}</value>
+        </managed-property>
+    </managed-bean>
+    <managed-bean>
+        <managed-bean-name>exceptionSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.ExceptionSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>exceptionService</property-name>
+            <value>#{exceptionService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>divisionService</property-name>
+            <value>#{divisionService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>departmentService</property-name>
+            <value>#{departmentService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>userTypeService</property-name>
+            <value>#{userTypeService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>userStatusService</property-name>
+            <value>#{userStatusService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>userService</property-name>
+            <value>#{userService}</value>
+        </managed-property>
+    </managed-bean>
+
+    <!--	                	User Table	                        -->
+    <managed-bean>
+        <managed-bean-name>userSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.UserSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>userService</property-name>
+            <value>#{userService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+    </managed-bean>
+
+    <!--	                	Privilege Comments Table	                        -->
+    <managed-bean>
+        <managed-bean-name>privilegeCommentSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.PrivilegeCommentSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>privilegeCommentService</property-name>
+            <value>#{privilegeCommentService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+    </managed-bean>
+
+
+    <!--	                	Rejected User Tab	                        -->
+    <managed-bean>
+        <managed-bean-name>rejectedUserSummaryBean</managed-bean-name>
+        <managed-bean-class>com.assurant.inc.sox.ar.client.bean.admin.RejectedUserSummaryBean</managed-bean-class>
+        <managed-bean-scope>session</managed-bean-scope>
+        <managed-property>
+            <property-name>rejectedUserService</property-name>
+            <value>#{rejectedUserService}</value>
+        </managed-property>
+        <managed-property>
+            <property-name>sessionDataBean</property-name>
+            <value>#{sessionDataBean}</value>
+        </managed-property>
+    </managed-bean>
+
+    <!--
+        Navigations
+    -->
+    <navigation-rule>
+        <from-view-id>/xhtml/*</from-view-id>
+        <navigation-case>
+            <from-outcome>taskList</from-outcome>
+            <to-view-id>/xhtml/tasklist/tasklistPage.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>createBundle</from-outcome>
+            <to-view-id>/xhtml/review/createBundle.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>createReview</from-outcome>
+            <to-view-id>/xhtml/review/createReviewPage.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>dashboard</from-outcome>
+            <to-view-id>/xhtml/dashboard/reviewManagementDashboard.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>adminConsole</from-outcome>
+            <to-view-id>/xhtml/admin/departmentSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToApplicationTable</from-outcome>
+            <to-view-id>/xhtml/admin/applicationSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToConflictsTable</from-outcome>
+            <to-view-id>/xhtml/admin/conflictSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToConflictTypesTable</from-outcome>
+            <to-view-id>/xhtml/admin/conflictTypeSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToDivisionsTable</from-outcome>
+            <to-view-id>/xhtml/admin/divisionSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToDepartmentsTable</from-outcome>
+            <to-view-id>/xhtml/admin/departmentSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToEnvironmentsTable</from-outcome>
+            <to-view-id>/xhtml/admin/environmentSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToFunctionDutyTable</from-outcome>
+            <to-view-id>/xhtml/admin/functionDutySummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToReviewOwnerTable</from-outcome>
+            <to-view-id>/xhtml/admin/reviewOwnerSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToSodOwnerTable</from-outcome>
+            <to-view-id>/xhtml/admin/sodOwnerSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToDataOwnerTable</from-outcome>
+            <to-view-id>/xhtml/admin/dataOwnerSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToSoxConcernTable</from-outcome>
+            <to-view-id>/xhtml/admin/soxConcernSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToUserStatusTable</from-outcome>
+            <to-view-id>/xhtml/admin/userStatusSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToUserTypeTable</from-outcome>
+            <to-view-id>/xhtml/admin/userTypeSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToExceptionReporting</from-outcome>
+            <to-view-id>/xhtml/admin/exceptionSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToUserTable</from-outcome>
+            <to-view-id>/xhtml/admin/userSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToPrivilegeComments</from-outcome>
+            <to-view-id>/xhtml/admin/privCommentSummary.xhtml</to-view-id>
+        </navigation-case>
+        <!-- made this change
+        <navigation-case>
+            <from-outcome>updateFieldPrivComment</from-outcome>
+            <to-view-id>/xhtml/admin/updateFieldPrivComment.xhtml</to-view-id>
+        </navigation-case>-->
+        <navigation-case>
+            <from-outcome>rejectedUserSummary</from-outcome>
+            <to-view-id>/xhtml/admin/rejectedUserSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToUserTable</from-outcome>
+            <to-view-id>/xhtml/admin/userSummary.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>switchToRejectedUsers</from-outcome>
+            <to-view-id>/xhtml/admin/rejectedUserSummary.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/xhtml/tasklist/tasklistPage.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>employeeList</from-outcome>
+            <to-view-id>/xhtml/reviewerReport/employeeList.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>reviewDetails</from-outcome>
+            <to-view-id>/xhtml/reviewDetails/reviewDetailsPage.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>bundlePreview</from-outcome>
+            <to-view-id>/xhtml/review/reviewBundleSummaryPage.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>actionRequired</from-outcome>
+            <to-view-id>/xhtml/actionRequired/actionRequired.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>rejectedUser</from-outcome>
+            <to-view-id>/xhtml/actionRequired/rejectUserPage.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/xhtml/reviewDetails/reviewDetailsPage.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>employeeList</from-outcome>
+            <to-view-id>/xhtml/reviewerReport/employeeList.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/xhtml/reviewerReport/employeeList.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>accessList</from-outcome>
+            <to-view-id>/xhtml/reviewerReport/accessList.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>reviewDetails</from-outcome>
+            <to-view-id>/xhtml/reviewDetails/reviewDetailsPage.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>printEmployeeList</from-outcome>
+            <to-view-id>/xhtml/reviewerReport/printEmployeeList.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/xhtml/reviewerReport/accessList.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>employeeList</from-outcome>
+            <to-view-id>/xhtml/reviewerReport/employeeList.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>accessList</from-outcome>
+            <to-view-id>/xhtml/reviewerReport/accessList.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>reviewUserDashboard</from-outcome>
+            <to-view-id>/xhtml/dashboard/reviewUserDashboard.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>printAccessList</from-outcome>
+            <to-view-id>/xhtml/reviewerReport/printAccessList.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/xhtml/dashboard/reviewManagementDashboard.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>selectReview</from-outcome>
+            <to-view-id>/xhtml/dashboard/reviewDashboard.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/xhtml/dashboard/reviewDashboard.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>selectReviewer</from-outcome>
+            <to-view-id>/xhtml/dashboard/reviewUserDashboard.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>reviewMgmtDashboard</from-outcome>
+            <to-view-id>/xhtml/dashboard/reviewManagementDashboard.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/xhtml/dashboard/reviewUserDashboard.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>accessList</from-outcome>
+            <to-view-id>/xhtml/reviewerReport/accessList.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>reviewDashboard</from-outcome>
+            <to-view-id>/xhtml/dashboard/reviewDashboard.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/xhtml/reviewerReport/rejectReviewUsersModalPanelComponent.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>reportSummary</from-outcome>
+            <to-view-id>/xhtml/reviewerReport/employeeList.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <application>
+        <el-resolver>org.springframework.web.jsf.el.SpringBeanFacesELResolver</el-resolver>
+    </application>
+    <lifecycle>
+        <phase-listener>com.assurant.inc.sox.ar.utils.LoggedInCheck</phase-listener>
+    </lifecycle>
+</faces-config>
 
 ```
