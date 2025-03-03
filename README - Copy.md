@@ -82,5 +82,6 @@ java.lang.ClassCastException: class org.apache.myfaces.webapp.ManagedBeanDestroy
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
 	at java.base/java.lang.Thread.run(Thread.java:833)
 
+CWWKZ0002E: An exception occurred while starting the application soxautoreviews. The exception message was: com.ibm.ws.container.service.metadata.MetaDataException: SRVE0303E: Servlet name not found adding servlet mapping; servlet name=SpringContextServlet; URL pattern=/SpringContextServlet; module=soxautoreviews; application=soxautoreviews
 
 ```
