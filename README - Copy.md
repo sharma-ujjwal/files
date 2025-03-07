@@ -379,4 +379,16 @@ web.xml
 
 [INFO] [ERROR   ] CWWKZ0002E: An exception occurred while starting the application soxautoreviews. The exception message was: com.ibm.ws.container.service.metadata.MetaDataException: SRVE0303E: Servlet name not found adding servlet mapping; servlet name=SpringContextServlet; URL pattern=/SpringContextServlet; module=soxautoreviews; application=soxautoreviews    
 
+Caused by: javax.servlet.ServletException: Cannot invoke "javax.faces.render.RenderKit.getResponseStateManager()" because "renderKit" is null
+[INFO]  at javax.faces.webapp.FacesServlet.service(FacesServlet.java:236)
+[INFO]  at [internal classes]
+[INFO]  at com.assurant.inc.sox.ar.servlets.RedirectServlet.doPost(RedirectServlet.java:73)
+[INFO]  at com.assurant.inc.sox.ar.servlets.BaseServlet.doGet(BaseServlet.java:17)
+[INFO]  at javax.servlet.http.HttpServlet.service(HttpServlet.java:686)
+[INFO]  ... 1 more
+[INFO] Caused by: java.lang.NullPointerException: Cannot invoke "javax.faces.render.RenderKit.getResponseStateManager()" because "renderKit" is null
+[INFO]  at org.apache.myfaces.context.servlet.FacesContextImpl.isPostback(FacesContextImpl.java:415)
+[INFO]  ... 5 more
+
+
 ```
