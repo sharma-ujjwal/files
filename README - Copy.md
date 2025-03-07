@@ -1,100 +1,397 @@
-```
-org.apache.myfaces.spi.InjectionProviderException: java.lang.RuntimeException: com.ibm.wsspi.injectionengine.InjectionException: SRVE8061E: Unable to invoke method --> [public void com.assurant.inc.sox.ar.utils.LoggedInCheck.beforePhase(javax.faces.event.PhaseEvent)] on class --> [class com.assurant.inc.sox.ar.utils.LoggedInCheck].
-	at com.ibm.ws.jsf.cdi.WASCDIAnnotationInjectionProvider.inject(WASCDIAnnotationInjectionProvider.java:75)
-	at com.ibm.ws.jsf.spi.impl.WASCDIAnnotationDelegateInjectionProvider.inject(WASCDIAnnotationDelegateInjectionProvider.java:52)
-	at org.apache.myfaces.config.FacesConfigurator.configureLifecycle(FacesConfigurator.java:1387)
-	at org.apache.myfaces.config.FacesConfigurator.configure(FacesConfigurator.java:571)
-	at org.apache.myfaces.webapp.AbstractFacesInitializer.buildConfiguration(AbstractFacesInitializer.java:456)
-	at org.apache.myfaces.webapp.Jsp21FacesInitializer.initContainerIntegration(Jsp21FacesInitializer.java:70)
-	at org.apache.myfaces.webapp.AbstractFacesInitializer.initFaces(AbstractFacesInitializer.java:190)
-	at org.apache.myfaces.webapp.StartupServletContextListener.contextInitialized(StartupServletContextListener.java:103)
-	at com.ibm.ws.webcontainer.webapp.WebApp.notifyServletContextCreated(WebApp.java:2464)
-	at com.ibm.ws.webcontainer31.osgi.webapp.WebApp31.notifyServletContextCreated(WebApp31.java:512)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:1062)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:6722)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApp(DynamicVirtualHost.java:484)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApplication(DynamicVirtualHost.java:479)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.startWebApplication(WebContainer.java:1208)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.access$100(WebContainer.java:113)
-	at com.ibm.ws.webcontainer.osgi.WebContainer$3.run(WebContainer.java:996)
-	at com.ibm.ws.threading.internal.ExecutorServiceImpl$RunnableWrapper.run(ExecutorServiceImpl.java:298)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
-	at java.base/java.lang.Thread.run(Thread.java:833)
-Caused by: java.lang.RuntimeException: com.ibm.wsspi.injectionengine.InjectionException: SRVE8061E: Unable to invoke method --> [public void com.assurant.inc.sox.ar.utils.LoggedInCheck.beforePhase(javax.faces.event.PhaseEvent)] on class --> [class com.assurant.inc.sox.ar.utils.LoggedInCheck].
-	at com.ibm.wsspi.webcontainer.annotation.AnnotationHelper.inject(AnnotationHelper.java:93)
-	at com.ibm.wsspi.webcontainer.annotation.AnnotationHelper.inject(AnnotationHelper.java:110)
-	at com.ibm.ws.jsf.cdi.WASCDIAnnotationInjectionProvider.inject(WASCDIAnnotationInjectionProvider.java:72)
-	... 22 more
-Caused by: com.ibm.wsspi.injectionengine.InjectionException: SRVE8061E: Unable to invoke method --> [public void com.assurant.inc.sox.ar.utils.LoggedInCheck.beforePhase(javax.faces.event.PhaseEvent)] on class --> [class com.assurant.inc.sox.ar.utils.LoggedInCheck].
-	at com.ibm.ws.webcontainer.webapp.WebApp.validateAndRun(WebApp.java:934)
-	at com.ibm.ws.webcontainer.webapp.WebApp.invokeAnnotTypeOnObjectAndHierarchy(WebApp.java:879)
-	at com.ibm.ws.webcontainer.osgi.webapp.WebApp.injectAndPostConstruct(WebApp.java:1361)
-	at com.ibm.wsspi.webcontainer.annotation.AnnotationHelper.inject(AnnotationHelper.java:52)
-	... 24 more
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.assurant.inc.sox.ar</groupId>
+	<artifactId>soxautoreviews</artifactId>
+	<packaging>war</packaging>
+	<name>Sox AutoReviews War</name>
+	<version>1.0.3</version>
+	<description />
+	<build>
+		<finalName>soxautoreviews</finalName>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<targetPath>${basedir}/WebContent/WEB-INF/classes</targetPath>
+				<includes>
+					<include>log4j.xml</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+					<exclude>${basedir}/src/test</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${jdkTargetVersion}</source>
+					<target>${jdkTargetVersion}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+				<version>3.3.1</version>
 
+				<configuration>
+					<webResources>
+						<resource>
+							<directory>WebContent</directory>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<outputDirectory>WebContent/WEB-INF/lib</outputDirectory>
+							<excludeScope>provided</excludeScope>
 
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<attach>true</attach>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>clean</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>WebContent/WEB-INF/lib</directory>
+							<includes>
+								<include>**/*.jar</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>src/main/webapp/WEB-INF/classes</directory>
+							<includes>
+								<include>*.*</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<testFailureIgnore>true</testFailureIgnore>
+					<skipTests>true</skipTests>
+					<excludes>
+						<exclude>**/Test*.java</exclude>
+						<exclude>**/*Test.java</exclude>
+						<exclude>**/*Mock.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>com.assurant.inc.sox</groupId>
+			<artifactId>SoxDataAccess</artifactId>
+			<version>1.4.4.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.richfaces</groupId>
+			<artifactId>richfaces</artifactId>
+			<version>${richfaces.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.myfaces.core</groupId>
+			<artifactId>myfaces-api</artifactId>
+			<version>${myfaces.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.faces</groupId>
+			<artifactId>javax.faces-api</artifactId>
+			<version>2.2</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.myfaces.core</groupId>
+			<artifactId>myfaces-impl</artifactId>
+			<version>${myfaces.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.mail</groupId>
+			<artifactId>jakarta.mail-api</artifactId>
+			<version>2.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.jersey</groupId>
+			<artifactId>jersey-json</artifactId>
+			<version>${jersey.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>jaxb-impl</artifactId>
+					<groupId>com.sun.xml.bind</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jackson-core-asl</artifactId>
+					<groupId>org.codehaus.jackson</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jackson-mapper-asl</artifactId>
+					<groupId>org.codehaus.jackson</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>stax-api</artifactId>
+					<groupId>stax</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jackson-xc</artifactId>
+					<groupId>org.codehaus.jackson</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jackson-jaxrs</artifactId>
+					<groupId>org.codehaus.jackson</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-asm</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>${aspectj.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.dozer</groupId>
+			<artifactId>dozer</artifactId>
+			<version>${dozer.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.el</groupId>
+			<artifactId>jakarta.el-api</artifactId>
+			<version>${javax.el.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>${javax.servlet.api.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet.jsp</groupId>
+			<artifactId>jsp-api</artifactId>
+			<version>${jsp-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.facelets</groupId>
+			<artifactId>jsf-facelets</artifactId>
+			<version>${facelets.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.faces</groupId>
+					<artifactId>jsf-api</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.faces</groupId>
+					<artifactId>jsf-impl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.faces</groupId>
+			<artifactId>jsf-api</artifactId>
+			<version>${jsf-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.faces</groupId>
+			<artifactId>jsf-impl</artifactId>
+			<version>${jsf-impl.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-digester</groupId>
+			<artifactId>commons-digester</artifactId>
+			<version>${commons-digester.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc11</artifactId>
+			<version>${ojdbc.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.expressly</groupId>
+			<artifactId>expressly</artifactId>
+			<version>${glassfish-el.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>${commons-codec.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>${ehcache.version}</version>
+		</dependency>
+	</dependencies>
+	<reporting>
+		<plugins>
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<configuration>
+					<targetJdk>${jdkTargetVersion}</targetJdk>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>jxr</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</reporting>
+	<properties>
+		<log4j.version>1.3.15</log4j.version>
+		<jdkTargetVersion>17</jdkTargetVersion>
+		<spring.version>5.3.39</spring.version>
+		<javax.mail.version>2.0.1</javax.mail.version>
+		<richfaces.version>4.5.17.Final</richfaces.version>
+		<myfaces.version>2.3.11</myfaces.version>
+		<commons-lang.version>3.14.0</commons-lang.version>
+		<jersey.version>1.19.4</jersey.version>
+		<aspectj.version>1.9.7</aspectj.version>
+		<slf4j.version>2.0.7</slf4j.version>
+		<asm.version>9.5</asm.version>
+		<dozer.version>5.5.1</dozer.version>
+		<javax.el.version>6.0.1</javax.el.version>
+		<jsp-api.version>2.2</jsp-api.version>
+		<facelets.version>1.1.14</facelets.version>
+		<jsf-api.version>2.2.20</jsf-api.version>
+		<jsf-impl.version>1.2-20</jsf-impl.version>
+		<commons-digester.version>2.1</commons-digester.version>
+		<junit.version>4.13.2</junit.version>
+		<ojdbc.version>21.9.0.0</ojdbc.version>
+		<glassfish-el.version>5.0.0</glassfish-el.version>
+		<commons-codec.version>1.15</commons-codec.version>
+		<ehcache.version>2.10.9.2</ehcache.version>
+		<javax.servlet.api.version>4.0.1</javax.servlet.api.version>
+	</properties>
+</project>
 
- An error occured while initializing MyFaces: class org.apache.myfaces.webapp.ManagedBeanDestroyerListener cannot be cast to class org.apache.myfaces.webapp.ManagedBeanDestroyerListener (org.apache.myfaces.webapp.ManagedBeanDestroyerListener is in unnamed module of loader com.ibm.ws.classloading.internal.AppClassLoader @73ca6c13; org.apache.myfaces.webapp.ManagedBeanDestroyerListener is in unnamed module of loader org.eclipse.osgi.internal.loader.EquinoxClassLoader @3403938f)
-java.lang.ClassCastException: class org.apache.myfaces.webapp.ManagedBeanDestroyerListener cannot be cast to class org.apache.myfaces.webapp.ManagedBeanDestroyerListener (org.apache.myfaces.webapp.ManagedBeanDestroyerListener is in unnamed module of loader com.ibm.ws.classloading.internal.AppClassLoader @73ca6c13; org.apache.myfaces.webapp.ManagedBeanDestroyerListener is in unnamed module of loader org.eclipse.osgi.internal.loader.EquinoxClassLoader @3403938f)
-	at org.apache.myfaces.config.FacesConfigurator.configureManagedBeanDestroyer(FacesConfigurator.java:1489)
-	at org.apache.myfaces.config.FacesConfigurator.configure(FacesConfigurator.java:573)
-	at org.apache.myfaces.webapp.AbstractFacesInitializer.buildConfiguration(AbstractFacesInitializer.java:456)
-	at org.apache.myfaces.webapp.Jsp21FacesInitializer.initContainerIntegration(Jsp21FacesInitializer.java:70)
-	at org.apache.myfaces.webapp.AbstractFacesInitializer.initFaces(AbstractFacesInitializer.java:190)
-	at org.apache.myfaces.webapp.StartupServletContextListener.contextInitialized(StartupServletContextListener.java:103)
-	at com.ibm.ws.webcontainer.webapp.WebApp.notifyServletContextCreated(WebApp.java:2464)
-	at com.ibm.ws.webcontainer31.osgi.webapp.WebApp31.notifyServletContextCreated(WebApp31.java:512)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:1062)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:6722)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApp(DynamicVirtualHost.java:484)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApplication(DynamicVirtualHost.java:479)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.startWebApplication(WebContainer.java:1208)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.access$100(WebContainer.java:113)
-	at com.ibm.ws.webcontainer.osgi.WebContainer$3.run(WebContainer.java:996)
-	at com.ibm.ws.threading.internal.ExecutorServiceImpl$RunnableWrapper.run(ExecutorServiceImpl.java:298)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
-	at java.base/java.lang.Thread.run(Thread.java:833)
-
-[3/3/25, 19:29:42:001 IST] 0000002b com.ibm.ws.webcontainer.webapp                               E SRVE0276E: Error while initializing Servlet [SpringContextServlet]: javax.servlet.UnavailableException: SRVE0201E: Servlet [org.springframework.web.context.ContextCleanupListener]: not a servlet class
-	at com.ibm.ws.webcontainer.servlet.ServletWrapper$1.run(ServletWrapper.java:1564)
-	at java.base/java.security.AccessController.doPrivileged(AccessController.java:569)
-	at com.ibm.ws.webcontainer.servlet.ServletWrapper.loadServlet(ServletWrapper.java:1519)
-	at com.ibm.ws.webcontainer.servlet.ServletWrapper.loadOnStartupCheck(ServletWrapper.java:1397)
-	at com.ibm.ws.webcontainer.webapp.WebApp.doLoadOnStartupActions(WebApp.java:1228)
-	at com.ibm.ws.webcontainer.webapp.WebApp.commonInitializationFinally(WebApp.java:1196)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:1094)
-	at com.ibm.ws.webcontainer.webapp.WebApp.initialize(WebApp.java:6722)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApp(DynamicVirtualHost.java:484)
-	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost.startWebApplication(DynamicVirtualHost.java:479)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.startWebApplication(WebContainer.java:1208)
-	at com.ibm.ws.webcontainer.osgi.WebContainer.access$100(WebContainer.java:113)
-	at com.ibm.ws.webcontainer.osgi.WebContainer$3.run(WebContainer.java:996)
-	at com.ibm.ws.threading.internal.ExecutorServiceImpl$RunnableWrapper.run(ExecutorServiceImpl.java:298)
-	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
-	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
-	at java.base/java.lang.Thread.run(Thread.java:833)
-
-CWWKZ0002E: An exception occurred while starting the application soxautoreviews. The exception message was: com.ibm.ws.container.service.metadata.MetaDataException: SRVE0303E: Servlet name not found adding servlet mapping; servlet name=SpringContextServlet; URL pattern=/SpringContextServlet; module=soxautoreviews; application=soxautoreviews
-
-
-
-web.xml
 
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
 		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-		 					http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
-		 version="3.1">
-	<display-name>SoxAutoReviews</display-name>
+		 xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+
+<display-name>SoxAutoReviews</display-name>
 	<context-param>
 		<param-name>javax.faces.DEFAULT_SUFFIX</param-name>
 		<param-value>.xhtml</param-value>
@@ -131,9 +428,9 @@ web.xml
 		<dispatcher>INCLUDE</dispatcher>
 	</filter-mapping>
 
-<!--	<listener>-->
-<!--		<listener-class>com.sun.faces.config.ConfigureListener</listener-class>-->
-<!--	</listener>-->
+	<listener>
+		<listener-class>com.sun.faces.config.ConfigureListener</listener-class>
+	</listener>
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener
 		</listener-class>
@@ -152,7 +449,7 @@ web.xml
 	<servlet>
 		<display-name>SpringContextServlet</display-name>
 		<servlet-name>SpringContextServlet</servlet-name>
-		<servlet-class>org.springframework.web.context.ContextCleanupListener</servlet-class>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet>
@@ -216,179 +513,228 @@ web.xml
 </web-app>
 
 
-[INFO] --- maven-dependency-plugin:2.8:tree (default-cli) @ soxautoreviews ---
-[INFO] com.assurant.inc.sox.ar:soxautoreviews:war:1.0.3
-[INFO] +- com.assurant.inc.sox:SoxDataAccess:jar:1.4.4.4:compile
-[INFO] |  +- org.springframework:spring-orm:jar:5.3.39:compile
-[INFO] |  |  +- org.springframework:spring-jdbc:jar:5.3.39:compile
-[INFO] |  |  \- org.springframework:spring-tx:jar:5.3.39:compile
-[INFO] |  +- org.springframework:spring-beans:jar:5.3.39:compile
-[INFO] |  +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
-[INFO] |  +- javax.persistence:javax.persistence-api:jar:2.2:compile
-[INFO] |  +- ch.qos.logback:logback-classic:jar:1.3.15:compile
-[INFO] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.15.4:compile
-[INFO] |  |  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.15.4:compile
-[INFO] |  +- com.fasterxml.jackson.core:jackson-core:jar:2.18.2:compile
-[INFO] |  +- commons-dbcp:commons-dbcp:jar:1.2.2:runtime
-[INFO] |  |  \- commons-pool:commons-pool:jar:1.3:runtime
-[INFO] |  +- org.dom4j:dom4j:jar:2.1.4:compile
-[INFO] |  +- org.hibernate:hibernate-core:jar:5.6.15.Final:compile
-[INFO] |  |  +- org.jboss.logging:jboss-logging:jar:3.4.3.Final:compile
-[INFO] |  |  +- net.bytebuddy:byte-buddy:jar:1.12.18:compile
-[INFO] |  |  +- antlr:antlr:jar:2.7.7:compile
-[INFO] |  |  +- org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:jar:1.1.1.Final:compile
-[INFO] |  |  +- org.jboss:jandex:jar:2.4.2.Final:compile
-[INFO] |  |  +- com.fasterxml:classmate:jar:1.5.1:compile
-[INFO] |  |  +- javax.activation:javax.activation-api:jar:1.2.0:compile
-[INFO] |  |  +- javax.xml.bind:jaxb-api:jar:2.3.1:compile
-[INFO] |  |  \- org.glassfish.jaxb:jaxb-runtime:jar:2.3.1:compile
-[INFO] |  |     +- org.glassfish.jaxb:txw2:jar:2.3.1:compile
-[INFO] |  |     +- com.sun.istack:istack-commons-runtime:jar:3.0.7:compile
-[INFO] |  |     +- org.jvnet.staxex:stax-ex:jar:1.8:compile
-[INFO] |  |     \- com.sun.xml.fastinfoset:FastInfoset:jar:1.2.15:compile
-[INFO] |  +- com.oracle.database.jdbc:ojdbc10:jar:19.25.0.0:compile
-[INFO] |  \- org.hibernate.common:hibernate-commons-annotations:jar:5.1.2.Final:compile
-[INFO] +- org.richfaces:richfaces:jar:4.5.17.Final:compile
-[INFO] |  +- org.richfaces:richfaces-core:jar:4.5.17.Final:compile
-[INFO] |  |  +- net.sourceforge.cssparser:cssparser:jar:0.9.18:compile
-[INFO] |  |  |  \- org.w3c.css:sac:jar:1.3:compile
-[INFO] |  |  \- com.google.guava:guava:jar:19.0:compile
-[INFO] |  \- org.richfaces:richfaces-a4j:jar:4.5.17.Final:compile
-[INFO] +- org.apache.myfaces.core:myfaces-api:jar:2.3.11:compile
-[INFO] +- org.apache.myfaces.core:myfaces-impl:jar:2.3.11:provided
-[INFO] |  \- commons-beanutils:commons-beanutils:jar:1.9.4:compile
-[INFO] |     \- commons-collections:commons-collections:jar:3.2.2:compile
-[INFO] +- org.apache.commons:commons-lang3:jar:3.14.0:compile
-[INFO] +- org.springframework:spring-test:jar:5.3.21:test
-[INFO] +- jakarta.mail:jakarta.mail-api:jar:2.1.3:compile
-[INFO] |  \- jakarta.activation:jakarta.activation-api:jar:2.1.3:compile
-[INFO] +- com.sun.jersey:jersey-json:jar:1.19.4:compile
-[INFO] |  +- org.codehaus.jettison:jettison:jar:1.1:compile
-[INFO] |  \- com.sun.jersey:jersey-core:jar:1.19.4:compile
-[INFO] |     \- javax.ws.rs:jsr311-api:jar:1.1.1:compile
-[INFO] +- org.springframework:spring-context:jar:5.3.21:compile
-[INFO] |  \- org.springframework:spring-expression:jar:5.3.21:compile
-[INFO] +- org.springframework:spring-core:jar:5.3.21:compile
-[INFO] |  \- org.springframework:spring-jcl:jar:5.3.21:compile
-[INFO] +- org.springframework:spring-web:jar:5.3.21:compile
-[INFO] +- org.springframework:spring-webmvc:jar:5.3.21:compile
-[INFO] +- org.springframework:spring-aop:jar:5.3.21:compile
-[INFO] +- org.aspectj:aspectjweaver:jar:1.9.7:compile
-[INFO] +- org.ow2.asm:asm:jar:9.5:compile
-[INFO] +- ch.qos.logback:logback-core:jar:1.3.15:compile
-[INFO] +- org.slf4j:slf4j-api:jar:2.0.7:compile
-[INFO] +- net.sf.dozer:dozer:jar:5.5.1:compile
-[INFO] |  \- org.slf4j:jcl-over-slf4j:jar:1.7.5:compile
-[INFO] +- jakarta.el:jakarta.el-api:jar:6.0.1:compile
-[INFO] +- javax.servlet:javax.servlet-api:jar:4.0.1:provided
-[INFO] +- javax.servlet.jsp:jsp-api:jar:2.2:compile
-[INFO] +- com.sun.facelets:jsf-facelets:jar:1.1.14:compile
-[INFO] +- com.sun.faces:jsf-api:jar:2.2.20:compile
-[INFO] +- javax.faces:jsf-impl:jar:1.2-20:provided
-[INFO] +- commons-digester:commons-digester:jar:2.1:compile
-[INFO] |  \- commons-logging:commons-logging:jar:1.1.1:compile
-[INFO] +- junit:junit:jar:4.13.2:test
-[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
-[INFO] +- com.oracle.database.jdbc:ojdbc11:jar:21.9.0.0:test
-[INFO] +- org.glassfish.expressly:expressly:jar:5.0.0:compile
-[INFO] +- commons-codec:commons-codec:jar:1.15:compile
-[INFO] \- net.sf.ehcache:ehcache:jar:2.10.9.2:compile
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time: 3.082 s
-[INFO] Finished at: 2025-03-04T19:33:42+05:30
-[INFO] Final Memory: 14M/60M
+<faces-config
+		xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_3.xsd"
+		version="2.3">
 
-
-[INFO] com.assurant.inc.sox.ar:soxautoreviews:war:1.0.3
-[INFO] +- com.assurant.inc.sox:SoxDataAccess:jar:1.4.4.4:compile
-[INFO] |  +- org.springframework:spring-orm:jar:5.3.39:compile
-[INFO] |  |  +- org.springframework:spring-jdbc:jar:5.3.39:compile
-[INFO] |  |  \- org.springframework:spring-tx:jar:5.3.39:compile
-[INFO] |  +- org.springframework:spring-beans:jar:5.3.39:compile
-[INFO] |  +- javax.annotation:javax.annotation-api:jar:1.3.2:compile
-[INFO] |  +- javax.persistence:javax.persistence-api:jar:2.2:compile
-[INFO] |  +- ch.qos.logback:logback-classic:jar:1.3.15:compile
-[INFO] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.18.2:compile
-[INFO] |  |  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.18.2:compile
-[INFO] |  +- com.fasterxml.jackson.core:jackson-core:jar:2.18.2:compile
-[INFO] |  +- commons-dbcp:commons-dbcp:jar:1.2.2:runtime
-[INFO] |  |  \- commons-pool:commons-pool:jar:1.3:runtime
-[INFO] |  +- org.dom4j:dom4j:jar:2.1.4:compile
-[INFO] |  +- org.hibernate:hibernate-core:jar:5.6.15.Final:compile
-[INFO] |  |  +- org.jboss.logging:jboss-logging:jar:3.4.3.Final:compile
-[INFO] |  |  +- net.bytebuddy:byte-buddy:jar:1.12.18:compile
-[INFO] |  |  +- antlr:antlr:jar:2.7.7:compile
-[INFO] |  |  +- org.jboss.spec.javax.transaction:jboss-transaction-api_1.2_spec:jar:1.1.1.Final:compile
-[INFO] |  |  +- org.jboss:jandex:jar:2.4.2.Final:compile
-[INFO] |  |  +- com.fasterxml:classmate:jar:1.5.1:compile
-[INFO] |  |  +- javax.activation:javax.activation-api:jar:1.2.0:compile
-[INFO] |  |  +- javax.xml.bind:jaxb-api:jar:2.3.1:compile
-[INFO] |  |  \- org.glassfish.jaxb:jaxb-runtime:jar:2.3.1:compile
-[INFO] |  |     +- org.glassfish.jaxb:txw2:jar:2.3.1:compile
-[INFO] |  |     +- com.sun.istack:istack-commons-runtime:jar:3.0.7:compile
-[INFO] |  |     +- org.jvnet.staxex:stax-ex:jar:1.8:compile
-[INFO] |  |     \- com.sun.xml.fastinfoset:FastInfoset:jar:1.2.15:compile
-[INFO] |  \- org.hibernate.common:hibernate-commons-annotations:jar:5.1.2.Final:compile
-[INFO] +- org.richfaces:richfaces:jar:4.5.17.Final:compile
-[INFO] |  +- org.richfaces:richfaces-core:jar:4.5.17.Final:compile
-[INFO] |  |  +- net.sourceforge.cssparser:cssparser:jar:0.9.18:compile
-[INFO] |  |  |  \- org.w3c.css:sac:jar:1.3:compile
-[INFO] |  |  \- com.google.guava:guava:jar:19.0:compile
-[INFO] |  \- org.richfaces:richfaces-a4j:jar:4.5.17.Final:compile
-[INFO] +- org.apache.myfaces.core:myfaces-api:jar:2.3.11:compile
-[INFO] +- org.apache.myfaces.core:myfaces-impl:jar:2.3.11:provided
-[INFO] |  \- commons-beanutils:commons-beanutils:jar:1.9.4:compile
-[INFO] |     \- commons-collections:commons-collections:jar:3.2.2:compile
-[INFO] +- org.apache.commons:commons-lang3:jar:3.14.0:compile
-[INFO] +- org.springframework:spring-test:jar:5.3.39:test
-[INFO] +- jakarta.mail:jakarta.mail-api:jar:2.1.3:compile
-[INFO] |  \- jakarta.activation:jakarta.activation-api:jar:2.1.3:compile
-[INFO] +- com.sun.jersey:jersey-json:jar:1.19.4:compile
-[INFO] |  +- org.codehaus.jettison:jettison:jar:1.1:compile
-[INFO] |  \- com.sun.jersey:jersey-core:jar:1.19.4:compile
-[INFO] |     \- javax.ws.rs:jsr311-api:jar:1.1.1:compile
-[INFO] +- org.springframework:spring-context:jar:5.3.39:compile
-[INFO] |  \- org.springframework:spring-expression:jar:5.3.39:compile
-[INFO] +- org.springframework:spring-core:jar:5.3.39:compile
-[INFO] |  \- org.springframework:spring-jcl:jar:5.3.39:compile
-[INFO] +- org.springframework:spring-web:jar:5.3.39:compile
-[INFO] +- org.springframework:spring-webmvc:jar:5.3.39:compile
-[INFO] +- org.springframework:spring-aop:jar:5.3.39:compile
-[INFO] +- org.aspectj:aspectjweaver:jar:1.9.7:compile
-[INFO] +- org.ow2.asm:asm:jar:9.5:compile
-[INFO] +- ch.qos.logback:logback-core:jar:1.3.15:compile
-[INFO] +- org.slf4j:slf4j-api:jar:2.0.7:compile
-[INFO] +- net.sf.dozer:dozer:jar:5.5.1:compile
-[INFO] |  \- org.slf4j:jcl-over-slf4j:jar:1.7.5:compile
-[INFO] +- jakarta.el:jakarta.el-api:jar:6.0.1:compile
-[INFO] +- javax.servlet:javax.servlet-api:jar:4.0.1:provided
-[INFO] +- javax.servlet.jsp:jsp-api:jar:2.2:compile
-[INFO] +- com.sun.facelets:jsf-facelets:jar:1.1.14:compile
-[INFO] +- com.sun.faces:jsf-api:jar:2.2.20:compile
-[INFO] +- javax.faces:jsf-impl:jar:1.2-20:provided
-[INFO] +- commons-digester:commons-digester:jar:2.1:compile
-[INFO] |  \- commons-logging:commons-logging:jar:1.1.1:compile
-[INFO] +- junit:junit:jar:4.13.2:test
-[INFO] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
-[INFO] +- com.oracle.database.jdbc:ojdbc11:jar:21.9.0.0:test
-[INFO] +- org.glassfish.expressly:expressly:jar:5.0.0:compile
-[INFO] +- commons-codec:commons-codec:jar:1.15:compile
-[INFO] \- net.sf.ehcache:ehcache:jar:2.10.9.2:compile
-
-[INFO] [ERROR   ] CWWKZ0002E: An exception occurred while starting the application soxautoreviews. The exception message was: com.ibm.ws.container.service.metadata.MetaDataException: SRVE0303E: Servlet name not found adding servlet mapping; servlet name=SpringContextServlet; URL pattern=/SpringContextServlet; module=soxautoreviews; application=soxautoreviews    
-
-Caused by: javax.servlet.ServletException: Cannot invoke "javax.faces.render.RenderKit.getResponseStateManager()" because "renderKit" is null
-[INFO]  at javax.faces.webapp.FacesServlet.service(FacesServlet.java:236)
-[INFO]  at [internal classes]
-[INFO]  at com.assurant.inc.sox.ar.servlets.RedirectServlet.doPost(RedirectServlet.java:73)
-[INFO]  at com.assurant.inc.sox.ar.servlets.BaseServlet.doGet(BaseServlet.java:17)
-[INFO]  at javax.servlet.http.HttpServlet.service(HttpServlet.java:686)
-[INFO]  ... 1 more
-[INFO] Caused by: java.lang.NullPointerException: Cannot invoke "javax.faces.render.RenderKit.getResponseStateManager()" because "renderKit" is null
-[INFO]  at org.apache.myfaces.context.servlet.FacesContextImpl.isPostback(FacesContextImpl.java:415)
-[INFO]  ... 5 more
-
-
-```
+	<!--
+		Navigations
+	-->
+	<navigation-rule>
+		<from-view-id>/xhtml/*</from-view-id>
+		<navigation-case>
+			<from-outcome>taskList</from-outcome>
+			<to-view-id>/xhtml/tasklist/tasklistPage.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>createBundle</from-outcome>
+			<to-view-id>/xhtml/review/createBundle.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>createReview</from-outcome>
+			<to-view-id>/xhtml/review/createReviewPage.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>dashboard</from-outcome>
+			<to-view-id>/xhtml/dashboard/reviewManagementDashboard.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>adminConsole</from-outcome>
+			<to-view-id>/xhtml/admin/departmentSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToApplicationTable</from-outcome>
+			<to-view-id>/xhtml/admin/applicationSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToConflictsTable</from-outcome>
+			<to-view-id>/xhtml/admin/conflictSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToConflictTypesTable</from-outcome>
+			<to-view-id>/xhtml/admin/conflictTypeSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToDivisionsTable</from-outcome>
+			<to-view-id>/xhtml/admin/divisionSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToDepartmentsTable</from-outcome>
+			<to-view-id>/xhtml/admin/departmentSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToEnvironmentsTable</from-outcome>
+			<to-view-id>/xhtml/admin/environmentSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToFunctionDutyTable</from-outcome>
+			<to-view-id>/xhtml/admin/functionDutySummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToReviewOwnerTable</from-outcome>
+			<to-view-id>/xhtml/admin/reviewOwnerSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToSodOwnerTable</from-outcome>
+			<to-view-id>/xhtml/admin/sodOwnerSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToDataOwnerTable</from-outcome>
+			<to-view-id>/xhtml/admin/dataOwnerSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToSoxConcernTable</from-outcome>
+			<to-view-id>/xhtml/admin/soxConcernSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToUserStatusTable</from-outcome>
+			<to-view-id>/xhtml/admin/userStatusSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToUserTypeTable</from-outcome>
+			<to-view-id>/xhtml/admin/userTypeSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToExceptionReporting</from-outcome>
+			<to-view-id>/xhtml/admin/exceptionSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToUserTable</from-outcome>
+			<to-view-id>/xhtml/admin/userSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToPrivilegeComments</from-outcome>
+			<to-view-id>/xhtml/admin/privCommentSummary.xhtml</to-view-id>
+		</navigation-case>
+		<!-- made this change
+		<navigation-case>
+			<from-outcome>updateFieldPrivComment</from-outcome>
+			<to-view-id>/xhtml/admin/updateFieldPrivComment.xhtml</to-view-id>
+		</navigation-case>-->
+		<navigation-case>
+			<from-outcome>rejectedUserSummary</from-outcome>
+			<to-view-id>/xhtml/admin/rejectedUserSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToUserTable</from-outcome>
+			<to-view-id>/xhtml/admin/userSummary.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>switchToRejectedUsers</from-outcome>
+			<to-view-id>/xhtml/admin/rejectedUserSummary.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<from-view-id>/xhtml/tasklist/tasklistPage.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>employeeList</from-outcome>
+			<to-view-id>/xhtml/reviewerReport/employeeList.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>reviewDetails</from-outcome>
+			<to-view-id>/xhtml/reviewDetails/reviewDetailsPage.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>bundlePreview</from-outcome>
+			<to-view-id>/xhtml/review/reviewBundleSummaryPage.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>actionRequired</from-outcome>
+			<to-view-id>/xhtml/actionRequired/actionRequired.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>rejectedUser</from-outcome>
+			<to-view-id>/xhtml/actionRequired/rejectUserPage.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<from-view-id>/xhtml/reviewDetails/reviewDetailsPage.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>employeeList</from-outcome>
+			<to-view-id>/xhtml/reviewerReport/employeeList.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<from-view-id>/xhtml/reviewerReport/employeeList.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>accessList</from-outcome>
+			<to-view-id>/xhtml/reviewerReport/accessList.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>reviewDetails</from-outcome>
+			<to-view-id>/xhtml/reviewDetails/reviewDetailsPage.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>printEmployeeList</from-outcome>
+			<to-view-id>/xhtml/reviewerReport/printEmployeeList.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<from-view-id>/xhtml/reviewerReport/accessList.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>employeeList</from-outcome>
+			<to-view-id>/xhtml/reviewerReport/employeeList.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>accessList</from-outcome>
+			<to-view-id>/xhtml/reviewerReport/accessList.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>reviewUserDashboard</from-outcome>
+			<to-view-id>/xhtml/dashboard/reviewUserDashboard.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>printAccessList</from-outcome>
+			<to-view-id>/xhtml/reviewerReport/printAccessList.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<from-view-id>/xhtml/dashboard/reviewManagementDashboard.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>selectReview</from-outcome>
+			<to-view-id>/xhtml/dashboard/reviewDashboard.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<from-view-id>/xhtml/dashboard/reviewDashboard.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>selectReviewer</from-outcome>
+			<to-view-id>/xhtml/dashboard/reviewUserDashboard.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>reviewMgmtDashboard</from-outcome>
+			<to-view-id>/xhtml/dashboard/reviewManagementDashboard.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<from-view-id>/xhtml/dashboard/reviewUserDashboard.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>accessList</from-outcome>
+			<to-view-id>/xhtml/reviewerReport/accessList.xhtml</to-view-id>
+		</navigation-case>
+		<navigation-case>
+			<from-outcome>reviewDashboard</from-outcome>
+			<to-view-id>/xhtml/dashboard/reviewDashboard.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<navigation-rule>
+		<from-view-id>/xhtml/reviewerReport/rejectReviewUsersModalPanelComponent.xhtml</from-view-id>
+		<navigation-case>
+			<from-outcome>reportSummary</from-outcome>
+			<to-view-id>/xhtml/reviewerReport/employeeList.xhtml</to-view-id>
+		</navigation-case>
+	</navigation-rule>
+	<render-kit>
+		<render-kit-id>HTML_BASIC</render-kit-id>
+		<render-kit-class>org.apache.myfaces.renderkit.html.HtmlRenderKitImpl</render-kit-class>
+	</render-kit>
+	<application>
+		<view-handler>com.sun.facelets.FaceletViewHandler</view-handler>
+		<variable-resolver>org.springframework.web.jsf.DelegatingVariableResolver</variable-resolver>
+	</application>
+	<lifecycle>
+		<phase-listener>com.assurant.inc.sox.ar.utils.LoggedInCheck</phase-listener>
+	</lifecycle>
+</faces-config>
