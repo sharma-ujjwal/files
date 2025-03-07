@@ -704,4 +704,8 @@
 		<auth-method>BASIC</auth-method>
 	</login-config>
 </web-app>
+
+[INFO] [ERROR   ] CWWKZ0002E: An exception occurred while starting the application soxautoreviews. The exception message was: com.ibm.ws.container.service.metadata.MetaDataException: SRVE0303E: Servlet name not found adding servlet mapping; servlet name=SpringContextServlet; URL pattern=/SpringContextServlet; module=soxautoreviews; application=soxautoreviews    
+
+
 ```
