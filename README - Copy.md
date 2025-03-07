@@ -784,4 +784,26 @@ Caused by: java.lang.ClassNotFoundException: org.springframework.web.jsf.Delegat
 	... 24 more
 
 
+javax.servlet.ServletException: component identifier must not be a zero-length String
+at javax.faces.webapp.FacesServlet.service(FacesServlet.java:236)
+at [internal classes]
+at org.richfaces.webapp.PushFilter.doFilter(PushFilter.java:96)
+at com.ibm.ws.webcontainer.filter.FilterInstanceWrapper.doFilter(FilterInstanceWrapper.java:203)
+at [internal classes]
+at com.assurant.inc.sox.ar.servlets.RedirectServlet.doPost(RedirectServlet.java:73)
+at com.assurant.inc.sox.ar.servlets.BaseServlet.doGet(BaseServlet.java:17)
+at javax.servlet.http.HttpServlet.service(HttpServlet.java:686)
+at [internal classes]
+Caused by: java.lang.IllegalArgumentException: component identifier must not be a zero-length String
+at javax.faces.component.UIComponentBase.isIdValid(UIComponentBase.java:2441)
+at [internal classes]
+at org.richfaces.view.facelets.html.BehaviorsAddingComponentHandlerWrapper.applyNextHandler(BehaviorsAddingComponentHandlerWrapper.java:53)
+at org.apache.myfaces.view.facelets.tag.jsf.ComponentTagHandlerDelegate.apply(ComponentTagHandlerDelegate.java:373)
+at [internal classes]
+at org.richfaces.view.facelets.html.BehaviorsAddingComponentHandlerWrapper.applyNextHandler(BehaviorsAddingComponentHandlerWrapper.java:53)
+at org.apache.myfaces.view.facelets.tag.jsf.ComponentTagHandlerDelegate.apply(ComponentTagHandlerDelegate.java:373)
+... 8 more
+
+
+
 ```
