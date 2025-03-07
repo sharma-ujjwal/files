@@ -377,6 +377,6 @@ web.xml
 [INFO] +- commons-codec:commons-codec:jar:1.15:compile
 [INFO] \- net.sf.ehcache:ehcache:jar:2.10.9.2:compile
 
-
+[INFO] [ERROR   ] CWWKZ0002E: An exception occurred while starting the application soxautoreviews. The exception message was: com.ibm.ws.container.service.metadata.MetaDataException: SRVE0303E: Servlet name not found adding servlet mapping; servlet name=SpringContextServlet; URL pattern=/SpringContextServlet; module=soxautoreviews; application=soxautoreviews    
 
 ```
