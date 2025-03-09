@@ -805,5 +805,8 @@ at org.apache.myfaces.view.facelets.tag.jsf.ComponentTagHandlerDelegate.apply(Co
 ... 8 more
 
 
+Caused by: javax.faces.view.facelets.TagException: /xhtml/common/main.xhtml at line 11 and column 139 <h:outputStyleSheet> Tag Library supports namespace: http://xmlns.jcp.org/jsf/html, but no tag was defined for name: outputStyleSheet
+at org.apache.myfaces.view.facelets.compiler.CompilationManager.pushTag(CompilationManager.java:300)
+
 
 ```
