@@ -788,5 +788,270 @@ Caused by: javax.el.PropertyNotFoundException: Target Unreachable, identifier 't
 [INFO]  at org.apache.el.parser.AstValue.getTarget(AstValue.java:72)
 
 
+package com.assurant.inc.sox.ar.client.bean;
+
+import com.assurant.inc.sox.ar.client.bean.tasklist.AllTaskListBean;
+import com.assurant.inc.sox.ar.client.bean.tasklist.BigBrotherTaskListBean;
+import com.assurant.inc.sox.ar.client.bean.tasklist.MyTaskListBean;
+import com.assurant.inc.sox.ar.client.bean.tasklist.RejectedAccessesTaskListBean;
+import com.assurant.inc.sox.ar.client.bean.util.JSFUtils;
+import com.assurant.inc.sox.ar.client.ui.SystemUserUI;
+import com.assurant.inc.sox.ar.client.ui.tasklist.AbstractTaskListUI;
+import com.assurant.inc.sox.ar.client.ui.tasklist.ActionRequiredTasklistUI;
+import com.assurant.inc.sox.ar.dto.SystemUserDTO;
+import com.assurant.inc.sox.ar.service.impl.SystemUserService;
+import com.assurant.inc.sox.ar.utils.http.HttpHelper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.jsf.FacesContextUtils;
+
+import javax.annotation.PostConstruct;
+import javax.faces.bean.SessionScoped;
+import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+@Component("sessionDataBean")
+@SessionScoped
+public class SessionDataBean {
+
+	/*
+	 * logger
+	 */
+	private static final Logger logger = LoggerFactory.getLogger(SessionDataBean.class);
+
+	private SystemUserUI systemUser;
+	private String selectedTabId;
+	private static final String ALL_TASK_TAB_ID = "allTaskTab";
+	private static final String MY_TASK_TAB_ID = "myTaskTab";
+	private static final String BIG_BROTHER_TASK_TAB_ID = "bigBrotherTaskTab";
+	private static final String REJECTED_ACCESSES_TAB_ID = "rejectedAccessestab";
+
+
+	@PostConstruct
+	public void init() {
+		HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+		// Enumeration headerNames = request.getHeaderNames();
+		// while(headerNames.hasMoreElements()){
+		// String headerName = (String) headerNames.nextElement();
+		// logger.debug("-------------http header name = " + headerName);
+		// logger.debug("-------------http header = " + request.getHeader(headerName));
+		// }
+
+		String userId = request.getHeader("sm_user");
+		String ldapGroups = request.getHeader("sm_groups");
+		String lastName = request.getHeader("sm_lastname");
+		String firstName = request.getHeader("sm_firstname");
+		if (userId == null || userId.equals("")) {
+			//userId = "DS03287";
+			//lastName = "test";
+			//firstName = "FirstName";
+			userId = "TESTSOXITOWNER";
+			lastName = "Dummy";
+			firstName = "User";
+		}
+		logger.debug("-------------User Info =  lastName " + lastName + " firstName - " +firstName);
+		logger.debug("-------------User Info =  SM_USER " + userId );
+		logger.debug("-------------User LDAP groups : = "+ldapGroups);
+		SystemUserDTO systemUserDTO = (SystemUserDTO) FacesContextUtils.getWebApplicationContext(FacesContext.getCurrentInstance())
+				.getBean("sessionSystemUser");
+
+		SystemUserService systemUserService = (SystemUserService) FacesContextUtils.getWebApplicationContext(
+				FacesContext.getCurrentInstance()).getBean("systemUserService");
+
+		String soxLdapITComplianceRole = (String) FacesContextUtils.getWebApplicationContext(FacesContext.getCurrentInstance())
+				.getBean("soxLdapITComplianceRole");
+
+		String soxLdapReviewerRole = (String) FacesContextUtils.getWebApplicationContext(FacesContext.getCurrentInstance()).getBean(
+				"soxLdapReviewerRole");
+
+		String soxLdapIpsUserRole = (String) FacesContextUtils.getWebApplicationContext(FacesContext.getCurrentInstance()).getBean(
+				"soxLdapIpsUserRole");
+		logger.info("soxLdapITComplianceRole :"+soxLdapITComplianceRole+"  soxLdapReviewerRole : "+soxLdapReviewerRole+ "  soxLdapIpsUserRole : "+soxLdapIpsUserRole);
+
+		//List<String> ldapRoles = null;// HttpHelper.parseHttpHeaderGroups(ldapGroups);
+		List<String> ldapRoles = HttpHelper.parseHttpHeaderGroups(ldapGroups);
+		logger.debug("-------------SM_GROUPS = " + ldapRoles);
+
+		// TODO temp remove
+		/*if(ldapGroups == null ||ldapGroups.equals("")){
+			ldapRoles.add("EBSOXMTL");
+			ldapRoles.add("EBSOXITOWNER");
+			//ldapRoles.add("EBSOXIPSUSER");
+			ldapRoles.add("EBSOXAPP");
+			ldapRoles.add("EBBOSOXDESIGNER");
+		}
+
+		ldapRoles = new ArrayList<String>();
+		ldapRoles.add("EBSOXMTL");
+		ldapRoles.add("EBSOXITOWNER");
+		//ldapRoles.add("EBSOXIPSUSER");
+		ldapRoles.add("EBSOXAPP");
+		ldapRoles.add("EBBOSOXDESIGNER");*/
+//		 TODO temp remove
+//		 userId = "DR00111";
+		// userId = "testsoxitowner";
+		//userId = "DS03287";
+//		userId = "TESTSOXITOWNER";
+//		userId = "EU74777";
+
+		if (ldapRoles != null) {
+			systemUserDTO.setItComplianceUser(ldapRoles.contains(soxLdapITComplianceRole));
+			systemUserDTO.setReviewer(ldapRoles.contains(soxLdapReviewerRole));
+			systemUserDTO.setIpsUser(ldapRoles.contains(soxLdapIpsUserRole));
+		}
+
+		systemUserDTO.setLdapRoles(ldapRoles);
+		systemUserDTO.setUserId(userId.toUpperCase());
+		systemUserDTO.setFirstName(firstName);
+		systemUserDTO.setLastName(lastName);
+
+		systemUserDTO = systemUserService.getSystemUserAccesses(ldapRoles);
+
+		this.setSystemUser(new SystemUserUI(systemUserDTO));
+	}
+
+	public SessionDataBean() {
+
+		this.selectedTabId = MY_TASK_TAB_ID;
+
+		/*
+		 * http header stuff
+		 */
+	}
+
+	public SystemUserUI getSystemUser() {
+		return systemUser;
+	}
+
+	public void setSystemUser(SystemUserUI systemUser) {
+		this.systemUser = systemUser;
+	}
+
+	public String getLoggedInUserId() {
+		return getSystemUser().getUserId();
+	}
+
+	public void initSelectedTasklistBean() {
+		if (this.selectedTabId.equals(MY_TASK_TAB_ID)) {
+			MyTaskListBean bean = (MyTaskListBean) JSFUtils.lookupBean("myTaskListBean");
+			bean.initBean();
+		} else if (this.selectedTabId.equals(ALL_TASK_TAB_ID)) {
+			AllTaskListBean bean = (AllTaskListBean) JSFUtils.lookupBean("allTaskListBean");
+			bean.initBean();
+		} else if (this.selectedTabId.equals(BIG_BROTHER_TASK_TAB_ID)) {
+			BigBrotherTaskListBean bean = (BigBrotherTaskListBean) JSFUtils.lookupBean("bigBrotherTaskListBean");
+			bean.initBean();
+		} else if (this.selectedTabId.equals(REJECTED_ACCESSES_TAB_ID)) {
+			RejectedAccessesTaskListBean bean = (RejectedAccessesTaskListBean) JSFUtils.lookupBean("rejectedAccessesTaskListBean");
+			bean.initBean();
+		}
+
+	}
+
+	private void unloadTasklistBeans() {
+		MyTaskListBean myBean = (MyTaskListBean) JSFUtils.lookupBean("myTaskListBean");
+		myBean.unloadBean();
+
+		AllTaskListBean allBean = (AllTaskListBean) JSFUtils.lookupBean("allTaskListBean");
+		allBean.unloadBean();
+
+		BigBrotherTaskListBean bigBroBean = (BigBrotherTaskListBean) JSFUtils.lookupBean("bigBrotherTaskListBean");
+		bigBroBean.unloadBean();
+
+		RejectedAccessesTaskListBean rejAccessBean = (RejectedAccessesTaskListBean) JSFUtils
+				.lookupBean("rejectedAccessesTaskListBean");
+		rejAccessBean.unloadBean();
+
+	}
+
+	public String doMyTaskListTabSwitch() {
+		this.selectedTabId = MY_TASK_TAB_ID;
+		this.unloadTasklistBeans();
+		this.initSelectedTasklistBean();
+		return null;
+	}
+
+	public String doAllTaskListTabSwitch() {
+		this.selectedTabId = ALL_TASK_TAB_ID;
+		this.unloadTasklistBeans();
+		this.initSelectedTasklistBean();
+		return null;
+	}
+
+	public String doBigBrotherTaskListTabSwitch() {
+		this.selectedTabId = BIG_BROTHER_TASK_TAB_ID;
+		this.unloadTasklistBeans();
+		this.initSelectedTasklistBean();
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public String doRejectedAccessesTaskListTabSwitch() {
+		this.selectedTabId = REJECTED_ACCESSES_TAB_ID;
+
+		MyTaskListBean myBean = (MyTaskListBean) JSFUtils.lookupBean("myTaskListBean");
+		List<AbstractTaskListUI> tasks = (List<AbstractTaskListUI>) myBean.getTaskListTable().getValue();
+		if (tasks.size() > 0) {
+			List<ActionRequiredTasklistUI> filteredList = new ArrayList<ActionRequiredTasklistUI>();
+			for (AbstractTaskListUI taskList : tasks) {
+				if (taskList instanceof ActionRequiredTasklistUI) {
+					filteredList.add((ActionRequiredTasklistUI) taskList);
+				}
+			}
+			this.unloadTasklistBeans();
+			RejectedAccessesTaskListBean rejAccessBean = (RejectedAccessesTaskListBean) JSFUtils
+					.lookupBean("rejectedAccessesTaskListBean");
+			rejAccessBean.prePopTable(filteredList);
+		}
+		else {
+			this.unloadTasklistBeans();
+		}
+
+
+		this.initSelectedTasklistBean();
+		return null;
+	}
+
+	public String getAllTaskTabId() {
+		return ALL_TASK_TAB_ID;
+	}
+
+	public String getMyTaskTabId() {
+		return MY_TASK_TAB_ID;
+	}
+
+	public String getBigBrotherTaskTabId() {
+		return BIG_BROTHER_TASK_TAB_ID;
+	}
+
+	public String getRejectedAccessesTaskTabId() {
+		return REJECTED_ACCESSES_TAB_ID;
+	}
+
+	public String getSelectedTabId() {
+		return selectedTabId;
+	}
+
+	public void setSelectedTabId(String selectedTabId) {
+		this.selectedTabId = selectedTabId;
+	}
+
+	public boolean isItComplianceUser() {
+		return systemUser.isItComplianceUser();
+	}
+
+	public boolean isReviewer() {
+		return systemUser.isReviewer();
+	}
+
+}
+
+Exception caught while initializing context: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'sessionDataBean': I
+nvocation of init method failed; nested exception is java.lang.NullPointerException: Cannot invoke "javax.faces.context.FacesContext.getExternalContext()" because the return value of "javax.faces.context.FacesContext.getCurrentInstance()" is null
+
+
 
 ```
