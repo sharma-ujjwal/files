@@ -373,8 +373,8 @@ at com.ibm.ws.webcontainer.webapp.WebApp.handleRequest(WebApp.java:5154)
 </faces-config>
 
 
-Exception caught while initializing context: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'application
-Service': Unsatisfied dependency expressed through field 'applicationDao'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 
-'applicationDao': Injection of resource dependencies failed; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'sessionFactor
-y' defined in ServletContext resource [/WEB-INF/springDataConfig.xml]: Cannot resolve reference to bean 'dataSourceSox' while setting bean property 'dataSource'; nested exception is 
-org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceSox': Invocation of init method failed; nested exception is javax.naming.NameNotFoundException: Intermediate context does not exist: jdbc/SoxDataSource
+An exception occurred while starting the application soxautoreviews. The exception message was: com.ibm.ws.container.service.state.StateChangeException:
+ org.jboss.weld.exceptions.DeploymentException: WELD-001414: Bean name is ambiguous. Name oam_PUSH_CONTEXT_FACTORY_BEAN_NAME resolves to beans: [Managed Bean [class org.apache.myface
+s.push.cdi.PushContextFactoryBean] with qualifiers [@Default @Any @Named], Managed Bean [class org.apache.myfaces.push.cdi.PushContextFactoryBean] with qualifiers [@Default @Any @Named]]
+
+
