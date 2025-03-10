@@ -1,96 +1,10 @@
-Exception thrown by application class 'javax.faces.webapp.FacesServlet.service:236'
-javax.servlet.ServletException: javax.el.PropertyNotFoundException: Target Unreachable, identifier 'taskListBeanName' resolved to null
-at javax.faces.webapp.FacesServlet.service(FacesServlet.java:236)
+javax.servlet.ServletException: /xhtml/tasklist/selectableTasksTemplateComponent.xhtml at line 58 and column 42 <rich:toolBar> Tag Library supports namespace: http://richfaces.org/rich, but no tag was defined for name: toolBar
+at javax.faces.webapp.FacesServlet.service(FacesServlet.java:220)
 at [internal classes]
 at com.assurant.inc.sox.ar.servlets.RedirectServlet.doPost(RedirectServlet.java:73)
 at com.assurant.inc.sox.ar.servlets.BaseServlet.doGet(BaseServlet.java:17)
 at javax.servlet.http.HttpServlet.service(HttpServlet.java:686)
 at [internal classes]
-Caused by: org.apache.myfaces.view.facelets.el.ContextAwarePropertyNotFoundException: javax.el.PropertyNotFoundException: Target Unreachable, identifier 'taskListBeanName' resolved to null
-at org.apache.myfaces.view.facelets.el.ContextAwareTagValueExpression.setValue(ContextAwareTagValueExpression.java:150)
-at [internal classes]
-at org.richfaces.view.facelets.html.BehaviorsAddingComponentHandlerWrapper.applyNextHandler(BehaviorsAddingComponentHandlerWrapper.java:53)
-at org.apache.myfaces.view.facelets.tag.jsf.ComponentTagHandlerDelegate.apply(ComponentTagHandlerDelegate.java:373)
-at [internal classes]
-at org.richfaces.view.facelets.html.BehaviorsAddingComponentHandlerWrapper.applyNextHandler(BehaviorsAddingComponentHandlerWrapper.java:53)
-at org.apache.myfaces.view.facelets.tag.jsf.ComponentTagHandlerDelegate.apply(ComponentTagHandlerDelegate.java:373)
-at [internal classes]
-at org.richfaces.view.facelets.html.BehaviorsAddingComponentHandlerWrapper.applyNextHandler(BehaviorsAddingComponentHandlerWrapper.java:53)
-at org.apache.myfaces.view.facelets.tag.jsf.ComponentTagHandlerDelegate.apply(ComponentTagHandlerDelegate.java:373)
-at [internal classes]
-at org.richfaces.view.facelets.html.BehaviorsAddingComponentHandlerWrapper.applyNextHandler(BehaviorsAddingComponentHandlerWrapper.java:53)
-at org.apache.myfaces.view.facelets.tag.jsf.ComponentTagHandlerDelegate.apply(ComponentTagHandlerDelegate.java:373)
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html
-		xmlns="http://www.w3.org/1999/xhtml"
-		xmlns:ui="http://java.sun.com/jsf/facelets"
-		xmlns:h="http://xmlns.jcp.org/jsf/html"
-		xmlns:f="http://java.sun.com/jsf/core"
-		xmlns:rich="http://richfaces.org/rich"
-		xmlns:a4j="http://richfaces.org/a4j">
-
-<ui:composition template="../common/main.xhtml">
-	<ui:define name="body">
-		<div id="taskListDiv" class="inline">
-			<h:outputLabel id="taskListLabel" styleClass="sectionHeader" value="Task List"/>
-			<a4j:status id="taskListStatus">
-				<f:facet name="start"><h:graphicImage id="loaderImage" value="/images/loader.gif"/></f:facet>
-			</a4j:status>
-		</div>
-		<rich:tabPanel id="taskListTabPanel" switchType="ajax" tabClass="tabStyle"
-					   selectedTab="#{sessionDataBean.selectedTabId}">
-
-			<rich:tab id="myTaskTab" label="My Tasks"
-					  action="#{sessionDataBean.doMyTaskListTabSwitch}">
-				<ui:include src="tasksTemplateComponent.xhtml">
-					<ui:param name="taskListBeanName" value="#{myTaskListBean}"/>
-					<ui:param name="idPrefix" value="#{myTaskListBean.idPrefix}"/>
-				</ui:include>
-			</rich:tab>
-
-			<rich:tab id="reviewerTaskTab" label="Reviewer Tasks"
-					  action="#{sessionDataBean.doAllTaskListTabSwitch}" rendered="#{sessionDataBean.itComplianceUser}">
-				<ui:include src="selectableTasksTemplateComponent.xhtml">
-					<ui:param name="taskListBeanName" value="#{allTaskListBean}"/>
-					<ui:param name="idPrefix" value="#{allTaskListBean.idPrefix}"/>
-				</ui:include>
-			</rich:tab>
-
-			<rich:tab id="teamTaskTab" label="My Team's Tasks"
-					  action="#{sessionDataBean.doBigBrotherTaskListTabSwitch}" rendered="#{sessionDataBean.reviewer}">
-				<ui:include src="tasksTemplateComponent.xhtml">
-					<ui:param name="taskListBeanName" value="#{bigBrotherTaskListBean}"/>
-					<ui:param name="idPrefix" value="#{bigBrotherTaskListBean.idPrefix}"/>
-				</ui:include>
-			</rich:tab>
-
-			<rich:tab id="rejectedAccessesTaskTab" label="Rejected Accesses"
-					  action="#{sessionDataBean.doRejectedAccessesTaskListTabSwitch}" rendered="#{sessionDataBean.itComplianceUser}">
-				<ui:include src="tasksTemplateComponent.xhtml">
-					<ui:param name="taskListBeanName" value="#{rejectedAccessesTaskListBean}"/>
-					<ui:param name="idPrefix" value="#{rejectedAccessesTaskListBean.idPrefix}"/>
-				</ui:include>
-			</rich:tab>
-
-		</rich:tabPanel>
-	</ui:define>
-
-	<ui:define name="modalPanels">
-		<a4j:outputPanel ajaxRendered="true" id="reviewDetailsModalAjaxPanel">
-			<ui:include src="reassignReviewerModalPanelComponent.xhtml"/>
-		</a4j:outputPanel>
-		<a4j:outputPanel ajaxRendered="true" id="myTaskLockPanelModalAjaxPanel">
-			<ui:include src="myTaskBreakLockModalPanelComponent.xhtml"/>
-		</a4j:outputPanel>
-		<a4j:outputPanel ajaxRendered="true" id="rejectAccessLockPanelModalAjaxPanel">
-			<ui:include src="rejectAccessBreakLockModalPanelComponent.xhtml"/>
-		</a4j:outputPanel>
-	</ui:define>
-
-</ui:composition>
-
-</html>
 
 <html xmlns="http://www.w3.org/1999/xhtml" 
 	xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -133,10 +47,11 @@ Include this xhtml file with ui:include tags and provide the following parameter
 			</a4j:outputPanel>
 			
 <!--			<rich:spacer width="10" />				-->
-			<br/>
+			<br />
+			<br />
 			<a4j:commandButton value="Go" action="#{taskListBeanName.doApplyFilter}" />
 <!--			<rich:spacer width="5" /> -->
-			<br/>
+			<br />
 			<a4j:commandButton value="Clear" action="#{taskListBeanName.doClearFilterFields}"
 				reRender="#{idPrefix}searchForPanel,#{idPrefix}FilterType,#{idPrefix}FilterValue"/>
 		</div>
@@ -148,12 +63,27 @@ Include this xhtml file with ui:include tags and provide the following parameter
 				reRender="#{idPrefix}FilterType, #{idPrefix}FilterValue"/>
 		</div>
 		<a4j:outputPanel ajaxRendered="true" id="#{idPrefix}TablePanel">
+			<rich:toolBar id="allTaskListToolBar">
+				<rich:toolBarGroup>
+					<a4j:commandLink id="allTaskListToolBarReassignLink" value="Reassign"
+						action="#{allTaskListBean.doPrepareReassignReviewersPanel}" styleClass="undecoratedDistributeLink"/>
+				</rich:toolBarGroup>
+			</rich:toolBar>
 			<rich:dataTable id="#{idPrefix}Table" binding="#{taskListBeanName.taskListTable}"/>
+			<rich:toolBar id="bottomAllTaskListToolBar">
+				<rich:toolBarGroup>
+					<a4j:commandLink id="bottomAllTaskListToolBarReassignLink" value="Reassign"
+						action="#{allTaskListBean.doPrepareReassignReviewersPanel}" 
+						styleClass="undecoratedDistributeLink"
+						oncomplete="window.scrollTo(0, 0);" />
+				</rich:toolBarGroup>
+			</rich:toolBar>
 			<table width="100%">
 				<tbody>
 					<tr>
 						<td align="left">
-							<rich:dataScroller align="left" for="#{idPrefix}Table" maxPages="20" id="#{idPrefix}TableDataScroller" />
+							<rich:datascroller align="left" for="#{idPrefix}Table" maxPages="20" id="#{idPrefix}TableDataScroller" 
+								  scrollerListener="#{taskListBeanName.doScrollerListener}" />
 						</td>
 						<td align="right"> 
 							<h:selectOneMenu value="#{taskListBeanName.displayAmount}" styleClass="fieldValue" >
