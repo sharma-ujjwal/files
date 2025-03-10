@@ -372,3 +372,9 @@ at com.ibm.ws.webcontainer.webapp.WebApp.handleRequest(WebApp.java:5154)
 	</application>
 </faces-config>
 
+
+Exception caught while initializing context: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'application
+Service': Unsatisfied dependency expressed through field 'applicationDao'; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 
+'applicationDao': Injection of resource dependencies failed; nested exception is org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'sessionFactor
+y' defined in ServletContext resource [/WEB-INF/springDataConfig.xml]: Cannot resolve reference to bean 'dataSourceSox' while setting bean property 'dataSource'; nested exception is 
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'dataSourceSox': Invocation of init method failed; nested exception is javax.naming.NameNotFoundException: Intermediate context does not exist: jdbc/SoxDataSource
