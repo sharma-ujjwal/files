@@ -1,42 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<properties>
+		<jdkTargetVersion>17</jdkTargetVersion>
+		<log4j.version>1.4.14</log4j.version>
+		<spring.version>5.3.31</spring.version>
+		<javax.mail.version>2.0.1</javax.mail.version>
+		<richfaces.version>4.5.17.Final</richfaces.version>
+		<myfaces.version>2.2.15</myfaces.version>
+		<commons-lang.version>3.14.0</commons-lang.version>
+		<jersey.version>1.19.4</jersey.version>
+		<aspectj.version>1.9.7</aspectj.version>
+		<slf4j.version>2.0.7</slf4j.version>
+		<asm.version>9.5</asm.version>
+		<dozer.version>5.5.1</dozer.version>
+		<javax.el.version>6.0.1</javax.el.version>
+		<javax.servlet.jsp.api.version>2.3.3</javax.servlet.jsp.api.version>
+		<facelets.version>1.1.14</facelets.version>
+		<commons-digester.version>2.1</commons-digester.version>
+		<junit.version>4.13.2</junit.version>
+		<ojdbc.version>21.9.0.0</ojdbc.version>
+		<glassfish-el.version>5.0.0</glassfish-el.version>
+		<commons-codec.version>1.15</commons-codec.version>
+		<ehcache.version>2.10.9.2</ehcache.version>
+		<javax.servlet.api.version>4.0.1</javax.servlet.api.version>
+	</properties>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.assurant.inc.sox.ar</groupId>
+	<artifactId>newsoxautoreviews</artifactId>
+	<packaging>war</packaging>
+	<name>Sox AutoReviews War</name>
+	<version>4.0-SNAPSHOT</version>
+	<description />
+	<build>
+		<finalName>newsoxautoreviews</finalName>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/main/resources</directory>
+				<targetPath>${basedir}/WebContent/WEB-INF/classes</targetPath>
+				<includes>
+					<include>log4j.xml</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.java</exclude>
+					<exclude>${basedir}/src/test</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>${jdkTargetVersion}</source>
+					<target>${jdkTargetVersion}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>3.3.1</version>
 
-```
-Imports System.Runtime.InteropServices
+				<configuration>
+					<webResources>
+						<resource>
+							<directory>WebContent</directory>
+						</resource>
+					</webResources>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<outputDirectory>WebContent/WEB-INF/lib</outputDirectory>
+							<excludeScope>provided</excludeScope>
 
-<ComVisible(True)>
-<Guid("0ABBE17C-CD4E-4B6C-B5B7-A9E70E6845E1")>
-<ClassInterface(ClassInterfaceType.None)>
-Public Class FlexGridWrapper
-    Implements IFlexGridWrapper
-
-    ' Double-click event handler
-    Private Sub flexGrid_DoubleClick(sender As Object, e As EventArgs) Handles flexGrid.DoubleClick
-        Dim selectedRow As Integer = flexGrid.Row
-        Dim rowData As String = ""
-
-        ' Fetch row data
-        For col As Integer = 0 To flexGrid.Cols - 1
-            rowData &= flexGrid.get_TextMatrix(selectedRow, col).ToString() & ";"
-        Next
-
-        ' Open MS Access and pass data
-        OpenAccessForm("frmBatchDialog", rowData)
-    End Sub
-
-    ' Open MS Access form without needing a COM reference
-    Private Sub OpenAccessForm(ByVal formName As String, ByVal rowData As String)
-        Try
-            ' Get a reference to the running MS Access instance
-            Dim accessApp As Object = Marshal.GetActiveObject("Access.Application")
-
-            ' Open the form
-            accessApp.DoCmd.OpenForm(formName, 0) ' 0 = acNormal view
-
-            ' Set form field
-            Dim accessForm As Object = accessApp.Forms(formName)
-            accessForm.Controls("txtRowData").Value = rowData
-
-        Catch ex As Exception
-            Throw New Exception("Error opening MS Access form: " & ex.Message)
-        End Try
-    End Sub
-End Class
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-source-plugin</artifactId>
+				<configuration>
+					<attach>true</attach>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>clean</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>WebContent/WEB-INF/lib</directory>
+							<includes>
+								<include>**/*.jar</include>
+							</includes>
+						</fileset>
+						<fileset>
+							<directory>src/main/webapp/WEB-INF/classes</directory>
+							<includes>
+								<include>*.*</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<testFailureIgnore>true</testFailureIgnore>
+					<skipTests>true</skipTests>
+					<excludes>
+						<exclude>**/Test*.java</exclude>
+						<exclude>**/*Test.java</exclude>
+						<exclude>**/*Mock.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>com.assurant.inc.sox</groupId>
+			<artifactId>SoxDataAccess</artifactId>
+			<version>3.6-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.richfaces</groupId>
+			<artifactId>richfaces</artifactId>
+			<version>${richfaces.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.myfaces.core</groupId>
+			<artifactId>myfaces-api</artifactId>
+			<version>${myfaces.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.myfaces.core</groupId>
+			<artifactId>myfaces-impl</artifactId>
+			<version>${myfaces.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.myfaces.core</groupId>
+					<artifactId>myfaces-push</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>${commons-lang.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.mail</groupId>
+			<artifactId>jakarta.mail-api</artifactId>
+			<version>2.1.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-asm</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.persistence</groupId>
+			<artifactId>jakarta.persistence-api</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
+			<version>${aspectj.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ow2.asm</groupId>
+			<artifactId>asm</artifactId>
+			<version>${asm.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-core</artifactId>
+			<version>${log4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.dozer</groupId>
+			<artifactId>dozer</artifactId>
+			<version>${dozer.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.el</groupId>
+			<artifactId>jakarta.el-api</artifactId>
+			<version>${javax.el.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>${javax.servlet.api.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet.jsp</groupId>
+			<artifactId>javax.servlet.jsp-api</artifactId>
+			<version>${javax.servlet.jsp.api.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-digester</groupId>
+			<artifactId>commons-digester</artifactId>
+			<version>${commons-digester.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc11</artifactId>
+			<version>${ojdbc.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.expressly</groupId>
+			<artifactId>expressly</artifactId>
+			<version>${glassfish-el.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>${commons-codec.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.ehcache</groupId>
+			<artifactId>ehcache</artifactId>
+			<version>${ehcache.version}</version>
+		</dependency>
+	</dependencies>
+	<reporting>
+		<plugins>
+			<plugin>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>javadoc</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<configuration>
+					<targetJdk>${jdkTargetVersion}</targetJdk>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>jxr</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</reporting>
+</project>
