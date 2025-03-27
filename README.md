@@ -439,3 +439,150 @@ Caused by: java.lang.ClassCastException: class com.assurant.inc.sox.ar.client.ui
 at com.assurant.inc.sox.ar.client.ui.tasklist.BundleTaskListUI.getBundleStatus(BundleTaskListUI.java:22)
 at com.assurant.inc.sox.ar.client.ui.tasklist.BundleTaskListUI.isClickable(BundleTaskListUI.java:27)
 
+```
+return new AbstractTaskListDTO(new ReviewDTO(new Review(), new CodeDTO(new Code()), new CodeDTO(new Code()))) {
+			@Override
+			public String getAssignedTo() { return ""; }
+
+			@Override
+			public Date getCreateDate() { return new Date(); }
+
+			@Override
+			public String getName() { return "Default Task"; }
+
+			@Override
+			public String getTaskId() { return "0"; }
+
+			@Override
+			public TaskTypeCode getTypeCode() { return null; }
+
+			@Override
+			public String getStatus() { return "Unknown"; }
+
+			@Override
+			public boolean isLocked() { return false; }
+
+			@Override
+			public String getLockedBy() { return "N/A"; }
+
+			@Override
+			public Date getLockedDate() { return null; }
+
+			@Override
+			public ReviewDTO getReview() { return null; }
+		};
+```
+
+```
+package com.assurant.inc.sox.ar.dto.tasklist;
+
+import com.assurant.inc.sox.ar.dto.CodeDTO;
+import com.assurant.inc.sox.ar.dto.ReviewBundleDTO;
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+
+public class BundleTaskListDTO extends AbstractTaskListDTO {
+
+	private final ReviewBundleDTO reviewBundle;
+
+	public BundleTaskListDTO(ReviewDTO review, ReviewBundleDTO bundle) {
+		super(review);
+		this.reviewBundle = bundle;
+	}
+
+	@Override
+	public String getStatus() {
+		return this.reviewBundle.getStatus().getDisplay();
+	}
+
+	public CodeDTO getBundleStatus() {
+		return this.reviewBundle.getStatus();
+	}
+
+	public ReviewBundleDTO getReviewBundle() {
+		return reviewBundle;
+	}
+}
+
+```
+
+```
+package com.assurant.inc.sox.ar.dto.tasklist;
+
+import com.assurant.inc.sox.ar.dto.ReviewBundleDTO;
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+import com.assurant.inc.sox.ar.dto.ReviewerDTO;
+
+public class RejectedUserTasklistDTO extends AbstractTaskListDTO {
+
+	private Long rejectedReviewUserId;
+	private final ReviewerDTO reviewer;
+	private final ReviewBundleDTO reviewBundle;
+
+	public RejectedUserTasklistDTO(ReviewDTO review, ReviewBundleDTO reviewBundle, ReviewerDTO reviewer) {
+		super(review);
+		this.reviewBundle = reviewBundle;
+		this.reviewer = reviewer;
+	}
+
+	@Override
+	public String getStatus() {
+		return "Incomplete";
+	}
+
+	public Long getRejectedReviewUserId() {
+		return rejectedReviewUserId;
+	}
+
+	public void setRejectedReviewUserId(Long rejectedReviewUserId) {
+		this.rejectedReviewUserId = rejectedReviewUserId;
+	}
+
+	public ReviewBundleDTO getReviewBundle() {
+		return reviewBundle;
+	}
+
+	public ReviewerDTO getReviewer() {
+  	return reviewer;
+  }
+
+}
+
+```
+
+```
+package com.assurant.inc.sox.ar.dto.tasklist;
+
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+import com.assurant.inc.sox.ar.dto.ReviewerDTO;
+
+public class ReviewerTaskListDTO extends AbstractTaskListDTO {
+
+	private final ReviewerDTO reviewer;
+	private String status = "Incomplete";
+	public ReviewerTaskListDTO(ReviewDTO reviewDTO, ReviewerDTO reviewer) {
+		super(reviewDTO);
+		this.reviewer = reviewer;
+	}
+	
+	public ReviewerTaskListDTO(String status) {
+		super(null);
+		this.reviewer = null;
+		this.status = status;
+	}	
+
+	public ReviewerDTO getReviewer() {
+		return reviewer;
+	}
+
+	@Override
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+}
+```
+
