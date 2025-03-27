@@ -403,3 +403,36 @@ public class ReviewerTaskListUI extends AbstractTaskListUI implements ISelectabl
     }
 }
 
+public class BundleTaskListUI extends AbstractTaskListUI {
+
+    public BundleTaskListUI() {
+        super(); // Calls the no-args constructor of AbstractTaskListUI
+    }
+
+    public BundleTaskListUI(BundleTaskListDTO taskList) {
+        super(taskList);
+    }
+
+    public CodeDTO getBundleStatus() {
+        return ((BundleTaskListDTO) this.taskList).getBundleStatus();
+    }
+
+    @Override
+    public boolean isClickable() {
+        String codeValue = this.getBundleStatus().getValue();
+        return !(ReviewBundleStatusCode.SUBMITTED.getCode().equalsIgnoreCase(codeValue) || 
+                 ReviewBundleStatusCode.IN_PROCESS.getCode().equalsIgnoreCase(codeValue));
+    }
+
+    @Override
+    public Long getBackingEntiyId() {
+        return ((BundleTaskListDTO) this.taskList).getReviewBundle().getReviewBundleId();
+    }
+
+    @Override
+    public String getBackingEntityName() {
+        return "Bundle Id";
+    }
+}
+
+
