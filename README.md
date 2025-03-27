@@ -154,3 +154,113 @@ public abstract class AbstractTaskListUI {
 
 	public abstract String getBackingEntityName();
 }
+
+```
+```
+package com.assurant.inc.sox.ar.client.ui.tasklist;
+
+import com.assurant.inc.sox.ar.dto.CodeDTO;
+import com.assurant.inc.sox.ar.dto.ReviewBundleDTO;
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+import com.assurant.inc.sox.ar.dto.enums.ReviewBundleStatusCode;
+import com.assurant.inc.sox.ar.dto.tasklist.BundleTaskListDTO;
+import com.assurant.inc.sox.domain.ar.Code;
+import com.assurant.inc.sox.domain.ar.Review;
+import com.assurant.inc.sox.domain.ar.ReviewBundle;
+
+public class BundleTaskListUI extends AbstractTaskListUI {
+
+	public BundleTaskListUI(BundleTaskListDTO taskList) {
+		super(taskList);
+	}
+
+	public CodeDTO getBundleStatus() {
+		return ((BundleTaskListDTO) this.taskList).getBundleStatus();
+	}
+
+	@Override
+	public boolean isClickable() {
+		String codeValue = this.getBundleStatus().getValue();
+		return !(ReviewBundleStatusCode.SUBMITTED.getCode().equalsIgnoreCase(codeValue) || ReviewBundleStatusCode.IN_PROCESS.getCode()
+		    .equalsIgnoreCase(codeValue));
+	}
+
+	@Override
+	public Long getBackingEntiyId() {
+		return ((BundleTaskListDTO) this.taskList).getReviewBundle().getReviewBundleId();
+	}
+
+	@Override
+	public String getBackingEntityName() {
+		return "Bundle Id";
+	}
+}
+```
+
+```
+package com.assurant.inc.sox.ar.client.ui.tasklist;
+
+import com.assurant.inc.sox.ar.client.ui.ISelectableUI;
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+import com.assurant.inc.sox.ar.dto.tasklist.ReviewerTaskListDTO;
+import com.assurant.inc.sox.domain.ar.Review;
+
+public class ReviewerTaskListUI extends AbstractTaskListUI implements ISelectableUI {
+	
+	private boolean selected;
+
+	public ReviewerTaskListUI() {
+		super(new ReviewerTaskListDTO("")); // Call the superclass constructor with a null argument
+	}
+
+	public ReviewerTaskListUI(ReviewerTaskListDTO taskList) {
+		super(taskList);
+	}
+
+	@Override
+	public Long getBackingEntiyId() {
+		if(((ReviewerTaskListDTO)this.taskList).getReviewer() == null){
+			return null;
+		}
+		return ((ReviewerTaskListDTO)this.taskList).getReviewer().getReviewerId();
+	}
+
+	public boolean isSelected() {
+    	return selected;
+    }
+
+	public void setSelected(boolean selected) {
+    	this.selected = selected;
+    }
+	
+	@Override
+  public String getBackingEntityName() {
+		return "Reviewer Id";
+	}
+}
+```
+
+```
+package com.assurant.inc.sox.ar.client.ui.tasklist;
+
+import com.assurant.inc.sox.ar.dto.tasklist.RejectedUserTasklistDTO;
+
+public class RejectedUserTasklistUI extends AbstractTaskListUI {
+
+	public RejectedUserTasklistUI(RejectedUserTasklistDTO taskList) {
+		super(taskList);
+	}
+
+	@Override
+	public String getBackingEntityName() {
+		return "Review User";
+	}
+
+	@Override
+	public Long getBackingEntiyId() {
+		return ((RejectedUserTasklistDTO) this.taskList).getRejectedReviewUserId();
+	}
+
+}
+
+```
