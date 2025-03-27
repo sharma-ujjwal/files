@@ -1,3 +1,5 @@
+
+ 
  Caused by: java.lang.RuntimeException: Could not restore StateHolder of type com.assurant.inc.sox.ar.client.ui.tasklist.ActionRequiredTasklistUI (missing no-args constructor?)
 [INFO]  at javax.faces.component.UIComponentBase.restoreAttachedState(UIComponentBase.java:1903)
 [INFO]  at [internal classes]
@@ -264,3 +266,140 @@ public class RejectedUserTasklistUI extends AbstractTaskListUI {
 }
 
 ```
+
+public abstract class AbstractTaskListUI {
+
+    protected final AbstractTaskListDTO taskList;
+
+    protected AbstractTaskListUI() {
+        this.taskList = createDefaultTaskListDTO(); // Assign a default DTO
+    }
+
+    protected AbstractTaskListUI(AbstractTaskListDTO taskList) {
+        this.taskList = (taskList != null) ? taskList : createDefaultTaskListDTO();
+    }
+
+    // Factory method to provide a default instance
+    protected AbstractTaskListDTO createDefaultTaskListDTO() {
+        return new AbstractTaskListDTO() {
+            @Override
+            public String getAssignedTo() { return ""; }
+
+            @Override
+            public Date getCreateDate() { return new Date(); }
+
+            @Override
+            public String getName() { return "Default Task"; }
+
+            @Override
+            public String getTaskId() { return "0"; }
+
+            @Override
+            public TaskTypeCode getTypeCode() { return null; }
+
+            @Override
+            public String getStatus() { return "Unknown"; }
+
+            @Override
+            public boolean isLocked() { return false; }
+
+            @Override
+            public String getLockedBy() { return "N/A"; }
+
+            @Override
+            public Date getLockedDate() { return null; }
+
+            @Override
+            public ReviewDTO getReview() { return null; }
+        };
+    }
+
+    public AbstractTaskListDTO getTaskList() {
+        return taskList;
+    }
+
+    public abstract Long getBackingEntiyId();
+
+    public abstract String getBackingEntityName();
+}
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class ActionRequiredTasklistUI extends AbstractTaskListUI {
+    
+    public ActionRequiredTasklistUI() {
+        super(); // Calls the no-args constructor of AbstractTaskListUI
+    }
+
+    public ActionRequiredTasklistUI(ActionRequiredTasklistDTO taskList) {
+        super(taskList);
+    }
+
+    @Override
+    public String getBackingEntityName() {
+        return "No Entity";
+    }
+
+    @Override
+    public Long getBackingEntiyId() {
+        return 0L;
+    }
+}
+
+public class RejectedUserTasklistUI extends AbstractTaskListUI {
+
+    public RejectedUserTasklistUI() {
+        super(); // Calls the no-args constructor of AbstractTaskListUI
+    }
+
+    public RejectedUserTasklistUI(RejectedUserTasklistDTO taskList) {
+        super(taskList);
+    }
+
+    @Override
+    public String getBackingEntityName() {
+        return "Review User";
+    }
+
+    @Override
+    public Long getBackingEntiyId() {
+        return ((RejectedUserTasklistDTO) this.taskList).getRejectedReviewUserId();
+    }
+}
+
+
+public class ReviewerTaskListUI extends AbstractTaskListUI implements ISelectableUI {
+
+    private boolean selected;
+
+    public ReviewerTaskListUI() {
+        super(); // Calls the no-args constructor of AbstractTaskListUI
+    }
+
+    public ReviewerTaskListUI(ReviewerTaskListDTO taskList) {
+        super(taskList);
+    }
+
+    @Override
+    public Long getBackingEntiyId() {
+        if(((ReviewerTaskListDTO)this.taskList).getReviewer() == null){
+            return null;
+        }
+        return ((ReviewerTaskListDTO)this.taskList).getReviewer().getReviewerId();
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    @Override
+    public String getBackingEntityName() {
+        return "Reviewer Id";
+    }
+}
+
