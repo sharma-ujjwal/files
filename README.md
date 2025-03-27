@@ -586,3 +586,57 @@ public class ReviewerTaskListDTO extends AbstractTaskListDTO {
 }
 ```
 
+package com.assurant.inc.sox.ar.dto.tasklist;
+
+import java.util.List;
+
+import com.assurant.inc.sox.ar.dto.ReviewBundleDTO;
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+import com.assurant.inc.sox.ar.dto.ReviewerDTO;
+import com.assurant.inc.sox.domain.ar.Application;
+
+public class ActionRequiredTasklistDTO extends AbstractTaskListDTO {
+
+	private final Application application;
+	private final ReviewBundleDTO reviewBundle;
+	private final ReviewerDTO reviewer;
+	private List<String> workOrderNumbers;
+
+	public ActionRequiredTasklistDTO(ReviewDTO review, ReviewBundleDTO reviewBundle, ReviewerDTO reviewer, Application application) {
+		super(review);
+		this.reviewBundle = reviewBundle;
+		this.reviewer = reviewer;
+		this.application = application;
+		
+
+	}
+
+	@Override
+	public String getStatus() {
+		return "Incomplete";
+	}
+
+	public ReviewerDTO getReviewer() {
+		return this.reviewer;
+	}
+
+	public void setWorkOrderNumbers(List<String> workOrderNumbers) {
+		// this.workOrderNumbers = DisplayStringBuilder.buildCommaDelimitedList(workOrderNumbers);
+		this.workOrderNumbers = workOrderNumbers;
+	}
+
+	public List<String> getWorkOrderNumbers() {
+		return this.workOrderNumbers;
+	}
+
+	public Application getApplication() {
+		return application;
+	}
+
+	public ReviewBundleDTO getReviewBundle() {
+		return reviewBundle;
+	}
+
+}
+```
+
