@@ -15,3 +15,54 @@
 [INFO] Caused by: java.lang.NoSuchMethodException: com.assurant.inc.sox.ar.client.ui.tasklist.ActionRequiredTasklistUI.<init>()
 [INFO]  at java.base/java.lang.Class.getConstructor0(Class.java:3585)
 [INFO]  at java.base/java.lang.Class.newInstance(Class.java:626)
+
+
+package com.assurant.inc.sox.ar.client.ui.tasklist;
+
+import com.assurant.inc.sox.ar.dto.ReviewerDTO;
+import com.assurant.inc.sox.ar.dto.tasklist.ActionRequiredTasklistDTO;
+
+public class ActionRequiredTasklistUI extends AbstractTaskListUI {
+
+	public ActionRequiredTasklistUI(ActionRequiredTasklistDTO taskList) {
+		super(taskList);
+	}
+
+	@Override
+	public String getBackingEntityName() {
+		
+		return "No Entity";
+	}
+
+	@Override
+	public Long getBackingEntiyId() {
+		return 0L;
+	}
+
+	public String getReviewerName() {
+		return ((ActionRequiredTasklistDTO) this.taskList).getReviewer().getReviewerName();
+
+	}
+
+	public String getApplicationName() {
+		return ((ActionRequiredTasklistDTO) this.taskList).getApplication().getName();
+	}
+
+	public String getWorkOrderNumbers() {
+		StringBuffer sb = new StringBuffer();
+		for (String st : ((ActionRequiredTasklistDTO) this.taskList).getWorkOrderNumbers()) {
+			sb.append(st).append("<br>");
+		}
+		return sb.toString();
+		
+	}
+
+	public ReviewerDTO getReviewer() {
+		return ((ActionRequiredTasklistDTO) this.taskList).getReviewer();
+	}
+
+	@Override
+	public String getStatus() {
+		return ((ActionRequiredTasklistDTO) this.taskList).getStatus();
+	}
+}
