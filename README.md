@@ -66,3 +66,91 @@ public class ActionRequiredTasklistUI extends AbstractTaskListUI {
 		return ((ActionRequiredTasklistDTO) this.taskList).getStatus();
 	}
 }
+
+```
+package com.assurant.inc.sox.ar.client.ui.tasklist;
+
+import java.util.Date;
+
+import com.assurant.inc.sox.ar.dto.CodeDTO;
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+import com.assurant.inc.sox.ar.dto.tasklist.AbstractTaskListDTO;
+import com.assurant.inc.sox.consts.TaskTypeCode;
+
+public abstract class AbstractTaskListUI {
+
+	protected final AbstractTaskListDTO taskList;
+
+	protected AbstractTaskListUI(AbstractTaskListDTO taskList) {
+		this.taskList = taskList;
+		
+	}
+
+	public AbstractTaskListDTO getTaskList() {
+		return taskList;
+	}
+
+	public String getAssignedTo() {
+		return taskList.getAssignedTo();
+	}
+
+	public Date getCreateDate() {
+		return taskList.getCreateDate();
+	}
+
+	public String getName() {
+		return taskList.getName();
+	}
+
+	public String getTaskId() {
+		return taskList.getTaskId();
+	}
+
+	public TaskTypeCode getTypeCode() {
+		return taskList.getTypeCode();
+	}
+
+	public String getTypeCodeValue() {
+		TaskTypeCode code = this.taskList.getTypeCode();
+		return (code == null) ? null : code.getCode();
+	}
+
+	public String getReviewTypeCodeDisplay() {
+		CodeDTO reviewTypeCd = (this.taskList.getReview() == null) ? null : this.taskList.getReview().getReviewTypeCd();
+		return (reviewTypeCd == null) ? null : reviewTypeCd.getDisplay();
+	}
+
+	public String getReviewTypeCodeValue() {
+		CodeDTO reviewTypeCd = this.taskList.getReview().getReviewTypeCd();
+		return (reviewTypeCd == null) ? null : reviewTypeCd.getValue();
+	}
+
+	public String getReviewName() {
+		ReviewDTO review = this.taskList.getReview();
+		return (review == null) ? null : review.getReviewName();
+	}
+
+	public String getStatus() {
+		return taskList.getStatus();
+	}
+
+	public boolean isClickable() {
+		return true;
+	}
+
+	public boolean isLocked() {
+		return this.taskList.isLocked();
+	}
+
+	public String getLockedBy() {
+		return this.taskList.getLockedBy();
+	}
+
+	public Date getLockedDate() {
+		return this.taskList.getLockedDate();
+	}
+
+	public abstract Long getBackingEntiyId();
+
+	public abstract String getBackingEntityName();
+}
