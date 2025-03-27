@@ -638,5 +638,127 @@ public class ActionRequiredTasklistDTO extends AbstractTaskListDTO {
 	}
 
 }
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ActionRequiredTasklistDTO extends AbstractTaskListDTO {
+
+    private final Application application;
+    private final ReviewBundleDTO reviewBundle;
+    private final ReviewerDTO reviewer;
+    private List<String> workOrderNumbers;
+
+    public ActionRequiredTasklistDTO(ReviewDTO review, ReviewBundleDTO reviewBundle, ReviewerDTO reviewer, Application application) {
+        super((review != null) ? review : new ReviewDTO()); // Safe default review
+        this.reviewBundle = (reviewBundle != null) ? reviewBundle : new ReviewBundleDTO(); // Avoids NPE
+        this.reviewer = (reviewer != null) ? reviewer : new ReviewerDTO(); // Safe reviewer object
+        this.application = (application != null) ? application : new Application(); // Default application
+        this.workOrderNumbers = new ArrayList<>(); // Ensures workOrderNumbers is never null
+    }
+
+    @Override
+    public String getStatus() {
+        return "Incomplete";
+    }
+
+    public ReviewerDTO getReviewer() {
+        return (reviewer != null) ? reviewer : new ReviewerDTO(); // Ensures safe access
+    }
+
+    public void setWorkOrderNumbers(List<String> workOrderNumbers) {
+        this.workOrderNumbers = (workOrderNumbers != null) ? workOrderNumbers : new ArrayList<>(); // Prevents null issues
+    }
+
+    public List<String> getWorkOrderNumbers() {
+        return (workOrderNumbers != null) ? workOrderNumbers : new ArrayList<>(); // Returns empty list if null
+    }
+
+    public Application getApplication() {
+        return (application != null) ? application : new Application(); // Safe default
+    }
+
+    public ReviewBundleDTO getReviewBundle() {
+        return (reviewBundle != null) ? reviewBundle : new ReviewBundleDTO(); // Ensures safe access
+    }
+}
+
+package com.assurant.inc.sox.ar.dto.tasklist;
+
+import com.assurant.inc.sox.ar.dto.ReviewBundleDTO;
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+import com.assurant.inc.sox.ar.dto.ReviewerDTO;
+
+public class RejectedUserTasklistDTO extends AbstractTaskListDTO {
+
+    private Long rejectedReviewUserId;
+    private final ReviewerDTO reviewer;
+    private final ReviewBundleDTO reviewBundle;
+
+    public RejectedUserTasklistDTO(ReviewDTO review, ReviewBundleDTO reviewBundle, ReviewerDTO reviewer) {
+        super((review != null) ? review : new ReviewDTO()); // Safe ReviewDTO
+        this.reviewBundle = (reviewBundle != null) ? reviewBundle : new ReviewBundleDTO(); // Safe default
+        this.reviewer = (reviewer != null) ? reviewer : new ReviewerDTO();
+        this.rejectedReviewUserId = 0L; // Default ID
+    }
+
+    @Override
+    public String getStatus() {
+        return "Incomplete";
+    }
+
+    public Long getRejectedReviewUserId() {
+        return (rejectedReviewUserId != null) ? rejectedReviewUserId : 0L; // Prevents NPE
+    }
+
+    public void setRejectedReviewUserId(Long rejectedReviewUserId) {
+        this.rejectedReviewUserId = (rejectedReviewUserId != null) ? rejectedReviewUserId : 0L;
+    }
+
+    public ReviewBundleDTO getReviewBundle() {
+        return (reviewBundle != null) ? reviewBundle : new ReviewBundleDTO();
+    }
+
+    public ReviewerDTO getReviewer() {
+        return (reviewer != null) ? reviewer : new ReviewerDTO();
+    }
+}
+
+package com.assurant.inc.sox.ar.dto.tasklist;
+
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+import com.assurant.inc.sox.ar.dto.ReviewerDTO;
+
+public class ReviewerTaskListDTO extends AbstractTaskListDTO {
+
+    private final ReviewerDTO reviewer;
+    private String status;
+
+    public ReviewerTaskListDTO(ReviewDTO reviewDTO, ReviewerDTO reviewer) {
+        super((reviewDTO != null) ? reviewDTO : new ReviewDTO()); // Prevents null
+        this.reviewer = (reviewer != null) ? reviewer : new ReviewerDTO(); // Safe reviewer object
+        this.status = "Incomplete";
+    }
+
+    public ReviewerTaskListDTO(String status) {
+        super(null);
+        this.reviewer = new ReviewerDTO(); // Safe default
+        this.status = (status != null) ? status : "Incomplete"; // Avoids null status
+    }	
+
+    public ReviewerDTO getReviewer() {
+        return (reviewer != null) ? reviewer : new ReviewerDTO(); // Ensures safe access
+    }
+
+    @Override
+    public String getStatus() {
+        return (status != null) ? status : "Incomplete"; // Avoids returning null
+    }
+
+    public void setStatus(String status) {
+        this.status = (status != null) ? status : "Incomplete"; // Null-safe setter
+    }
+}
+
 ```
 
