@@ -435,4 +435,7 @@ public class BundleTaskListUI extends AbstractTaskListUI {
     }
 }
 
+Caused by: java.lang.ClassCastException: class com.assurant.inc.sox.ar.client.ui.tasklist.AbstractTaskListUI$1 cannot be cast to class com.assurant.inc.sox.ar.dto.tasklist.BundleTaskListDTO (com.assurant.inc.sox.ar.client.ui.tasklist.AbstractTaskListUI$1 and com.assurant.inc.sox.ar.dto.tasklist.BundleTaskListDTO are in unnamed module of loader com.ibm.ws.classloading.internal.AppClassLoader @57e2f62e)
+at com.assurant.inc.sox.ar.client.ui.tasklist.BundleTaskListUI.getBundleStatus(BundleTaskListUI.java:22)
+at com.assurant.inc.sox.ar.client.ui.tasklist.BundleTaskListUI.isClickable(BundleTaskListUI.java:27)
 
