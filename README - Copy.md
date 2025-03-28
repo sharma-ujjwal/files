@@ -1271,3 +1271,11 @@ public class ReviewBundle implements Serializable, IAuditableAr {
 		this.conflict = conflict;
 	}
 }
+
+ Caused by: java.lang.NullPointerException: Cannot invoke "com.assurant.inc.sox.domain.ar.CodePk.getValue()" because the return value of "com.assurant.inc.sox.domain.ar.Code.getPk()" is null
+[INFO]  at com.assurant.inc.sox.ar.dto.CodeDTO.getValue(CodeDTO.java:15)
+[INFO]  at com.assurant.inc.sox.ar.client.ui.tasklist.BundleTaskListUI.isClickable(BundleTaskListUI.java:33)
+[INFO]  at jdk.internal.reflect.GeneratedMethodAccessor1402.invoke(Unknown Source)
+[INFO]  at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+[INFO]  at javax.el.BeanELResolver.getValue(BeanELResolver.java:93)
+[INFO]  ... 20 more
