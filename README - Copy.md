@@ -1110,3 +1110,139 @@
 </ui:composition>
 </html>
 
+
+<ui:define name="referenceCoreTable">
+
+    <div style="float: left">
+        <!-- Search -->
+        <p:outputPanel id="searchPanel" layout="block">
+
+            <h:panelGrid columns="6" columnClasses="label,value,label,value,label,value" style="width:80%">
+                <h:outputText value="SOX Concern" />
+                <p:selectOneMenu id="privSoxConcernList" value="#{privilegeCommentSummaryBean.soxConcernFilter}">
+                    <f:selectItems value="#{privilegeCommentSummaryBean.availableSOXConcerns}" />
+                </p:selectOneMenu>
+
+                <h:outputText value="Priv Description" />
+                <p:inputText id="privDescFilter" value="#{privilegeCommentSummaryBean.privDescriptionFilter}" 
+                    maxlength="25" onblur="this.value = this.value.toUpperCase();" />
+
+                <h:outputText value="Application Name" />
+                <p:selectOneMenu id="privApplicationNameText" value="#{privilegeCommentSummaryBean.applicationNameFilter}">
+                    <f:selectItems value="#{privilegeCommentSummaryBean.availableApplicationNames}" />
+                </p:selectOneMenu>
+
+                <h:outputText value="Extract System ID" />
+                <p:selectOneMenu id="extractSystemFilter" value="#{privilegeCommentSummaryBean.extractSystemIdFilter}">
+                    <f:selectItems value="#{privilegeCommentSummaryBean.availableExtractSystems}" />
+                </p:selectOneMenu>
+
+                <h:outputText value="Priv Value" />
+                <p:inputText id="privValueFilter" value="#{privilegeCommentSummaryBean.privValueFilter}" 
+                    maxlength="25" onblur="this.value = this.value.toUpperCase();" />
+
+                <h:outputText value="Function Duty" />
+                <p:selectOneMenu id="privFunctionDutyId" value="#{privilegeCommentSummaryBean.functionDutyIdFilter}">
+                    <f:selectItems value="#{privilegeCommentSummaryBean.availableFunctionDuties}" />
+                </p:selectOneMenu>
+            </h:panelGrid>
+
+            <h:panelGrid columns="2" columnClasses="leftCol,rightCol" style="width:100%">
+                <h:panelGroup>
+                    <p:commandButton id="goSearchButton" value="Go" action="#{privilegeCommentSummaryBean.goSearch}" update="@form"/>
+                    <p:commandButton id="resetButton" value="Reset" action="#{privilegeCommentSummaryBean.resetSearch}" update="@form"/>
+                    <h:outputLabel for="filterListbox" value="Filter: " />
+                    <p:selectOneMenu id="filterListbox" value="#{privilegeCommentSummaryBean.activeFilter}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableFilters}" />
+                    </p:selectOneMenu>
+                </h:panelGroup>
+
+                <h:panelGroup style="text-align:right">
+                    <p:commandButton id="addButton" value="Add new Row" action="#{privilegeCommentSummaryBean.showAddPrivilegeCommentPanel}" update="@form"/>
+                    <p:commandButton id="deleteButton" value="Delete Row" action="#{privilegeCommentSummaryBean.showDeletePrivilegeCommentPanel}" rendered="#{privilegeCommentSummaryBean.deleteEnabled}" update="@form"/>
+                    <p:commandButton id="updateButton" value="Update Row" action="#{privilegeCommentSummaryBean.showUpdatePrivilegeCommentPanel}" update="@form"/>
+                </h:panelGroup>
+            </h:panelGrid>
+
+        </p:outputPanel>
+    </div>
+
+    <!-- Privilege Comment Display Table -->
+    <p:outputPanel id="tablePanel" layout="block" style="clear: both; width: 100%;">
+
+        <p:dataTable id="privCommentTable" var="element"
+                     value="#{privilegeCommentSummaryBean.privilegeCommentList}"
+                     rows="#{privilegeCommentSummaryBean.displayAmount}" paginator="false"
+                     rowIndexVar="index" rowStyleClass="#{index mod 2 eq 0 ? 'evenRow' : 'oddRow'}"
+                     styleClass="defaultTable" >
+
+            <p:column rendered="#{privilegeCommentSummaryBean.deleteEnabled}">
+                <f:facet name="header">
+                    <p:commandLink value="Select All" action="#{privilegeCommentSummaryBean.switchCheckBoxToggle}" update="@form"/>
+                </f:facet>
+                <p:selectBooleanCheckbox value="#{element.checked}" />
+            </p:column>
+
+            <!-- Repeat this pattern for all columns -->
+            <p:column>
+                <f:facet name="header">
+                    <p:commandLink value="Privilege Description" action="#{privilegeCommentSummaryBean.doSort}" update="@form">
+                        <f:param name="column" value="description" />
+                    </p:commandLink>
+                </f:facet>
+                #{element.description}
+            </p:column>
+
+            <!-- Repeat for other fields with sorting logic -->
+            <!-- Privilege Value -->
+            <p:column>
+                <f:facet name="header">
+                    <p:commandLink value="Privilege Value" action="#{privilegeCommentSummaryBean.doSort}" update="@form">
+                        <f:param name="column" value="value" />
+                    </p:commandLink>
+                </f:facet>
+                #{element.value}
+            </p:column>
+
+            <!-- Add similar columns for other fields... -->
+            <!-- FunctionDutyId, Comment, SoxConcern, ApplicationName, etc. -->
+
+            <p:column>
+                <f:facet name="header">
+                    <p:commandLink value="ExtractDate" action="#{privilegeCommentSummaryBean.doSort}" update="@form">
+                        <f:param name="column" value="extractDate" />
+                    </p:commandLink>
+                </f:facet>
+                <h:outputText value="#{element.extractDate}">
+                    <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{applicationBean.timeZone}" />
+                </h:outputText>
+            </p:column>
+
+            <!-- Repeat for effectiveFromDate, effectiveToDate, lastChangedBy, lastChangedDate, createdBy, createdDate -->
+
+        </p:dataTable>
+
+        <!-- Scroll and Row Selector -->
+        <h:panelGrid columns="2" style="width:100%">
+            <h:panelGroup>
+                <p:dataScroller for="privCommentTable" id="userScroller"
+                    scrollHeight="300"
+                    mode="inline"
+                    scrollStep="1"
+                    widgetVar="scrollWidget"
+                    style="max-height:300px;overflow:auto"
+                    scrollListener="#{privilegeCommentSummaryBean.doScrollerListener}" />
+            </h:panelGroup>
+            <h:panelGroup style="text-align:right">
+                <p:selectOneMenu id="userDisplayRows" value="#{privilegeCommentSummaryBean.displayAmount}" styleClass="fieldValue">
+                    <f:selectItems value="#{applicationBean.availableRowDisplayItems}" />
+                    <p:ajax listener="#{privilegeCommentSummaryBean.doDisplayRowListener}" update="privCommentTable" onstart="window.scrollTo(0, 0);" />
+                </p:selectOneMenu>
+                <h:outputText value=" items per page " />
+            </h:panelGroup>
+        </h:panelGrid>
+
+    </p:outputPanel>
+
+</ui:define>
+
