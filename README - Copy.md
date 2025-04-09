@@ -708,4 +708,405 @@
 	</ui:composition>
 </html>
 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:p="http://primefaces.org/ui">
+
+<ui:composition template="../common/referenceCoreTableTemplate.xhtml">
+    <ui:define name="styles">
+        <style type="text/css">
+            select {
+                font-size: 1.0em;
+            }
+        </style>
+    </ui:define>
+    <ui:define name="referenceCoreTable">
+        <div style="float: left">
+            <!-- Search -->
+            <p:outputPanel id="searchPanel">
+                <p:panelGrid columns="6" width="80%" styleClass="ui-panelgrid-blank">
+                    <h:outputText value="SOX Concern" />
+                    <p:selectOneMenu id="privSoxConcernList" 
+                        value="#{privilegeCommentSummaryBean.soxConcernFilter}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableSOXConcerns}" />
+                    </p:selectOneMenu>
+                    
+                    <h:outputText value="Priv Description" />
+                    <p:inputText id="privDescFilter" value="#{privilegeCommentSummaryBean.privDescriptionFilter}"
+                        maxlength="25" onchange="this.value = this.value.toUpperCase();">
+                    </p:inputText>
+                    
+                    <h:outputText value="Application Name" />
+                    <p:selectOneMenu id="privApplicationNameText" 
+                        value="#{privilegeCommentSummaryBean.applicationNameFilter}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableApplicationNames}" />
+                    </p:selectOneMenu>
+                    
+                    <h:outputText value="Extract System ID" />
+                    <p:selectOneMenu id="extractSystemFilter" 
+                        value="#{privilegeCommentSummaryBean.extractSystemIdFilter}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableExtractSystems}" />
+                    </p:selectOneMenu>
+                    
+                    <h:outputText value="Priv Value" />
+                    <p:inputText id="privValueFilter" value="#{privilegeCommentSummaryBean.privValueFilter}" 
+                        maxlength="25" onchange="this.value = this.value.toUpperCase();">
+                    </p:inputText>
+                    
+                    <h:outputText value="Function Duty" />
+                    <p:selectOneMenu id="privFunctionDutyId" 
+                        value="#{privilegeCommentSummaryBean.functionDutyIdFilter}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableFunctionDuties}" />
+                    </p:selectOneMenu>
+                </p:panelGrid>
+                
+                <p:panelGrid columns="2" width="800" styleClass="ui-panelgrid-blank">
+                    <p:panelGroup>
+                        <p:commandButton id="goSearchButton" value="Go"
+                            action="#{privilegeCommentSummaryBean.goSearch}" />
+                        <p:commandButton id="resetButton" value="Reset"
+                            action="#{privilegeCommentSummaryBean.resetSearch}" />
+                        <h:outputLabel id="selectFilterLabel" value="Filter: " />
+                        <p:selectOneMenu id="filterListbox"
+                            value="#{privilegeCommentSummaryBean.activeFilter}">
+                            <f:selectItems
+                                value="#{privilegeCommentSummaryBean.availableFilters}" />
+                        </p:selectOneMenu>
+                    </p:panelGroup>
+                    
+                    <p:panelGroup style="text-align: right;">
+                        <p:commandButton id="addButton" value="Add new Row"
+                            action="#{privilegeCommentSummaryBean.showAddPrivilegeCommentPanel}" />
+                        <p:commandButton id="deleteButton" value="Delete Row"
+                            action="#{privilegeCommentSummaryBean.showDeletePrivilegeCommentPanel}" 
+                            rendered="#{privilegeCommentSummaryBean.deleteEnabled}" />
+                        <p:commandButton id="updateButton" value="Update Row"
+                            action="#{privilegeCommentSummaryBean.showUpdatePrivilegeCommentPanel}" />
+                    </p:panelGroup>
+                </p:panelGrid>
+            </p:outputPanel>
+        </div>
+
+        <p:outputPanel style="width: 100%; clear: both;">
+            <!-- PrivilegeComment Display Table -->
+            <p:dataTable id="privCommentTable" 
+                value="#{privilegeCommentSummaryBean.privilegeCommentList}"
+                var="element" rows="#{privilegeCommentSummaryBean.displayAmount}" 
+                styleClass="ui-datatable-striped" paginator="true"
+                paginatorTemplate="{RowsPerPageDropdown} {FirstPageLink} {PreviousPageLink} {CurrentPageReport} {NextPageLink} {LastPageLink}"
+                rowsPerPageTemplate="5,10,15,20,25,30,50">
+                
+                <p:column selectionMode="multiple" 
+                    rendered="#{privilegeCommentSummaryBean.deleteEnabled}"
+                    style="width:2%">
+                    <f:facet name="header">
+                        <p:commandLink value="Select All" 
+                            action="#{privilegeCommentSummaryBean.switchCheckBoxToggle}" />
+                    </f:facet>
+                    <p:selectBooleanCheckbox id="PrivCommentCheckBox"
+                        value="#{element.checked}"></p:selectBooleanCheckbox>
+                </p:column>
+                
+                <p:column headerText="Privilege Description" sortBy="#{element.description}">
+                    #{element.description}
+                </p:column>
+                
+                <p:column headerText="Privilege Value" sortBy="#{element.value}">
+                    #{element.value}
+                </p:column>
+                
+                <p:column headerText="FunctionDutyId" sortBy="#{element.functionDutyId}">
+                    #{element.functionDutyId}
+                </p:column>
+                
+                <p:column headerText="Privilege Comment" sortBy="#{element.comment}">
+                    #{element.comment}
+                </p:column>
+                
+                <p:column headerText="SoxConcern" sortBy="#{element.soxConcern}">
+                    #{element.soxConcern}
+                </p:column>
+                
+                <p:column headerText="Application Name" sortBy="#{element.applicationName}">
+                    #{element.applicationName}
+                </p:column>
+                
+                <p:column headerText="ExtractSystemId" sortBy="#{element.extractSystemId}">
+                    #{element.extractSystemId}
+                </p:column>
+                
+                <p:column headerText="ExtractDate" sortBy="#{element.extractDate}">
+                    <h:outputText value="#{element.extractDate}">
+                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{applicationBean.timeZone}" />
+                    </h:outputText>
+                </p:column>
+                
+                <p:column headerText="Active From Date" sortBy="#{element.effectiveFromDate}">
+                    <h:outputText value="#{element.effectiveFromDate}">
+                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{applicationBean.timeZone}" />
+                    </h:outputText>
+                </p:column>
+                
+                <p:column headerText="Active To Date" sortBy="#{element.effectiveToDate}">
+                    <h:outputText value="#{element.effectiveToDate}">
+                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{applicationBean.timeZone}" />
+                    </h:outputText>
+                </p:column>
+                
+                <p:column headerText="Last Changed By" sortBy="#{element.lastChangedBy}">
+                    #{element.lastChangedBy}
+                </p:column>
+                
+                <p:column headerText="Last Changed Date" sortBy="#{element.lastChangedDate}">
+                    <h:outputText value="#{element.lastChangedDate}">
+                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{applicationBean.timeZone}" />
+                    </h:outputText>
+                </p:column>
+                
+                <p:column headerText="Created By" sortBy="#{element.createdBy}">
+                    #{element.createdBy}
+                </p:column>
+                
+                <p:column headerText="Created Date" sortBy="#{element.createdDate}">
+                    <h:outputText value="#{element.createdDate}">
+                        <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{applicationBean.timeZone}" />
+                    </h:outputText>
+                </p:column>
+            </p:dataTable>
+        </p:outputPanel>
+    </ui:define>
+
+    <ui:define name="modalPanels">
+        <!-- ADD PopUp Modal Panel -->
+        <p:dialog id="addModalPanel" header="Add New Row" widgetVar="addDialog" 
+            modal="true" height="400" width="550" resizable="true"
+            visible="#{privilegeCommentSummaryBean.renderAddPrivilegeCommentModalPanel}">
+            
+            <p:messages id="msgId" showDetail="true" autoUpdate="true" />
+            
+            <h:form id="addprivilegeCommentForm">
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank">
+                    <p:outputLabel value="Priv Description" />
+                    <p:inputText id="privDescText" maxlength="50"
+                        value="#{privilegeCommentSummaryBean.privDescription}" 
+                        onchange="this.value = this.value.toUpperCase();" />
+                    
+                    <p:outputLabel value="Priv Value" />
+                    <p:inputText id="privValueText" maxlength="50"
+                        value="#{privilegeCommentSummaryBean.privValue}" 
+                        onchange="this.value = this.value.toUpperCase();" />
+                    
+                    <p:outputLabel value="Function Duty" />
+                    <p:selectOneMenu id="functionDuty" 
+                        value="#{privilegeCommentSummaryBean.functionDutyId}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableFunctionDuties}" />
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="Priv Comment" />
+                    <p:inputText id="privCommentText" maxlength="50"
+                        value="#{privilegeCommentSummaryBean.comment}" 
+                        onchange="this.value = this.value.toUpperCase();" />
+                    
+                    <p:outputLabel value="SOX Concern" />
+                    <p:selectOneMenu id="soxconcern" 
+                        value="#{privilegeCommentSummaryBean.soxConcern}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableSOXConcerns}" />
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="Application Name" />
+                    <p:selectOneMenu id="applicationName" 
+                        value="#{privilegeCommentSummaryBean.applicationName}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableApplicationNames}" />    
+                    </p:selectOneMenu>
+                    
+                    <p:panelGroup colspan="2" style="text-align: center;">
+                        <p:commandButton id="save" value="Save" 
+                            action="#{privilegeCommentSummaryBean.doAddPrivilegeComment}"
+                            oncomplete="if (!args.validationFailed) {PF('addDialog').hide();}" />
+                        <p:commandButton id="Cancel" value="Cancel" immediate="true"
+                            action="#{privilegeCommentSummaryBean.doCancelAddPrivilegeCommentPanel}"
+                            oncomplete="PF('addDialog').hide();" />
+                    </p:panelGroup>
+                </p:panelGrid>
+            </h:form>
+        </p:dialog>
+
+        <!-- Verify Delete Modal Panel -->
+        <p:dialog id="deleteConfirmModalPanel" header="Delete Row(s)" widgetVar="deleteDialog" 
+            modal="true" height="400" width="650" resizable="true"
+            visible="#{privilegeCommentSummaryBean.renderDeletePrivilegeCommentModalPanel}">
+            
+            <p:messages id="delmsgId" showDetail="true" autoUpdate="true" />
+            
+            <h:form id="deleteConfirmForm">
+                <div class="verticalSpacer" />
+                <div class="sectionHeaderSmall">
+                    Delete Privilege Comment(s)?
+                </div>
+                
+                <p:dataTable id="selectDeletedRowsTable"
+                    value="#{privilegeCommentSummaryBean.deletedPrivilegeCommentList}"
+                    var="privilegeComment">
+                    <p:column headerText="PrivilegeComment Description">
+                        #{privilegeComment.description}
+                    </p:column>
+                    <p:column headerText="PrivilegeComment Value">
+                        #{privilegeComment.value}
+                    </p:column>
+                </p:dataTable>
+
+                <p:panelGroup style="text-align: center;">
+                    <p:commandButton id="deleteButton" value="Delete"
+                        action="#{privilegeCommentSummaryBean.doDelete}"
+                        oncomplete="if (!args.validationFailed) {PF('deleteDialog').hide();}" />
+                    <p:commandButton id="cancelDeleteButton" value="Cancel" immediate="true"
+                        action="#{privilegeCommentSummaryBean.doCancelDelete}"
+                        oncomplete="PF('deleteDialog').hide();" />
+                </p:panelGroup>
+            </h:form>
+        </p:dialog>
+
+        <!-- Verify Update Modal Panel -->
+        <p:dialog id="updateConfirmModalPanel" header="Update Row" widgetVar="updateDialog" 
+            modal="true" height="400" width="600" resizable="true"
+            visible="#{privilegeCommentSummaryBean.renderUpdatePrivilegeCommentModalPanel}">
+            
+            <p:messages id="updmsgId" showDetail="true" autoUpdate="true" />
+            
+            <h:form id="updateConfirmForm">
+                <div class="verticalSpacer" />
+                <div class="sectionHeaderSmall">
+                    Update Privilege Comment
+                </div>
+
+                <p:panelGrid columns="2" layout="grid" styleClass="ui-panelgrid-blank">
+                    <p:outputLabel value="Priv Description" />
+                    <p:outputLabel value="#{privilegeCommentSummaryBean.privDescription}" />
+                    
+                    <p:outputLabel value="Priv Value" />
+                    <p:outputLabel value="#{privilegeCommentSummaryBean.privValue}" />
+                    
+                    <p:outputLabel value="Function Duty" />
+                    <p:selectOneMenu id="updateFunctionDuty" 
+                        value="#{privilegeCommentSummaryBean.functionDutyId}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableFunctionDuties}" />
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="Priv Comment" />
+                    <p:inputText id="updatePrivCommentText" maxlength="50"
+                        value="#{privilegeCommentSummaryBean.comment}" 
+                        onchange="this.value = this.value.toUpperCase();" />
+                    
+                    <p:outputLabel value="SOX Concern" />
+                    <p:selectOneMenu id="updateSoxconcern" 
+                        value="#{privilegeCommentSummaryBean.soxConcern}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableSOXConcerns}" />
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="Application Name" />
+                    <p:selectOneMenu id="updateApplicationName" 
+                        value="#{privilegeCommentSummaryBean.applicationName}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableApplicationNames}" />    
+                    </p:selectOneMenu>
+                    
+                    <p:panelGroup colspan="2" style="text-align: center;">
+                        <p:commandButton id="updateButton" value="Update"
+                            action="#{privilegeCommentSummaryBean.doUpdate}"
+                            oncomplete="if (!args.validationFailed) {PF('updateDialog').hide();}" />
+                        <p:commandButton id="cancelupdateButton" value="Cancel" immediate="true"
+                            action="#{privilegeCommentSummaryBean.doCancelUpdate}"
+                            oncomplete="PF('updateDialog').hide();" />
+                    </p:panelGroup>
+                </p:panelGrid>
+            </h:form>
+        </p:dialog>
+
+        <!-- Bulk update functionality -->
+        <p:dialog id="bulkUpdateConfirmModalPanel" header="Bulk Update Privilege Comment" 
+            widgetVar="bulkUpdateDialog" modal="true" height="500" width="800" resizable="true"
+            visible="#{privilegeCommentSummaryBean.renderBulkUpdatePanel}">
+            
+            <p:messages id="blkmsgId" showDetail="true" autoUpdate="true" />
+            
+            <h:form id="bulkUpdateConfirmForm">
+                <div class="verticalSpacer"></div>
+
+                <p:panelGrid columns="4" layout="grid" styleClass="ui-panelgrid-blank">
+                    <p:outputLabel value="Application Name" />
+                    <p:selectOneMenu id="bulkAppName" 
+                        value="#{privilegeCommentSummaryBean.bulkAppName}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableApplicationNames}" />
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="SOX Concern" />
+                    <p:selectOneMenu id="bulkSoxConcern" 
+                        value="#{privilegeCommentSummaryBean.bulkSoxConcern}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableSOXConcerns}" />
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="Function Duty" />
+                    <p:selectOneMenu id="bulkFunctionDutyId" 
+                        value="#{privilegeCommentSummaryBean.bulkFunctionDutyId}">
+                        <f:selectItems value="#{privilegeCommentSummaryBean.availableFunctionDuties}" />
+                    </p:selectOneMenu>
+                    
+                    <p:outputLabel value="Priv Comment" />
+                    <p:inputText id="bulkPrivCommentField" maxlength="50"
+                        value="#{privilegeCommentSummaryBean.bulkComment}" 
+                        onchange="this.value = this.value.toUpperCase();" />
+                </p:panelGrid>
+
+                <p:dataTable id="bulkprivCommentTable" 
+                    value="#{privilegeCommentSummaryBean.bulkUpdateList}"
+                    var="priv" rows="10" scrollable="true" scrollHeight="200">
+                    <p:column selectionMode="multiple" 
+                        rendered="#{privilegeCommentSummaryBean.updateCheckbox}" 
+                        style="width:2%">
+                        <f:facet name="header">Select</f:facet>
+                        <p:selectBooleanCheckbox id="PrivCommentCheckBox"
+                            value="#{priv.checked}"></p:selectBooleanCheckbox>
+                    </p:column>
+                    
+                    <p:column headerText="Privilege Description">
+                        #{priv.description}
+                    </p:column>
+                    
+                    <p:column headerText="Privilege Value">
+                        #{priv.value}
+                    </p:column>
+                    
+                    <p:column headerText="FunctionDutyId">
+                        #{priv.functionDutyId}
+                    </p:column>
+                    
+                    <p:column headerText="Privilege Comment">
+                        #{priv.comment}
+                    </p:column>
+                    
+                    <p:column headerText="SoxConcern">
+                        #{priv.soxConcern}
+                    </p:column>
+                    
+                    <p:column headerText="Application Name">
+                        #{priv.applicationName}
+                    </p:column>
+                </p:dataTable>
+
+                <p:panelGroup style="text-align: center;">
+                    <p:commandButton id="bulkUpdateButton" value="Update"
+                        action="#{privilegeCommentSummaryBean.doBulkUpdate}"
+                        update="bulkUpdateConfirmModalPanel"
+                        oncomplete="if (!args.validationFailed) {PF('bulkUpdateDialog').hide();}" />
+                    <p:commandButton id="cancelBulkUpdateButton" value="Cancel" immediate="true"
+                        action="#{privilegeCommentSummaryBean.doCancelBulkUpdate}"
+                        oncomplete="PF('bulkUpdateDialog').hide();" />
+                </p:panelGroup>
+            </h:form>
+        </p:dialog>
+    </ui:define>
+</ui:composition>
+</html>
 
