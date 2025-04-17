@@ -1,91 +1,73 @@
-```
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:p="http://primefaces.org/ui">
+	  xmlns:p="http://primefaces.org/ui">
+<!-- 
+Include this xhtml file with ui:include tags and provide the following parameters:
 
-	<ui:composition template="../common/main.xhtml">
-		<ui:define name="body">
-			<a4j:status id="tableMaintenanceAjaxLoadStatus"
-				onstart="showModalInfoWindow();"
-				onstop="hideModalInfoWindow();"></a4j:status>
-			<rich:tabPanel id="tabPanel" switchType="server" tabClass="tabStyle"
-				selectedTab="#{adminConsoleBean.selectedTab}">
+* taskListBeanName - A backing bean that is an instance of a concrete AbstractTaskListBean.
 
-				<rich:tab id="rejectsTab" label="Rejects"
-					action="#{adminConsoleBean.switchToRejectedUsers}"
-					rendered="#{!sessionDataBean.systemUser.ipsUser}">
-					<ui:insert name="rejectsTab" />
-				</rich:tab>
+* idPrefix - A unique id prefix for the field ids of the page.
+-->
 
-				<rich:tab id="exceptionReportingTab"
-					label="Exception Reporting"
-					action="#{adminConsoleBean.switchToExceptionReporting}"
-					rendered="#{!sessionDataBean.systemUser.ipsUser}">
-					<ui:insert name="exceptionTab" />
-				</rich:tab>
-
-				<rich:tab id="tableMaintenanceTab" label="Table Maintenance"
-					action="#{adminConsoleBean.switchToTableMaintenance}">
-					<ui:insert name="tableMaintenanceTab" />
-				</rich:tab>
-			</rich:tabPanel>
-		</ui:define>
-	</ui:composition>
-</html>
-
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
-
-    <ui:composition template="../common/main.xhtml">
-        <ui:define name="body">
-            <!-- Replace a4j:status with p:ajaxStatus -->
-            <p:ajaxStatus id="tableMaintenanceAjaxLoadStatus">
-                <f:facet name="start">
-                    <script type="text/javascript">showModalInfoWindow();</script>
-                </f:facet>
-                <f:facet name="complete">
-                    <script type="text/javascript">hideModalInfoWindow();</script>
-                </f:facet>
-            </p:ajaxStatus>
-
-            <!-- Replace rich:tabPanel with p:tabView -->
-            <p:tabView id="tabPanel" 
-                       activeIndex="#{adminConsoleBean.selectedTabIndex}" 
-                       dynamic="true"
-                       cache="false"
-                       styleClass="tabStyle">
-
-                <!-- Replace rich:tab with p:tab -->
-                <p:tab id="rejectsTab" 
-                       title="Rejects"
-                       rendered="#{!sessionDataBean.systemUser.ipsUser}">
-                    <p:ajax event="tabChange" 
-                            listener="#{adminConsoleBean.switchToRejectedUsers}" />
-                    <ui:insert name="rejectsTab" />
-                </p:tab>
-
-                <p:tab id="exceptionReportingTab" 
-                       title="Exception Reporting"
-                       rendered="#{!sessionDataBean.systemUser.ipsUser}">
-                    <p:ajax event="tabChange" 
-                            listener="#{adminConsoleBean.switchToExceptionReporting}" />
-                    <ui:insert name="exceptionTab" />
-                </p:tab>
-
-                <p:tab id="tableMaintenanceTab" 
-                       title="Table Maintenance">
-                    <p:ajax event="tabChange" 
-                            listener="#{adminConsoleBean.switchToTableMaintenance}" />
-                    <ui:insert name="tableMaintenanceTab" />
-                </p:tab>
-            </p:tabView>
-        </ui:define>
-    </ui:composition>
+<ui:composition>
+		<div style="text-align:right;">
+			<h:outputText value="Search by: " />
+			
+			<h:selectOneMenu id="#{idPrefix}FilterType" value="#{taskListBeanName.taskListFilterTypeCode}" 
+				styleClass="fieldValue" >
+				<f:selectItems value="#{taskListBeanName.avaliableTaskListFilterTypes}"/>
+				<p:ajax event="change" render="#{idPrefix}FilterValue"/>
+			</h:selectOneMenu>	
+			
+			<!--<rich:spacer width="5" />	-->
+			<h:outputText value=" Search for: " />
+			
+			<p:outputPanel autoUpdate="true" id="#{idPrefix}searchForPanel">
+				<h:selectOneMenu id="#{idPrefix}FilterValue" value="#{taskListBeanName.taskListFilterValue}"
+					styleClass="fieldValue"
+					rendered="#{taskListBeanName.filterIsNotText}" >
+					<f:selectItems value="#{taskListBeanName.filterValues}" /> 
+				</h:selectOneMenu>
+						
+				<h:inputText id="#{idPrefix}FilterTextValue" value="#{taskListBeanName.taskListFilterTextValue}" styleClass="fieldValue"
+					rendered="#{taskListBeanName.filterIsText}" />
+			</p:outputPanel>
+			
+			<!--<rich:spacer width="10" />	-->
+			<p:commandButton value="Go" action="#{taskListBeanName.doApplyFilter}" />
+			<!--<rich:spacer width="5" /> -->
+			<p:commandButton value="Clear" action="#{taskListBeanName.doClearFilterFields}"
+				render="#{idPrefix}searchForPanel,#{idPrefix}FilterType,#{idPrefix}FilterValue"/>
+		</div>
+		<div style="text-align:right;">
+			<p:commandLink value="Clear Filter" action="#{taskListBeanName.doClearFilter}"
+				render="#{idPrefix}FilterType, #{idPrefix}FilterValue"/>
+			<h:outputText value=" | " />
+			<p:commandLink value="Refresh Tasklist" action="#{taskListBeanName.doRefreshTasklist}"
+				render="#{idPrefix}FilterType, #{idPrefix}FilterValue"/>
+		</div>
+		<p:outputPanel autoUpdate="true" id="#{idPrefix}TablePanel">
+			<p:dataTable id="#{idPrefix}Table"
+						 binding="#{taskListBeanName.taskListTable}"
+						 paginator="true"
+						 selectionMode="single"
+						 style="width:100%"
+						 rowKey="#{row.id}"/>
+			<table width="100%">
+				<tbody>
+					<tr>
+						<td align="right"> 
+							<h:selectOneMenu value="#{taskListBeanName.displayAmount}" styleClass="fieldValue" >
+								<f:selectItems value="#{applicationBean.availableRowDisplayItems}"/>
+								<p:ajax event="change"/>
+							</h:selectOneMenu>
+							<h:outputText value=" items per page " />
+						</td>
+					</tr>
+				</tbody>
+	 		</table>
+		</p:outputPanel>
+</ui:composition>
 </html>
