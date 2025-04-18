@@ -1,3 +1,4 @@
+```
 package com.assurant.inc.sox.ar.client.bean.tasklist;
 
 import java.util.*;
