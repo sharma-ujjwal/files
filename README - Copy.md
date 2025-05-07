@@ -593,3 +593,9 @@
         </p:outputPanel>
     </ui:define>
 </ui:composition>
+
+
+ HTML nesting warning on closing changes: element div rendered by component : {Component-Path : [Class: javax.faces.component.UIViewRoot,ViewId: /xhtml/admin/excepti
+onSummary.xhtml][Class: javax.faces.component.html.HtmlBody,Id: j_id_a][Class: javax.faces.component.html.HtmlForm,Id: bodyForm][Class: org.primefaces.component.tabview.TabView,Id: t
+abPanel][Class: org.primefaces.component.tabview.Tab,Id: exceptionReportingTab][Class: org.primefaces.component.outputpanel.OutputPanel,Id: exceptionOutputPanel]} not explicitly closed
+
