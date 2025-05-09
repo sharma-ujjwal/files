@@ -149,6 +149,7 @@
 								action="#{exceptionSummaryBean.showExceptionEditPanel}"
 								oncomplete="PF('editExceptionA4jPanelVar').show();"
 								update="editException"
+								process="@this"
 								rendered="#{exception.missingSupervisor}" value="edit">
 								<f:param name="editId" value="#{exception.userId}" />
 							</p:commandLink>
@@ -325,9 +326,9 @@
 							</p:column>
 						</p:dataTable>
 						<div class="verticalSpacer" />
-						<div style="width: 100%;" id="supervisorPanel">
-							<p:outputPanel autoUpdate="true">
-								Supervisor: 
+						<p:outputPanel id="supervisorPanelOp" autoUpdate="false">
+							<div style="width: 100%;" >
+								Supervisor:
 								<h:outputText rendered="#{!exceptionSummaryBean.selectedException.missingSupervisor}"
 										value="#{exceptionSummaryBean.selectedException.supervisorName}" />
 								<p:commandLink rendered="#{exceptionSummaryBean.selectedException.missingSupervisor or exceptionSummaryBean.supervisorChanged}"
@@ -335,8 +336,8 @@
 											   value="Select supervisor"
 											   oncomplete="PF('searchSupervisorDialog').show()"
 											   update="searchSupervisorModalPanel" />
-							</p:outputPanel>
-						</div>
+							</div>
+						</p:outputPanel>
 						<div class="verticalSpacer" />
 						<p:outputPanel autoUpdate="true">
 							<p:dataTable id="directReportsTable"
@@ -502,10 +503,16 @@
 						</h:panelGrid>
 						<div style="verticalSpacer" />
 						<div>
-							<h:commandButton id="searchButton" value="Go"
-								action="#{exceptionSummaryBean.doSupervisorSearch}" />
-							<h:commandButton id="resetButton" value="Reset"
-								action="#{exceptionSummaryBean.resetSupervisorSearch}" />
+							<p:commandButton id="searchButton" value="Go"
+											 process="@form"
+											 update="searchUserForm:searchUserTable"
+											 oncomplete="PF('searchSupervisorDialog').show();"
+											 action="#{exceptionSummaryBean.doSupervisorSearch}" />
+							<p:commandButton id="resetButton" value="Reset"
+											 process="@form"
+											 update="searchUserForm"
+											 oncomplete="PF('searchSupervisorDialog').show();"
+											 action="#{exceptionSummaryBean.resetSupervisorSearch}" />
 						</div>
 						<div style="verticalSpacer" />
 						<p:outputPanel autoUpdate="true">
@@ -549,6 +556,9 @@
 									</f:facet>
 									<p:commandLink value="#{user.keyId}"
 										action="#{exceptionSummaryBean.doAssignSelectedSupervisor}"
+										process="@this"
+										update="editExceptionForm:supervisorPanelOp"
+										oncomplete="PF('searchSupervisorDialog').hide();"
 										styleClass="headerSortLink">
 										<f:param name="selectedSupervisorId" value="#{user.userId}" />
 									</p:commandLink>
