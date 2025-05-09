@@ -6,7 +6,6 @@
 	xmlns:f="http://java.sun.com/jsf/core"
 	xmlns:p="http://primefaces.org/ui">
 
-	<ui:composition>
 		<ui:define name="styles">
 			<style type="text/css">
 				select {
@@ -148,6 +147,8 @@
 						<p:outputPanel id="supervisorDisplayPanel" autoUpdate="true">
 							<p:commandLink id="missingSupervisor"
 								action="#{exceptionSummaryBean.showExceptionEditPanel}"
+								oncomplete="PF('editExceptionA4jPanelVar').show();"
+								update="editException"
 								rendered="#{exception.missingSupervisor}" value="edit">
 								<f:param name="editId" value="#{exception.userId}" />
 							</p:commandLink>
@@ -239,13 +240,14 @@
 					</p:column>
 				</p:dataTable>
 			</p:outputPanel>
-		<ui:define name="modalPanels">
+
 			<p:outputPanel autoUpdate="true" id="editExceptionA4jPanel">
 				<p:dialog id="editException" resizeable="true"
 					draggable="true" width="1000" height="600"
 					widgetVar="editExceptionA4jPanelVar"
-					rendered="#{exceptionSummaryBean.renderEditExceptionPanel}"
-					visible="true" style="overflow: auto;">
+					model="true" closable="false" showHeader="true"
+					appendTo="@body"
+					style="overflow: auto; display: none;">
 
 					<f:facet name="header">
 						<h:outputLabel value="Edit Exception" />
@@ -259,15 +261,10 @@
 
 					<h:form id="editExceptionForm">
 						<p:dataTable id="userExceptionsTable"
-							value="#{exceptionSummaryBean.exceptionList}" var="exception"
-							rows="1" 
-							paginator="true" paginatorPosition="bottom"
-							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-							currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-							rowsPerPageTemplate="10,25,50,100"
-							rowIndexVar="rowIndex" rowKeyVar="rowKey"
-							scrollable="true" 
-							headerClass="defaultTableHeader">
+							value="#{exceptionSummaryBean.exceptionList}"
+							var="exception"
+							rows="1"
+							styleClass="defaultTableHeader">
 		
 							<p:column id="nameColumn">
 								<f:facet name="header">Name</f:facet>	
@@ -329,11 +326,15 @@
 						</p:dataTable>
 						<div class="verticalSpacer" />
 						<div style="width: 100%;" id="supervisorPanel">
-							<p:outputPanel ajautoUpdate="true">
+							<p:outputPanel autoUpdate="true">
 								Supervisor: 
 								<h:outputText rendered="#{!exceptionSummaryBean.selectedException.missingSupervisor}"
 										value="#{exceptionSummaryBean.selectedException.supervisorName}" />
-								<p:commandLink rendered="#{exceptionSummaryBean.selectedException.missingSupervisor or exceptionSummaryBean.supervisorChanged}" action="#{exceptionSummaryBean.doShowSearchSupervisorPanel}" value="Select supervisor" />
+								<p:commandLink rendered="#{exceptionSummaryBean.selectedException.missingSupervisor or exceptionSummaryBean.supervisorChanged}"
+											   action="#{exceptionSummaryBean.doShowSearchSupervisorPanel}"
+											   value="Select supervisor"
+											   oncomplete="PF('searchSupervisorDialog').show()"
+											   update="searchSupervisorModalPanel" />
 							</p:outputPanel>
 						</div>
 						<div class="verticalSpacer" />
@@ -466,9 +467,11 @@
 				</p:dialog>
 				<p:dialog id="searchSupervisorModalPanel" resizeable="true"
 					draggable="true" height="500" width="750"
-					rendered="#{exceptionSummaryBean.renderSearchSupervisorModalPanel}"
-					visible="true" widgetVar="searchSupervisorDialog">
-	
+					widgetVar="searchSupervisorDialog"
+				    appendTo="@body"
+					modal="true" closable="false" showHeader="true"
+				  	style="overflow: auto; display: none;">
+
 					<f:facet name="header">
 						<h:outputLabel value="Search Supervisor" />
 					</f:facet>
@@ -497,106 +500,99 @@
 								value="#{exceptionSummaryBean.supervisorSearchFirstName}"
 								onchange="this.value = this.value.toUpperCase();" />
 						</h:panelGrid>
-						<div style="verticalSpacer"></div>
+						<div style="verticalSpacer" />
 						<div>
 							<h:commandButton id="searchButton" value="Go"
 								action="#{exceptionSummaryBean.doSupervisorSearch}" />
 							<h:commandButton id="resetButton" value="Reset"
 								action="#{exceptionSummaryBean.resetSupervisorSearch}" />
 						</div>
-						<div style="verticalSpacer"></div>
+						<div style="verticalSpacer" />
 						<p:outputPanel autoUpdate="true">
-						<p:dataTable id="searchUserTable"
-							value="#{exceptionSummaryBean.supervisorSearchList}" 
-							var="user"
-							rows="10"
-							styleClass="defaultTableHeader"
-							paginator="true" paginatorPosition="bottom"
-							paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-							currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-							rowsPerPageTemplate="10,25,50,100"
-							rowIndexVar="rowIndex" rowKeyVar="rowKey"
-							scrollable="true"
-							rowStyleClasses="oddRow, evenRow" style="width:100%">
-							<p:column>
-								<f:facet name="header">
-									<p:commandLink value="Last Name" action="#{exceptionSummaryBean.doSupervisorSort}"
+							<p:dataTable id="searchUserTable"
+								value="#{exceptionSummaryBean.supervisorSearchList}"
+								var="user"
+								rows="10"
+								styleClass="defaultTableHeader"
+								paginator="true" paginatorPosition="bottom"
+								paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+								currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+								rowsPerPageTemplate="10,25,50,100"
+								rowIndexVar="rowIndex" rowKeyVar="rowKey"
+								scrollable="true"
+								rowStyleClasses="oddRow, evenRow" style="width:100%">
+								<p:column>
+									<f:facet name="header">
+										<p:commandLink value="Last Name" action="#{exceptionSummaryBean.doSupervisorSort}"
+											styleClass="headerSortLink">
+											<f:param name="supervisorColumn" value="lastName" />
+										</p:commandLink>
+									</f:facet>
+									#{user.lastName}
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<p:commandLink value="First Name" action="#{exceptionSummaryBean.doSupervisorSort}"
+											styleClass="headerSortLink">
+											<f:param name="supervisorColumn" value="firstName" />
+										</p:commandLink>
+									</f:facet>
+									#{user.firstName}
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<p:commandLink value="Key Id"
+											action="#{exceptionSummaryBean.doSupervisorSort}"
+											styleClass="headerSortLink">
+											<f:param name="supervisorColumn" value="keyId" />
+										</p:commandLink>
+									</f:facet>
+									<p:commandLink value="#{user.keyId}"
+										action="#{exceptionSummaryBean.doAssignSelectedSupervisor}"
 										styleClass="headerSortLink">
-										<f:param name="supervisorColumn" value="lastName" />
+										<f:param name="selectedSupervisorId" value="#{user.userId}" />
 									</p:commandLink>
-								</f:facet>	
-								#{user.lastName} 
-							</p:column>
-							<p:column>
-								<f:facet name="header">
-									<p:commandLink value="First Name" action="#{exceptionSummaryBean.doSupervisorSort}"
-										styleClass="headerSortLink">
-										<f:param name="supervisorColumn" value="firstName" />
-									</p:commandLink>
-								</f:facet>	
-								#{user.firstName} 
-							</p:column>
-							<p:column>
-								<f:facet name="header">
-									<p:commandLink value="Key Id"
-										action="#{exceptionSummaryBean.doSupervisorSort}"
-										styleClass="headerSortLink">
-										<f:param name="supervisorColumn" value="keyId" />
-									</p:commandLink>
-								</f:facet>
-								<p:commandLink value="#{user.keyId}"
-									action="#{exceptionSummaryBean.doAssignSelectedSupervisor}"
-									styleClass="headerSortLink">
-									<f:param name="selectedSupervisorId" value="#{user.userId}" />
-								</p:commandLink>
-							</p:column>
-							<p:column>
-								<f:facet name="header">
-									<p:commandLink value="Division" action="#{exceptionSummaryBean.doSupervisorSort}"
-										styleClass="headerSortLink">
-										<f:param name="supervisorColumn" value="divisionName" />
-									</p:commandLink>
-								</f:facet>	
-								#{user.divisionName} 
-							</p:column>
-							<p:column>
-								<f:facet name="header">
-									<p:commandLink value="Location" action="#{exceptionSummaryBean.doSupervisorSort}"
-										styleClass="headerSortLink">
-										<f:param name="supervisorColumn" value="location" />
-									</p:commandLink>
-								</f:facet>	
-								#{user.location} 
-							</p:column>
-							<p:column>
-								<f:facet name="header">
-									<p:commandLink value="Status" action="#{exceptionSummaryBean.doSupervisorSort}"
-										styleClass="headerSortLink">
-										<f:param name="supervisorColumn" value="userStatusDescription" />
-									</p:commandLink>
-								</f:facet>	
-								#{user.userStatusDescription} 
-							</p:column>
-							<p:column>
-								<f:facet name="header">
-									<p:commandLink value="Type" action="#{exceptionSummaryBean.doSupervisorSort}"
-										styleClass="headerSortLink">
-										<f:param name="supervisorColumn" value="userTypeDescription" />
-									</p:commandLink>
-								</f:facet>	
-								#{user.userTypeDescription} 
-							</p:column>
-						</p:dataTable>
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<p:commandLink value="Division" action="#{exceptionSummaryBean.doSupervisorSort}"
+											styleClass="headerSortLink">
+											<f:param name="supervisorColumn" value="divisionName" />
+										</p:commandLink>
+									</f:facet>
+									#{user.divisionName}
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<p:commandLink value="Location" action="#{exceptionSummaryBean.doSupervisorSort}"
+											styleClass="headerSortLink">
+											<f:param name="supervisorColumn" value="location" />
+										</p:commandLink>
+									</f:facet>
+									#{user.location}
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<p:commandLink value="Status" action="#{exceptionSummaryBean.doSupervisorSort}"
+											styleClass="headerSortLink">
+											<f:param name="supervisorColumn" value="userStatusDescription" />
+										</p:commandLink>
+									</f:facet>
+									#{user.userStatusDescription}
+								</p:column>
+								<p:column>
+									<f:facet name="header">
+										<p:commandLink value="Type" action="#{exceptionSummaryBean.doSupervisorSort}"
+											styleClass="headerSortLink">
+											<f:param name="supervisorColumn" value="userTypeDescription" />
+										</p:commandLink>
+									</f:facet>
+									#{user.userTypeDescription}
+								</p:column>
+							</p:dataTable>
 						</p:outputPanel>
 						<table width="100%">
 							<tbody>
-								<tr>
-									<td align="left">
-										<p:dataScroller align="left" for="searchUserTable"
-											maxPages="20" />
-									</td>
-								</tr>
-	
 								<tr>
 	
 									<td align="left">
@@ -607,10 +603,7 @@
 								</tr>
 							</tbody>
 						</table>
-	
 					</h:form>
 				</p:dialog>
 			</p:outputPanel>
-		</ui:define>
-	</ui:composition>
 </html>
