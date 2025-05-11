@@ -457,12 +457,20 @@
 						</p:outputPanel>
 						<div class="verticalSpacer" />
 						<div>
-							<h:commandButton id="saveButton" value="Save"
-								action="#{exceptionSummaryBean.saveException}" />
+							<p:commandButton id="saveButton" value="Save"
+								action="#{exceptionSummaryBean.saveException}"
+								oncomplete="PF('editExceptionA4JPanelVar').hide();"
+								update="editExceptionForm:supervisorPanelOp"
+								process="@form"
+								ajax="true"/>
 
-							<h:commandButton id="cancelButton" value="Cancel"
-								action="#{exceptionSummaryBean.cancelEditException}" 
-								immediate="true"/>
+							<p:commandButton id="cancelButton"
+											 value="Cancel"
+											 immediate="true"
+											 process="@this"
+											 update="editExceptionForm"
+											 action="#{exceptionSummaryBean.cancelEditException}"
+											 oncomplete="PF('editExceptionA4JPanelVar').hide();" />
 						</div>
 					</h:form>
 				</p:dialog>
@@ -557,8 +565,8 @@
 									<p:commandLink value="#{user.keyId}"
 										action="#{exceptionSummaryBean.doAssignSelectedSupervisor}"
 										process="@this"
-										update="editExceptionForm:supervisorPanelOp"
-										oncomplete="PF('searchSupervisorDialog').hide();"
+										update="editExceptionA4jPanel"
+										oncomplete="PF('searchSupervisorDialog').hide(); PF('editExceptionA4jPanelVar').show();"
 										styleClass="headerSortLink">
 										<f:param name="selectedSupervisorId" value="#{user.userId}" />
 									</p:commandLink>
@@ -606,8 +614,9 @@
 								<tr>
 	
 									<td align="left">
-										<h:commandButton id="cancelButton" value="Cancel"
-											immediate="true"
+										<p:commandButton id="cancelButton" value="Cancel"
+											process="@this"
+											oncomplete="PF('searchSupervisorDialog').hide();"
 											action="#{exceptionSummaryBean.doCancelSearchSupervisor}" />
 									</td>
 								</tr>
@@ -617,8 +626,3 @@
 				</p:dialog>
 			</p:outputPanel>
 </html>
-
-
-HTML nesting warning on closing changes: element update not explicitly closed
-Cannot set content type. Response already committed
-*** java.lang.instrument ASSERTION FAILED ***: "!errorOutstanding" with message transform method call failed at s\open\src\java.instrument\share\native\libinstrument\JPLISAgent.c line: 873
