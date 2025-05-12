@@ -27,15 +27,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-//import org.hibernate.criterion.Disjunction;
-//import org.apache.commons.lang.StringUtils;
-//import com.assurant.inc.sox.domain.ar.UserStatus;
-//import com.assurant.inc.sox.domain.ar.UserType;
-
-/**
- * @author BB68602
- *
- */
 @Repository
 @Transactional
 public class UserDao extends HibernateBaseSox implements IUserDao {
@@ -73,22 +64,11 @@ public class UserDao extends HibernateBaseSox implements IUserDao {
 
 	}
 
-
-	/*
-     * (non-Javadoc)
-     *
-     * @see com.assurant.inc.sox.dao.luad.IUserDao#findByMgrUserId(java.lang.Long)
-     */
 	public User findByMgrUserId(Long id) {
 		List<User> results = this.findByMgrUserIds(Collections.singletonList(id));
 		return (results.size() == 0) ? null : results.get(0);
 	}
 
-	/*
-     * (non-Javadoc)
-     *
-     * @see com.assurant.inc.sox.dao.luad.IUserDao#findByMgrUserIds(java.util.List)
-     */
 	@SuppressWarnings("unchecked")
 	public List<User> findByMgrUserIds(List<Long> ids) {
 		int cnt = ids.size();
@@ -103,21 +83,11 @@ public class UserDao extends HibernateBaseSox implements IUserDao {
 		return (List<User>) this.hibernateTemplate.findByCriteria(criteria);
 	}
 
-	/*
-     * (non-Javadoc)
-     *
-     * @see com.assurant.inc.sox.dao.luad.IUserDao#findByUserId(java.lang.Long)
-     */
 	public User findByUserId(Long id) {
 		List<User> results = this.findByUserIds(Collections.singletonList(id));
 		return (results.size() == 0) ? null : results.get(0);
 	}
 
-	/*
-     * (non-Javadoc)
-     *
-     * @see com.assurant.inc.sox.dao.luad.IUserDao#findByUserIds(java.util.List)
-     */
 	@SuppressWarnings("unchecked")
 	public List<User> findByUserIds(List<Long> ids) {
 		int cnt = ids.size();
@@ -149,11 +119,6 @@ public class UserDao extends HibernateBaseSox implements IUserDao {
 		return (List<String>) template.find(COST_CENTERS_HQL, params);
 	}
 
-	/*
-     * (non-Javadoc)
-     *
-     * @see com.assurant.inc.sox.dao.luad.IUserDao#findUsersSupervisor(java.lang.Long)
-     */
 	@SuppressWarnings("unchecked")
 	public User findUsersSupervisor(Long userId) {
 		System.out.println("MYCARS soxDataAccess UserDao.findUsersSupervisor() --> Start userId: " + userId);
@@ -179,11 +144,6 @@ public class UserDao extends HibernateBaseSox implements IUserDao {
 		return (result.size() == 0) ? null : result.get(0);
 	}
 
-	/*
-     * (non-Javadoc)
-     *
-     * @see com.assurant.inc.sox.dao.luad.IUserDao#findActiveUsers(java.lang.String)
-     */
 	@SuppressWarnings("unchecked")
 	public List<User> findActiveUsers(String searchName) {
 
@@ -218,13 +178,9 @@ public class UserDao extends HibernateBaseSox implements IUserDao {
 		criteria.add(Restrictions.le("pk.effectiveFromDate", now)).add(
 				Restrictions.or(Restrictions.isNull("pk.effectiveToDate"), Restrictions.ge(
 						"pk.effectiveToDate", now)));
-		}
+	}
 
-	/*
-     * (non-Javadoc)
-     *
-     * @see com.assurant.inc.sox.dao.luad.IUserDao#findUsersForSupervisor(java.lang.String)
-     */
+	
 	@SuppressWarnings("unchecked")
 	public List<User> findUsersForSupervisor(Long supervisorId) {
 		System.out.println("MYCARS soxDataAccess UserDao.findUsersForSupervisor() --> Start supervisorId: " + supervisorId);
