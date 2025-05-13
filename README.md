@@ -223,3 +223,25 @@
     </p:column>
 
 </p:dataTable>
+
+
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.component.UIComponent;
+import org.primefaces.component.datatable.DataTable;
+
+public void onAjaxFromRow(AjaxBehaviorEvent event) {
+    UIComponent component = event.getComponent();
+    UIComponent parent = component.getParent();
+
+    while (parent != null && !(parent instanceof DataTable)) {
+        parent = parent.getParent();
+    }
+
+    if (parent instanceof DataTable) {
+        DataTable table = (DataTable) parent;
+        List<?> data = (List<?>) table.getValue();
+        System.out.println("Total rows in table: " + data.size());
+        // You now have access to the full DataTable value list
+    }
+}
+
