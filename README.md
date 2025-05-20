@@ -1,37 +1,48 @@
 ```
-	/**
-	 * Build the remove button, attach a listener to it.
-	 *
-	 * @param accessesDTO the DTO the listener attaches to
-	 * @param id to generate a unique id for the component
-	 * @return the HtmlAjaxCommandButton built
-	 */
-	private HtmlCommandButton buildRemoveButton(ReviewUserApplicationAccessesDTO accessesDTO, int id) {
-		HtmlCommandButton removeButton = new HtmlCommandButton();
-		removeButton.setId("Application" + id + "removeButton");
-		removeButton.setValue("None");
-		removeButton.setOnclick("setRadios('bodyForm:Application" + id + "Table', 'R'); callSelectOrRejectAllEmployees(false); return false;");
-		//removeButton.addActionListener(new RemoveButtonListener(accessesDTO));
-		return removeButton;
-	}
-
-	/**
-	 * Build the keep button, attach a listener to it.
-	 *
-	 * @param accessesDTO the DTO the listener attaches to
-	 * @param id to generate a unique id for the component
-	 * @return the HtmlAjaxCommandButton built
-	 */
-	private HtmlCommandButton buildKeepButton(ReviewUserApplicationAccessesDTO accessesDTO, int id) {
-		HtmlCommandButton keepButton = new HtmlCommandButton();
-		keepButton.setId("Application" + id + "keepButton");
-		keepButton.setValue("All");
-		keepButton.setOnclick("setRadios('bodyForm:Application" + id + "Table', 'K'); callSelectOrRejectAllEmployees(true); return false;");
-		//keepButton.addActionListener(new KeepButtonListener(accessesDTO));
-		return keepButton;
-	}
-
-keepButton.setOnclick("setRadios('bodyForm:Application" + id + "Table', 'K') callSelectOrRejectAllEmployees(true); return false;"); 
-removeButton.setOnclick("setRadios('bodyForm:Application" + id + "Table', 'R'); callSelectOrRejectAllEmployees(false); return false;");
-from this onClick method invoke a method employeeListBean.selectOrRejectAllEmployees(isSelected); add this code when on click is activated similar to above one. the method is 
-callSelectOrRejectAllEmployees(boolean isSelected) is present in EmployeeListBean.java
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<h:head>
+    <title>Access List</title>
+</h:head>
+<h:body>
+    <h:form id="accessListForm">
+        <ui:repeat value="#{accessListBean.accessGroups}" var="group">
+            <p:panel header="Application Name: #{group.applicationName}" toggleable="true" collapsed="true">
+                <h:panelGrid columns="2" cellpadding="5">
+                    <h:outputText value="Business Area:" />
+                    <h:outputText value="#{group.businessArea}" />
+                    
+                    <h:outputText value="Evidence Description:" />
+                    <h:outputText value="#{group.evidenceDescription}" />
+                    
+                    <!-- Add more summary details if required -->
+                </h:panelGrid>
+                
+                <p:dataTable value="#{group.privileges}" var="priv">
+                    <p:column headerText="Source Name">
+                        <h:outputText value="#{priv.sourceName}" />
+                    </p:column>
+                    <p:column headerText="Evidence Description">
+                        <h:outputText value="#{priv.evidenceDescription}" />
+                    </p:column>
+                    <p:column headerText="Privilege Value">
+                        <h:outputText value="#{priv.privilegeValue}" />
+                    </p:column>
+                    <p:column headerText="Privilege Comment">
+                        <h:inputText value="#{priv.privilegeComment}" />
+                    </p:column>
+                    <p:column headerText="Review Status">
+                        <p:selectOneRadio value="#{priv.reviewStatus}">
+                            <f:selectItem itemLabel="Keep" itemValue="Keep" />
+                            <f:selectItem itemLabel="Remove" itemValue="Remove" />
+                        </p:selectOneRadio>
+                    </p:column>
+                </p:dataTable>
+            </p:panel>
+        </ui:repeat>
+    </h:form>
+</h:body>
+</html>
