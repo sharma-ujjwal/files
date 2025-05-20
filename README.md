@@ -1,161 +1,176 @@
 ```
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:h="http://xmlns.jcp.org/jsf/html"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="../common/main.xhtml">
-    <ui:define name="body">
-        <h:outputLabel styleClass="sectionHeader" value="Report Details"/>
+	<ui:define name="body">
+		<script type="text/javascript">
 
-        <p:ajaxStatus>
-            <f:facet name="start">
-                <h:graphicImage value="/images/loader.gif"/>
-            </f:facet>
-        </p:ajaxStatus>
+			function setRadios(parentElementId, radioValue) {
+				// find the element that contains the subtree with all the radios to set
+				let parentElement = document.getElementById(parentElementId);
+				// find all the input elements in the subtree of the parent element
+				let inputs = parentElement.getElementsByTagName('input');
+				// loop over each input element
+				for (let i = 0; i &lt; inputs.length; i++) {
+					let input = inputs[i];
+					// is it of type radio?
+					if (input.type === 'radio') {
+						// is it the right radio for the given value to set?
+						if (input.value === radioValue) {
+							// check it
+							input.checked = true;
+						}
+					}
+				}
+			}
+		</script>
 
-        <ui:include src="headerComponent.xhtml">
-            <ui:param name="backingBeanName" value="#{accessListBean}"/>
-        </ui:include>
+		<h:outputLabel styleClass="sectionHeader" value="Report Details"/>
 
-        <div class="verticalSpacer"/>
+		<p:ajaxStatus>
+			<f:facet name="start">
+				<h:graphicImage value="/images/loader.gif"/>
+			</f:facet>
+		</p:ajaxStatus>
 
-        <p:toolbar id="approvedReviewersTableToolBar">
-            <p:toolbarGroup location="left">
-                <h:commandLink styleClass="listitem" id="approvedReviewersDistributeLink" value="Return to List"
-                               action="#{accessListBean.doReturnToEmployeeList}"/>
-                <h:outputLabel styleClass="headerTextValue" value="  "/>
-                <h:commandLink id="accessListRejectLink"
-                               value="Reject Employee"
-                               action="#{accessListBean.doPrepareRejectUserPanel}"
-                               styleClass="undecoratedRejectLink"
-                               rendered="#{accessListBean.editMode}"/>
-            </p:toolbarGroup>
-            <p:toolbarGroup>
-                <h:commandLink id="printAccessCommandLink"
-                               action="#{accessListBean.doPrintAccessList}"
-                               value="Printable Version"
-                               styleClass="print"
-                               onmousedown="document.forms['bodyForm'].target='_blank'"/>
-            </p:toolbarGroup>
-            <p:toolbarGroup location="right">
-                <h:commandLink styleClass="previousitem" id="previousEmployeeLink"
-                               action="#{accessListBean.doRetrievePreviousEmployee}"
-                               value="Previous Employee"/>
-                <h:outputLabel styleClass="headerTextValue" value="  "/>
-                <h:commandLink styleClass="nextitem" id="nextEmployeeLink"
-                               action="#{accessListBean.doRetrieveNextEmployee}"
-                               value="Next Employee"/>
-            </p:toolbarGroup>
-        </p:toolbar>
+		<ui:include src="headerComponent.xhtml">
+			<ui:param name="backingBeanName" value="#{accessListBean}"/>
+		</ui:include>
 
-        <table style="margin: 10px 0px 10px 0px; width: 100%">
-            <tr>
-                <td align="left">
-                    <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.numberOfRecords}"/>
-                    <h:outputLabel styleClass="headerTextValue" value=" - "/>
-                    <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userName}"/>
-                </td>
-                <td align="center">
-                    <h:outputLabel styleClass="headerTextValue" value="Employee Status:"/>
-                    <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userStatus}"/>
-                </td>
-                <td align="center">
-                    <h:outputLabel styleClass="headerTextValue" value="Employee Manager:" rendered="#{accessListBean.review.notManagerReview}"/>
-                    <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.employeeManager}" rendered="#{accessListBean.review.notManagerReview}"/>
-                </td>
-                <td align="right">
-                    <h:outputLabel styleClass="headerTextValue" value="Division:"/>
-                    <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDivision}"/>
-                </td>
-                <td align="right">
-                    <h:outputLabel styleClass="headerTextValue" value="Department:"/>
-                    <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDepartment}"/>
-                </td>
-            </tr>
-        </table>
+		<div class="verticalSpacer"/>
 
-        <p:outputPanel id="accessListOutputPanel">
-            <ui:repeat value="#{accessListBean.accessGroups}" var="group">
-                <p:panel header="Application: #{group.applicationName}" toggleable="true" collapsed="true">
-                    <h:panelGrid columns="2" cellpadding="5">
-                        <h:outputText value="Business Area:"/>
-                        <h:outputText value="#{group.businessArea}"/>
-                        <h:outputText value="Evidence Description:"/>
-                        <h:outputText value="#{group.evidenceDescription}"/>
-                    </h:panelGrid>
+		<p:toolbar id="approvedReviewersTableToolBar">
+			<p:toolbarGroup location="left">
+				<h:commandLink styleClass="listitem" id="approvedReviewersDistributeLink" value="Return to List"
+							   action="#{accessListBean.doReturnToEmployeeList}"/>
+				<h:outputLabel styleClass="headerTextValue" value="  "/>
+				<h:commandLink id="accessListRejectLink"
+							   value="Reject Employee"
+							   action="#{accessListBean.doPrepareRejectUserPanel}"
+							   styleClass="undecoratedRejectLink"
+							   rendered="#{accessListBean.editMode}"/>
+			</p:toolbarGroup>
+			<p:toolbarGroup>
+				<h:commandLink id="printAccessCommandLink"
+							   action="#{accessListBean.doPrintAccessList}"
+							   value="Printable Version"
+							   styleClass="print"
+							   onmousedown="document.forms['bodyForm'].target='_blank'"/>
+			</p:toolbarGroup>
+			<p:toolbarGroup location="right">
+				<h:commandLink styleClass="previousitem" id="previousEmployeeLink"
+							   action="#{accessListBean.doRetrievePreviousEmployee}"
+							   value="Previous Employee"/>
+				<h:outputLabel styleClass="headerTextValue" value="  "/>
+				<h:commandLink styleClass="nextitem" id="nextEmployeeLink"
+							   action="#{accessListBean.doRetrieveNextEmployee}"
+							   value="Next Employee"/>
+			</p:toolbarGroup>
+		</p:toolbar>
 
-                    <p:dataTable value="#{group.privileges}" var="priv">
-                        <p:column headerText="Source Name">
-                            <h:outputText value="#{priv.sourceName}"/>
-                        </p:column>
-                        <p:column headerText="Evidence Description">
-                            <h:outputText value="#{priv.evidenceDescription}"/>
-                        </p:column>
-                        <p:column headerText="Privilege Value">
-                            <h:outputText value="#{priv.privilegeValue}"/>
-                        </p:column>
-                        <p:column headerText="Privilege Comment">
-                            <h:inputText value="#{priv.privilegeComment}"/>
-                        </p:column>
-                        <p:column headerText="Review Status">
-                            <p:selectOneRadio value="#{priv.reviewStatus}">
-                                <f:selectItem itemLabel="Keep" itemValue="Keep"/>
-                                <f:selectItem itemLabel="Remove" itemValue="Remove"/>
-                            </p:selectOneRadio>
-                        </p:column>
-                    </p:dataTable>
-                </p:panel>
-            </ui:repeat>
-        </p:outputPanel>
+		<table style="margin: 10px 0px 10px 0px; width: 100%">
+			<tr>
+				<td align="left">
+					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.numberOfRecords}"/>
+					<h:outputLabel styleClass="headerTextValue" value=" - "/>
+					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userName}"/>
+				</td>
+				<td align="center">
+					<h:outputLabel styleClass="headerTextValue" value="Employee Status:"/>
+					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userStatus}"/>
+				</td>
+				<td align="center">
+					<h:outputLabel styleClass="headerTextValue" value="Employee Manager:" rendered="#{accessListBean.review.notManagerReview}"/>
+					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.employeeManager}" rendered="#{accessListBean.review.notManagerReview}"/>
+				</td>
+				<td align="right">
+					<h:outputLabel styleClass="headerTextValue" value="Division:"/>
+					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDivision}"/>
+				</td>
+				<td align="right">
+					<h:outputLabel styleClass="headerTextValue" value="Department:"/>
+					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDepartment}"/>
+				</td>
+			</tr>
+		</table>
 
-        <p:toolbar id="bottomApprovedReviewersTableToolBar">
-            <p:toolbarGroup location="left">
-                <h:commandLink styleClass="listitem" id="bottomApprovedReviewersDistributeLink" value="Return to List"
-                               action="#{accessListBean.doReturnToEmployeeList}"/>
-                <h:outputLabel styleClass="headerTextValue" value="  "/>
-                <p:commandLink id="bottomAccessListRejectLink"
-                               value="Reject Employee"
-                               action="#{accessListBean.doPrepareRejectUserPanel}"
-                               styleClass="undecoratedRejectLink"
-                               rendered="#{accessListBean.editMode}"
-                               oncomplete="window.scrollTo(0, 0);"/>
-            </p:toolbarGroup>
-            <p:toolbarGroup>
-                <h:commandLink id="bottomPrintAccessCommandLink"
-                               action="#{accessListBean.doPrintAccessList}"
-                               value="Printable Version"
-                               styleClass="print"
-                               onmousedown="document.forms['bodyForm'].target='_blank'"/>
-            </p:toolbarGroup>
-            <p:toolbarGroup location="right">
-                <h:commandLink styleClass="previousitem" id="bottomPreviousEmployeeLink"
-                               action="#{accessListBean.doRetrievePreviousEmployee}"
-                               value="Previous Employee"/>
-                <h:outputLabel styleClass="headerTextValue" value="  "/>
-                <h:commandLink styleClass="nextitem" id="bottomNextEmployeeLink"
-                               action="#{accessListBean.doRetrieveNextEmployee}"
-                               value="Next Employee"/>
-            </p:toolbarGroup>
-        </p:toolbar>
-    </ui:define>
+		<p:outputPanel id="accessListOutputPanel">
+			<ui:repeat value="#{accessListBean.reviewUserApplicationAccessesDTOs}" var="group">
+				<p:panel header="Application: #{group.applicationName}" toggleable="true" collapsed="true">
+					<p:dataTable value="#{group.accesses}" var="priv">
+						<p:column headerText="Source Name">
+							<h:outputText value="#{priv.sourceName}"/>
+						</p:column>
+						<p:column headerText="Evidence Description">
+							<h:outputText value="#{priv.privilegeDescription}"/>
+						</p:column>
+						<p:column headerText="Privilege Value">
+							<h:outputText value="#{priv.privilegeValue}"/>
+						</p:column>
+						<p:column headerText="Privilege Comment">
+							<h:inputText value="#{priv.privilegeComment}"/>
+						</p:column>
+						<p:column headerText="Review Status">
+							<p:selectOneRadio value="#{priv.reviewStatus}">
+								<f:selectItem itemLabel="Keep" itemValue="Keep"/>
+								<f:selectItem itemLabel="Remove" itemValue="Remove"/>
+							</p:selectOneRadio>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</ui:repeat>
+		</p:outputPanel>
 
-    <ui:define name="modalPanels">
-        <p:outputPanel autoUpdate="true" id="accessListModalAjaxPanel">
-            <ui:include src="rejectReviewUsersModalPanelComponent.xhtml">
-                <ui:param name="aListBean" value="#{accessListBean}"/>
-                <ui:param name="formId" value="rejectReviewUserCommentForm"/>
-                <ui:param name="panelId" value="rejectReviewUserModalPanel"/>
-                <ui:param name="msgId" value="rejectReviewUserModalPanelMessages"/>
-                <ui:param name="dataTableId" value="rejectReviewUserModalPanelTable"/>
-                <ui:param name="selectId" value="rejectUserModalPanelReason"/>
-                <ui:param name="inputId" value="rejectUserModalComments"/>
-                <ui:param name="submitId" value="rejectUserModalPanelSubmitButton"/>
-                <ui:param name="cancelId" value="rejectUserModalPanelCancelButton"/>
-            </ui:include>
-        </p:outputPanel>
-    </ui:define>
+		<p:toolbar id="bottomApprovedReviewersTableToolBar">
+			<p:toolbarGroup location="left">
+				<h:commandLink styleClass="listitem" id="bottomApprovedReviewersDistributeLink" value="Return to List"
+							   action="#{accessListBean.doReturnToEmployeeList}"/>
+				<h:outputLabel styleClass="headerTextValue" value="  "/>
+				<p:commandLink id="bottomAccessListRejectLink"
+							   value="Reject Employee"
+							   action="#{accessListBean.doPrepareRejectUserPanel}"
+							   styleClass="undecoratedRejectLink"
+							   rendered="#{accessListBean.editMode}"
+							   oncomplete="window.scrollTo(0, 0);"/>
+			</p:toolbarGroup>
+			<p:toolbarGroup>
+				<h:commandLink id="bottomPrintAccessCommandLink"
+							   action="#{accessListBean.doPrintAccessList}"
+							   value="Printable Version"
+							   styleClass="print"
+							   onmousedown="document.forms['bodyForm'].target='_blank'"/>
+			</p:toolbarGroup>
+			<p:toolbarGroup location="right">
+				<h:commandLink styleClass="previousitem" id="bottomPreviousEmployeeLink"
+							   action="#{accessListBean.doRetrievePreviousEmployee}"
+							   value="Previous Employee"/>
+				<h:outputLabel styleClass="headerTextValue" value="  "/>
+				<h:commandLink styleClass="nextitem" id="bottomNextEmployeeLink"
+							   action="#{accessListBean.doRetrieveNextEmployee}"
+							   value="Next Employee"/>
+			</p:toolbarGroup>
+		</p:toolbar>
+	</ui:define>
+
+	<ui:define name="modalPanels">
+		<p:outputPanel autoUpdate="true" id="accessListModalAjaxPanel">
+			<ui:include src="rejectReviewUsersModalPanelComponent.xhtml">
+				<ui:param name="aListBean" value="#{accessListBean}"/>
+				<ui:param name="formId" value="rejectReviewUserCommentForm"/>
+				<ui:param name="panelId" value="rejectReviewUserModalPanel"/>
+				<ui:param name="msgId" value="rejectReviewUserModalPanelMessages"/>
+				<ui:param name="dataTableId" value="rejectReviewUserModalPanelTable"/>
+				<ui:param name="selectId" value="rejectUserModalPanelReason"/>
+				<ui:param name="inputId" value="rejectUserModalComments"/>
+				<ui:param name="submitId" value="rejectUserModalPanelSubmitButton"/>
+				<ui:param name="cancelId" value="rejectUserModalPanelCancelButton"/>
+			</ui:include>
+		</p:outputPanel>
+	</ui:define>
 </ui:composition>
 </html>
