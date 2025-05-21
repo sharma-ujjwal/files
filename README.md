@@ -1,90 +1,73 @@
 ```
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-	  xmlns:ui="http://java.sun.com/jsf/facelets"
-	  xmlns:h="http://xmlns.jcp.org/jsf/html"
-	  xmlns:f="http://java.sun.com/jsf/core"
-	  xmlns:p="http://primefaces.org/ui">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:ui="http://java.sun.com/jsf/facelets"
+  xmlns:h="http://xmlns.jcp.org/jsf/html"
+  xmlns:f="http://java.sun.com/jsf/core"
+  xmlns:p="http://primefaces.org/ui">
 
 <ui:composition template="../common/main.xhtml">
-	<ui:define name="body">
-		<script type="text/javascript">
+<ui:define name="body">
+<script type="text/javascript">
 
-			function setRadios(parentElementId, radioValue) {
-				// find the element that contains the subtree with all the radios to set
-				let parentElement = document.getElementById(parentElementId);
-				// find all the input elements in the subtree of the parent element
-				let inputs = parentElement.getElementsByTagName('input');
-				// loop over each input element
-				for (let i = 0; i &lt; inputs.length; i++) {
-					let input = inputs[i];
-					// is it of type radio?
-					if (input.type === 'radio') {
-						// is it the right radio for the given value to set?
-						if (input.value === radioValue) {
-							// check it
-							input.checked = true;
-						}
-					}
-				}
+function setRadios(parentElementId, radioValue) {
+    // find the element that contains the subtree with all the radios to set
+	var parentElement = document.getElementById(parentElementId);
+	// find all the input elements in the subtree of the parent element
+	var inputs = parentElement.getElementsByTagName('input');
+	// loop over each input element
+	for (var i = 0; i &lt; inputs.length; i++) {
+		var input = inputs[i];
+		// is it of type radio?
+		if (input.type == 'radio') {
+			// is it the right radio for the given value to set?
+			if (input.value == radioValue) {
+				// check it
+				input.checked = true;
 			}
+		}
+	}
+}
 
-			function setRadioButtonValue(radioValue) {
-				let inputs = document.getElementsByTagName('input');
-				for (let i = 0; i &lt; inputs.length; i++) {
-					let input = inputs[i];
-					// is it of type radio?
-					if (input.type === 'radio') {
-						// is it the right radio for the given value to set?
-						if (input.value === radioValue) {
-							// check it
-							input.checked = true;
-						}
-					}
-				}
-			}
-		</script>
+</script>
 
-		<h:outputLabel styleClass="sectionHeader" value="Report Details"/>
-
-		<p:ajaxStatus>
-			<f:facet name="start">
-				<h:graphicImage value="/images/loader.gif"/>
-			</f:facet>
-		</p:ajaxStatus>
-
-		<ui:include src="headerComponent.xhtml">
-			<ui:param name="backingBeanName" value="#{accessListBean}"/>
-		</ui:include>
-
-		<div class="verticalSpacer"/>
-
+	<h:outputLabel styleClass="sectionHeader" value="Report Details"/>
+	
+	<p:ajaxStatus>
+		<f:facet name="start"><h:graphicImage  value="/images/loader.gif"/></f:facet>
+	</p:ajaxStatus>
+	
+	<ui:include src="headerComponent.xhtml">
+		<ui:param name="backingBeanName" value="#{accessListBean}"/>
+	</ui:include> 
+	<div class="verticalSpacer"/>
 		<p:toolbar id="approvedReviewersTableToolBar">
 			<p:toolbarGroup location="left">
 				<h:commandLink styleClass="listitem" id="approvedReviewersDistributeLink" value="Return to List"
-							   action="#{accessListBean.doReturnToEmployeeList}"/>
+					action="#{accessListBean.doReturnToEmployeeList}"/>
 				<h:outputLabel styleClass="headerTextValue" value="  "/>
-				<h:commandLink id="accessListRejectLink"
-							   value="Reject Employee"
-							   action="#{accessListBean.doPrepareRejectUserPanel}"
-							   styleClass="undecoratedRejectLink"
-							   rendered="#{accessListBean.editMode}"/>
+				<p:commandLink id="accessListRejectLink"
+					value="Reject Employee" 
+					action="#{accessListBean.doPrepareRejectUserPanel}"
+					styleClass="undecoratedRejectLink"
+					rendered="#{accessListBean.editMode}" />
 			</p:toolbarGroup>
 			<p:toolbarGroup>
-				<h:commandLink id="printAccessCommandLink"
-							   action="#{accessListBean.doPrintAccessList}"
-							   value="Printable Version"
-							   styleClass="print"
-							   onmousedown="document.forms['bodyForm'].target='_blank'"/>
+			    <h:commandLink id="printAccessCommandLink" 
+					action="#{accessListBean.doPrintAccessList}" 
+					value="Printable Version" 
+					styleClass="print"
+					onmousedown="document.forms['bodyForm'].target='_blank'" />
 			</p:toolbarGroup>
 			<p:toolbarGroup location="right">
 				<h:commandLink styleClass="previousitem" id="previousEmployeeLink"
-							   action="#{accessListBean.doRetrievePreviousEmployee}"
-							   value="Previous Employee"/>
+					action="#{accessListBean.doRetrievePreviousEmployee}"
+					value="Previous Employee" />
 				<h:outputLabel styleClass="headerTextValue" value="  "/>
 				<h:commandLink styleClass="nextitem" id="nextEmployeeLink"
-							   action="#{accessListBean.doRetrieveNextEmployee}"
-							   value="Next Employee"/>
+					action="#{accessListBean.doRetrieveNextEmployee}"
+					value="Next Employee" />
 			</p:toolbarGroup>
 		</p:toolbar>
 
@@ -139,26 +122,26 @@
 						<p:column style="text-align:center;" headerText="Review Status">
 							<f:facet name="header">
 								<h:panelGroup  layout="block">
-									<h:outputText value="Review Status" style="font-weight: bold; display: block; margin-bottom: 5px;"/>
+									<h:outputText value="Review Status" style="font-weight: 1000; display: block; margin-bottom: 5px;"/>
 									<p:panelGrid columns="2" cellpadding="2">
 										<h:commandButton value="All"
-														 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'K')}" >
+														 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'KEEP')}" >
 											<f:ajax execute="@this" render="@form privilegeTable" />
 										</h:commandButton>
 										<h:commandButton value="None"
-													 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'R')}" >
+														 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'REMOVE')}" >
 											<f:ajax execute="@this" render="@form privilegeTable" />
 										</h:commandButton>
 									</p:panelGrid>
 								</h:panelGroup>
 							</f:facet>
-							<p:selectOneRadio id="reviewRadioButton" value="#{priv.keepRemoveFlag}">
+							<h:selectOneRadio id="reviewRadioButton" value="#{priv.keepRemoveFlag}">
 								<f:selectItems value="#{accessListBean.keepRemoveOptions}" var="option"
 											   itemLabel="#{option.label}" itemValue="#{option.value}" />
 								<p:ajax event="change"
 										listener="#{accessListBean.statusChanged(priv)}"
 										update="@this" />
-							</p:selectOneRadio>
+							</h:selectOneRadio>
 						</p:column>
 					</p:dataTable>
 				</p:panel>
