@@ -115,42 +115,54 @@
 		</table>
 
 		<h:form id="accessListForm">
-			<p:dataTable value="#{accessListBean.reviewUserApplicationAccessesDTOs}" var="group" varStatus="gStatus" id="groupTable">
-				<p:column>
-					<p:panel id="accessPanel_#{gStatus.index}" styleClass="myPanelStyle">
-						<f:facet name="header">
-							<h:panelGrid columns="2" style="width:100%">
-								<h:outputText value="Application Name: #{group.applicationName}" />
-								<h:outputText value="User ID: #{group.applicationUserId}" style="float: right; font-weight: inherit" />
-							</h:panelGrid>
-						</f:facet>
-
-						<p:dataTable id="privilegeTable_#{gStatus.index}" value="#{group.accesses}" var="priv">
-							<p:column style="text-align:center;" headerText="Review Status">
-								<f:facet name="header">
+			<ui:repeat value="#{accessListBean.reviewUserApplicationAccessesDTOs}" var="group">
+				<p:panel id="accessPanel_#{group.applicationName}" styleClass="myPanelStyle">
+					<f:facet name="header">
+						<h:panelGrid columns="2" style="width:100%">
+							<h:outputText value="Application Name: #{group.applicationName}"/>
+							<h:outputText value="User ID: #{group.applicationUserId}" style="float: right; font-weight: inherit;"/>
+						</h:panelGrid>
+					</f:facet>
+					<p:dataTable id="privilegeTable" value="#{group.accesses}" var="priv">
+						<p:column headerText="Source Name">
+							<h:outputText value="#{priv.sourceName}"/>
+						</p:column>
+						<p:column headerText="Evidence Description">
+							<h:outputText value="#{priv.privilegeDescription}"/>
+						</p:column>
+						<p:column headerText="Privilege Value">
+							<h:outputText value="#{priv.privilegeValue}"/>
+						</p:column>
+						<p:column headerText="Privilege Comment">
+							<h:outputText value="#{priv.privilegeComment}"/>
+						</p:column>
+						<p:column style="text-align:center;" headerText="Review Status">
+							<f:facet name="header">
+								<h:panelGroup  layout="block">
+									<h:outputText value="Review Status" style="font-weight: bold; display: block; margin-bottom: 5px;"/>
 									<p:panelGrid columns="2" cellpadding="2">
-										<p:commandButton value="All"
-														 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'K')}"
-														 update="accessListForm:groupTable:#{gStatus.index}:accessPanel_#{gStatus.index}" process="@this"/>
-
-										<p:commandButton value="None"
-														 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'R')}"
-														 update="accessListForm:groupTable:#{gStatus.index}:accessPanel_#{gStatus.index}" process="@this"/>
+										<h:commandButton value="All"
+														 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'K')}" >
+											<f:ajax execute="@this" render="@form privilegeTable" />
+										</h:commandButton>
+										<h:commandButton value="None"
+													 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'R')}" >
+											<f:ajax execute="@this" render="@form privilegeTable" />
+										</h:commandButton>
 									</p:panelGrid>
-								</f:facet>
-
-								<h:selectOneRadio id="reviewRadio" value="#{priv.keepRemoveFlag}">
-									<f:selectItems value="#{accessListBean.keepRemoveOptions}" var="option"
-												   itemLabel="#{option.label}" itemValue="#{option.value}" />
-									<p:ajax event="change"
-											listener="#{accessListBean.statusChanged(priv)}"
-											update="@this" />
-								</h:selectOneRadio>
-							</p:column>
-						</p:dataTable>
-					</p:panel>
-				</p:column>
-			</p:dataTable>
+								</h:panelGroup>
+							</f:facet>
+							<p:selectOneRadio id="reviewRadioButton" value="#{priv.keepRemoveFlag}">
+								<f:selectItems value="#{accessListBean.keepRemoveOptions}" var="option"
+											   itemLabel="#{option.label}" itemValue="#{option.value}" />
+								<p:ajax event="change"
+										listener="#{accessListBean.statusChanged(priv)}"
+										update="@this" />
+							</p:selectOneRadio>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+			</ui:repeat>
 		</h:form>
 
 	<p:toolbar id="bottomApprovedReviewersTableToolBar">
