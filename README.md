@@ -123,25 +123,27 @@
 						</p:column>
 						<p:column style="text-align:center;" headerText="Review Status">
 							<f:facet name="header">
-								<p:panelGrid  columns="2" cellpadding="2">
-									<p:commandButton value="All"
-													 action="#{employeeListBean.selectAllEmployees}"
-													 update="privilegeTable"
+								<h:panelGroup  layout="block">
+									<h:outputText value="Review Status" style="font-weight: bold; display: block; margin-bottom: 5px;"/>
+									<p:panelGrid columns="2" cellpadding="2">
+										<p:commandButton value="All"
+														 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'K')}"
+														 update="@form"
+														 process="@this" />
+										<p:commandButton value="None"
+													 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'R')}"
+													 update="@form"
 													 process="@this" />
-									<p:commandButton value="None"
-													 action="#{employeeListBean.rejectAllEmployees}"
-													 update="privilegeTable"
-													 process="@this" />
-								</p:panelGrid>
+									</p:panelGrid>
+								</h:panelGroup>
 							</f:facet>
-							<p:selectOneRadio value="#{priv.keepRemoveFlag}">
-								<f:selectItem itemLabel="Keep" itemValue="K"/>
-								<f:selectItem itemLabel="Remove" itemValue="R"/>
-
+							<h:selectOneRadio value="#{priv.keepRemoveFlag}">
+								<f:selectItems value="#{accessListBean.keepRemoveOptions}" var="option"
+											   itemLabel="#{option.label}" itemValue="#{option.value}" />
 								<p:ajax event="change"
 										listener="#{accessListBean.statusChanged(priv)}"
 										update="@this" />
-							</p:selectOneRadio>
+							</h:selectOneRadio>
 						</p:column>
 					</p:dataTable>
 				</p:panel>
