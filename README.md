@@ -8,6 +8,9 @@
 
 <ui:composition template="../common/main.xhtml">
     <ui:define name="body">
+        <!-- Add messages component for debugging -->
+        <p:messages id="messages" autoUpdate="true" showDetail="true"/>
+        
         <script type="text/javascript">
             function setRadios(parentElementId, radioValue) {
                 let parentElement = document.getElementById(parentElementId);
@@ -33,11 +36,16 @@
                     }
                 }
             }
+            
+            // Debug function to check if buttons are working
+            function logAction(action) {
+                console.log("Action triggered: " + action);
+            }
         </script>
 
         <h:outputLabel styleClass="sectionHeader" value="Report Details"/>
         
-        <p:ajaxStatus>
+        <p:ajaxStatus onstart="logAction('ajax-start')" onsuccess="logAction('ajax-success')" onerror="logAction('ajax-error')">
             <f:facet name="start"><h:graphicImage value="/images/loader.gif"/></f:facet>
         </p:ajaxStatus>
         
@@ -47,157 +55,144 @@
         
         <div class="verticalSpacer"/>
         
-        <h:form id="mainForm">
-            <p:toolbar id="approvedReviewersTableToolBar">
+        <!-- Main form wrapping all interactive elements -->
+        <h:form id="mainForm" prependId="false">
+            <!-- Top Toolbar -->
+            <p:toolbar id="topToolbar">
                 <p:toolbarGroup location="left">
-                    <p:commandLink styleClass="listitem" id="approvedReviewersDistributeLink" value="Return to List"
-                        action="#{accessListBean.doReturnToEmployeeList}"
-                        update="@form"
-                        process="@this"/>
-                    <p:outputLabel styleClass="headerTextValue" value="  "/>
-                    <p:commandLink id="accessListRejectLink"
-                        value="Reject Employee" 
-                        action="#{accessListBean.doPrepareRejectUserPanel}"
-                        styleClass="undecoratedRejectLink"
-                        update="accessListModalAjaxPanel"
-                        process="@this"
-                        oncomplete="PF('rejectReviewUserModalPanel').show()"
-                        rendered="#{accessListBean.editMode}"/>
+                    <p:commandButton id="returnToListBtn" value="Return to List"
+                                   action="#{accessListBean.doReturnToEmployeeList}"
+                                   update="@form"
+                                   process="@this"
+                                   onstart="logAction('return-to-list')"
+                                   icon="pi pi-arrow-left"/>
+                    
+                    <p:commandButton id="rejectEmployeeBtn" value="Reject Employee"
+                                   action="#{accessListBean.doPrepareRejectUserPanel}"
+                                   styleClass="undecoratedRejectLink"
+                                   update=":accessListModalAjaxPanel"
+                                   process="@this"
+                                   oncomplete="PF('rejectReviewUserModalPanel').show()"
+                                   rendered="#{accessListBean.editMode}"
+                                   icon="pi pi-times"/>
                 </p:toolbarGroup>
+                
                 <p:toolbarGroup>
-                    <p:commandLink id="printAccessCommandLink"
+                    <p:commandButton id="printBtn" value="Printable Version"
                                    action="#{accessListBean.doPrintAccessList}"
-                                   value="Printable Version"
                                    styleClass="print"
                                    target="_blank"
-                                   process="@form"/>
+                                   process="@form"
+                                   icon="pi pi-print"/>
                 </p:toolbarGroup>
+                
                 <p:toolbarGroup location="right">
-                    <p:commandLink styleClass="previousitem" id="previousEmployeeLink"
+                    <p:commandButton id="prevEmployeeBtn" value="Previous Employee"
                                    action="#{accessListBean.doRetrievePreviousEmployee}"
-                                   value="Previous Employee"
                                    update="@form"
-                                   process="@this"/>
-                    <p:outputLabel styleClass="headerTextValue" value="  "/>
-                    <p:commandLink styleClass="nextitem" id="nextEmployeeLink"
+                                   process="@this"
+                                   onstart="logAction('previous-employee')"
+                                   icon="pi pi-chevron-left"/>
+                    
+                    <p:commandButton id="nextEmployeeBtn" value="Next Employee"
                                    action="#{accessListBean.doRetrieveNextEmployee}"
-                                   value="Next Employee"
                                    update="@form"
-                                   process="@this"/>
+                                   process="@this"
+                                   onstart="logAction('next-employee')"
+                                   icon="pi pi-chevron-right"/>
                 </p:toolbarGroup>
             </p:toolbar>
 
-            <table style="margin: 10px 0px 10px 0px; width: 100%">
-                <tr>
-                    <td align="left">
-                        <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.numberOfRecords}"/>
-                        <h:outputLabel styleClass="headerTextValue" value=" - "/>
-                        <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userName}"/>
-                    </td>
-                    <td align="center">
-                        <h:outputLabel styleClass="headerTextValue" value="Employee Status:"/>
-                        <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userStatus}"/>
-                    </td>
-                    <td align="center">
-                        <h:outputLabel styleClass="headerTextValue" value="Employee Manager:" rendered="#{accessListBean.review.notManagerReview}"/>
-                        <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.employeeManager}" rendered="#{accessListBean.review.notManagerReview}"/>
-                    </td>
-                    <td align="right">
-                        <h:outputLabel styleClass="headerTextValue" value="Division:"/>
-                        <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDivision}"/>
-                    </td>
-                    <td align="right">
-                        <h:outputLabel styleClass="headerTextValue" value="Department:"/>
-                        <h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDepartment}"/>
-                    </td>
-                </tr>
-            </table>
+            <!-- Employee Information -->
+            <p:panel header="Employee Details" style="margin-bottom:20px;">
+                <p:outputLabel value="#{accessListBean.numberOfRecords} - #{accessListBean.userName}" style="font-weight:bold; margin-right:20px;"/>
+                <p:outputLabel value="Status: #{accessListBean.userStatus}" style="margin-right:20px;"/>
+                <p:outputLabel value="Manager: #{accessListBean.employeeManager}" 
+                             rendered="#{accessListBean.review.notManagerReview}" style="margin-right:20px;"/>
+                <p:outputLabel value="Division: #{accessListBean.userDivision}" style="margin-right:20px;"/>
+                <p:outputLabel value="Department: #{accessListBean.userDepartment}"/>
+            </p:panel>
 
-            <ui:repeat value="#{accessListBean.reviewUserApplicationAccessesDTOs}" var="group">
-                <p:panel id="accessPanel_#{group.applicationName}" styleClass="myPanelStyle">
-                    <f:facet name="header">
-                        <h:panelGrid columns="2" style="width:100%">
-                            <h:outputText value="Application Name: #{group.applicationName}"/>
-                            <h:outputText value="User ID: #{group.applicationUserId}" style="float: right; font-weight: inherit;"/>
-                        </h:panelGrid>
-                    </f:facet>
-                    <p:dataTable id="privilegeTable" value="#{group.accesses}" var="priv">
+            <!-- Access List -->
+            <ui:repeat value="#{accessListBean.reviewUserApplicationAccessesDTOs}" var="group" varStatus="loop">
+                <p:panel id="appPanel_#{loop.index}" header="Application: #{group.applicationName} (User ID: #{group.applicationUserId})" 
+                         styleClass="myPanelStyle" toggleable="true" collapsed="false">
+                    <p:dataTable id="privTable_#{loop.index}" value="#{group.accesses}" var="priv">
                         <p:column headerText="Source Name">
                             <h:outputText value="#{priv.sourceName}"/>
                         </p:column>
-                        <p:column headerText="Evidence Description">
+                        <p:column headerText="Description">
                             <h:outputText value="#{priv.privilegeDescription}"/>
                         </p:column>
-                        <p:column headerText="Privilege Value">
+                        <p:column headerText="Value">
                             <h:outputText value="#{priv.privilegeValue}"/>
                         </p:column>
-                        <p:column headerText="Privilege Comment">
+                        <p:column headerText="Comment">
                             <h:outputText value="#{priv.privilegeComment}"/>
                         </p:column>
-                        <p:column style="text-align:center;" headerText="Review Status">
+                        <p:column headerText="Review Status" style="text-align:center">
                             <f:facet name="header">
-                                <h:panelGroup layout="block">
-                                    <h:outputText value="Review Status" style="font-weight: 1000; display: block; margin-bottom: 5px;"/>
-                                    <p:panelGrid columns="2" cellpadding="2">
-                                        <h:commandButton value="All"
-                                                         action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'KEEP')}">
-                                            <f:ajax execute="@this" render="@form privilegeTable" />
-                                        </h:commandButton>
-                                        <h:commandButton value="None"
-                                                         action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'REMOVE')}">
-                                            <f:ajax execute="@this" render="@form privilegeTable" />
-                                        </h:commandButton>
-                                    </p:panelGrid>
-                                </h:panelGroup>
+                                <h:panelGrid columns="2" style="margin-bottom:5px;">
+                                    <p:commandButton value="All" icon="pi pi-check"
+                                                   action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'KEEP')}"
+                                                   update=":mainForm:privTable_#{loop.index}"
+                                                   process="@this"/>
+                                    <p:commandButton value="None" icon="pi pi-times"
+                                                   action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'REMOVE')}"
+                                                   update=":mainForm:privTable_#{loop.index}"
+                                                   process="@this"/>
+                                </h:panelGrid>
                             </f:facet>
-                            <h:selectOneRadio id="reviewRadioButton" value="#{priv.keepRemoveFlag}">
+                            <p:selectOneRadio id="reviewRadio_#{loop.index}" value="#{priv.keepRemoveFlag}" layout="custom">
                                 <f:selectItems value="#{accessListBean.keepRemoveOptions}" var="option"
-                                               itemLabel="#{option.label}" itemValue="#{option.value}" />
-                                <p:ajax event="change"
-                                        listener="#{accessListBean.statusChanged(priv)}"
-                                        update="@this" />
-                            </h:selectOneRadio>
+                                             itemLabel="#{option.label}" itemValue="#{option.value}"/>
+                                <p:ajax listener="#{accessListBean.statusChanged(priv)}" update="@this"/>
+                            </p:selectOneRadio>
                         </p:column>
                     </p:dataTable>
                 </p:panel>
             </ui:repeat>
 
-            <p:toolbar id="bottomApprovedReviewersTableToolBar">
+            <!-- Bottom Toolbar (duplicate of top for convenience) -->
+            <p:toolbar id="bottomToolbar" style="margin-top:20px;">
                 <p:toolbarGroup location="left">
-                    <p:commandLink styleClass="listitem" id="bottomApprovedReviewersDistributeLink" value="Return to List"
-                                   action="#{accessListBean.doReturnToEmployeeList}"
-                                   update="@form"
-                                   process="@this"/>
-                    <p:outputLabel styleClass="headerTextValue" value="  "/>
-                    <p:commandLink id="bottomAccessListRejectLink"
-                                   value="Reject Employee"
-                                   action="#{accessListBean.doPrepareRejectUserPanel}"
-                                   styleClass="undecoratedRejectLink"
-                                   update="accessListModalAjaxPanel"
-                                   process="@this"
-                                   oncomplete="PF('rejectReviewUserModalPanel').show(); window.scrollTo(0, 0);"
-                                   rendered="#{accessListBean.editMode}"/>
+                    <p:commandButton id="bottomReturnBtn" value="Return to List"
+                                    action="#{accessListBean.doReturnToEmployeeList}"
+                                    update="@form"
+                                    process="@this"
+                                    icon="pi pi-arrow-left"/>
+                    
+                    <p:commandButton id="bottomRejectBtn" value="Reject Employee"
+                                    action="#{accessListBean.doPrepareRejectUserPanel}"
+                                    styleClass="undecoratedRejectLink"
+                                    update=":accessListModalAjaxPanel"
+                                    process="@this"
+                                    oncomplete="PF('rejectReviewUserModalPanel').show(); window.scrollTo(0,0);"
+                                    rendered="#{accessListBean.editMode}"
+                                    icon="pi pi-times"/>
                 </p:toolbarGroup>
+                
                 <p:toolbarGroup>
-                    <p:commandLink id="bottomPrintAccessCommandLink"
-                                   action="#{accessListBean.doPrintAccessList}"
-                                   value="Printable Version"
-                                   styleClass="print"
-                                   target="_blank"
-                                   process="@form"/>
+                    <p:commandButton id="bottomPrintBtn" value="Printable Version"
+                                    action="#{accessListBean.doPrintAccessList}"
+                                    styleClass="print"
+                                    target="_blank"
+                                    process="@form"
+                                    icon="pi pi-print"/>
                 </p:toolbarGroup>
+                
                 <p:toolbarGroup location="right">
-                    <p:commandLink styleClass="previousitem" id="bottomPreviousEmployeeLink"
-                                   action="#{accessListBean.doRetrievePreviousEmployee}"
-                                   value="Previous Employee"
-                                   update="@form"
-                                   process="@this"/>
-                    <p:outputLabel styleClass="headerTextValue" value="  "/>
-                    <p:commandLink styleClass="nextitem" id="bottomNextEmployeeLink"
-                                   action="#{accessListBean.doRetrieveNextEmployee}"
-                                   value="Next Employee"
-                                   update="@form"
-                                   process="@this"/>
+                    <p:commandButton id="bottomPrevBtn" value="Previous Employee"
+                                    action="#{accessListBean.doRetrievePreviousEmployee}"
+                                    update="@form"
+                                    process="@this"
+                                    icon="pi pi-chevron-left"/>
+                    
+                    <p:commandButton id="bottomNextBtn" value="Next Employee"
+                                    action="#{accessListBean.doRetrieveNextEmployee}"
+                                    update="@form"
+                                    process="@this"
+                                    icon="pi pi-chevron-right"/>
                 </p:toolbarGroup>
             </p:toolbar>
         </h:form>
