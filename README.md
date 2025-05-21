@@ -198,3 +198,18 @@
 </ui:composition>
 
 </html>
+
+function setRadioButtonValue(radioValue) {
+				let inputs = document.getElementsByTagName('input');
+				for (let i = 0; i &lt; inputs.length; i++) {
+					let input = inputs[i];
+					// is it of type radio?
+					if (input.type === 'radio') {
+						// is it the right radio for the given value to set?
+						if (input.value === radioValue) {
+							// check it
+							input.checked = true;
+						}
+					}
+				}
+			}
