@@ -1,5 +1,5 @@
 ```
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html
   xmlns="http://www.w3.org/1999/xhtml"
   xmlns:ui="http://java.sun.com/jsf/facelets"
@@ -9,6 +9,7 @@
 
 <ui:composition template="../common/main.xhtml">
 <ui:define name="body">
+	<h:form id="acceessListForm">
 <script type="text/javascript">
 
 function setRadios(parentElementId, radioValue) {
@@ -71,83 +72,80 @@ function setRadios(parentElementId, radioValue) {
 			</p:toolbarGroup>
 		</p:toolbar>
 
-		<table style="margin: 10px 0px 10px 0px; width: 100%">
-			<tr>
-				<td align="left">
-					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.numberOfRecords}"/>
-					<h:outputLabel styleClass="headerTextValue" value=" - "/>
-					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userName}"/>
-				</td>
-				<td align="center">
-					<h:outputLabel styleClass="headerTextValue" value="Employee Status:"/>
-					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userStatus}"/>
-				</td>
-				<td align="center">
-					<h:outputLabel styleClass="headerTextValue" value="Employee Manager:" rendered="#{accessListBean.review.notManagerReview}"/>
-					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.employeeManager}" rendered="#{accessListBean.review.notManagerReview}"/>
-				</td>
-				<td align="right">
-					<h:outputLabel styleClass="headerTextValue" value="Division:"/>
-					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDivision}"/>
-				</td>
-				<td align="right">
-					<h:outputLabel styleClass="headerTextValue" value="Department:"/>
-					<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDepartment}"/>
-				</td>
-			</tr>
-		</table>
+			<table style="margin: 10px 0px 10px 0px; width: 100%">
+				<tr>
+					<td align="left">
+						<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.numberOfRecords}"/>
+						<h:outputLabel styleClass="headerTextValue" value=" - "/>
+						<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userName}"/>
+					</td>
+					<td align="center">
+						<h:outputLabel styleClass="headerTextValue" value="Employee Status:"/>
+						<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userStatus}"/>
+					</td>
+					<td align="center">
+						<h:outputLabel styleClass="headerTextValue" value="Employee Manager:" rendered="#{accessListBean.review.notManagerReview}"/>
+						<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.employeeManager}" rendered="#{accessListBean.review.notManagerReview}"/>
+					</td>
+					<td align="right">
+						<h:outputLabel styleClass="headerTextValue" value="Division:"/>
+						<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDivision}"/>
+					</td>
+					<td align="right">
+						<h:outputLabel styleClass="headerTextValue" value="Department:"/>
+						<h:outputLabel styleClass="headerTextValue" value="#{accessListBean.userDepartment}"/>
+					</td>
+				</tr>
+			</table>
 
-		<h:form id="accessListForm">
-			<ui:repeat value="#{accessListBean.reviewUserApplicationAccessesDTOs}" var="group">
-				<p:panel id="accessPanel_#{group.applicationName}" styleClass="myPanelStyle">
+	<ui:repeat value="#{accessListBean.reviewUserApplicationAccessesDTOs}" var="group">
+		<p:panel id="accessPanel_#{group.applicationName}" styleClass="myPanelStyle">
+			<f:facet name="header">
+				<h:panelGrid columns="2" style="width:100%">
+					<h:outputText value="Application Name: #{group.applicationName}"/>
+					<h:outputText value="User ID: #{group.applicationUserId}" style="float: right; font-weight: inherit;"/>
+				</h:panelGrid>
+			</f:facet>
+			<p:dataTable id="privilegeTable" value="#{group.accesses}" var="priv">
+				<p:column headerText="Source Name">
+					<h:outputText value="#{priv.sourceName}"/>
+				</p:column>
+				<p:column headerText="Evidence Description">
+					<h:outputText value="#{priv.privilegeDescription}"/>
+				</p:column>
+				<p:column headerText="Privilege Value">
+					<h:outputText value="#{priv.privilegeValue}"/>
+				</p:column>
+				<p:column headerText="Privilege Comment">
+					<h:outputText value="#{priv.privilegeComment}"/>
+				</p:column>
+				<p:column style="text-align:center;" headerText="Review Status">
 					<f:facet name="header">
-						<h:panelGrid columns="2" style="width:100%">
-							<h:outputText value="Application Name: #{group.applicationName}"/>
-							<h:outputText value="User ID: #{group.applicationUserId}" style="float: right; font-weight: inherit;"/>
-						</h:panelGrid>
+						<h:panelGroup  layout="block">
+							<h:outputText value="Review Status" style="font-weight: 1000; display: block; margin-bottom: 5px;"/>
+							<p:panelGrid columns="2" cellpadding="2">
+								<h:commandButton value="All"
+												 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'KEEP')}" >
+									<f:ajax execute="@this" render="@form privilegeTable" />
+								</h:commandButton>
+								<h:commandButton value="None"
+												 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'REMOVE')}" >
+									<f:ajax execute="@this" render="@form privilegeTable" />
+								</h:commandButton>
+							</p:panelGrid>
+						</h:panelGroup>
 					</f:facet>
-					<p:dataTable id="privilegeTable" value="#{group.accesses}" var="priv">
-						<p:column headerText="Source Name">
-							<h:outputText value="#{priv.sourceName}"/>
-						</p:column>
-						<p:column headerText="Evidence Description">
-							<h:outputText value="#{priv.privilegeDescription}"/>
-						</p:column>
-						<p:column headerText="Privilege Value">
-							<h:outputText value="#{priv.privilegeValue}"/>
-						</p:column>
-						<p:column headerText="Privilege Comment">
-							<h:outputText value="#{priv.privilegeComment}"/>
-						</p:column>
-						<p:column style="text-align:center;" headerText="Review Status">
-							<f:facet name="header">
-								<h:panelGroup  layout="block">
-									<h:outputText value="Review Status" style="font-weight: 1000; display: block; margin-bottom: 5px;"/>
-									<p:panelGrid columns="2" cellpadding="2">
-										<h:commandButton value="All"
-														 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'KEEP')}" >
-											<f:ajax execute="@this" render="@form privilegeTable" />
-										</h:commandButton>
-										<h:commandButton value="None"
-														 action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'REMOVE')}" >
-											<f:ajax execute="@this" render="@form privilegeTable" />
-										</h:commandButton>
-									</p:panelGrid>
-								</h:panelGroup>
-							</f:facet>
-							<h:selectOneRadio id="reviewRadioButton" value="#{priv.keepRemoveFlag}">
-								<f:selectItems value="#{accessListBean.keepRemoveOptions}" var="option"
-											   itemLabel="#{option.label}" itemValue="#{option.value}" />
-								<p:ajax event="change"
-										listener="#{accessListBean.statusChanged(priv)}"
-										update="@this" />
-							</h:selectOneRadio>
-						</p:column>
-					</p:dataTable>
-				</p:panel>
-			</ui:repeat>
-		</h:form>
-
+					<h:selectOneRadio id="reviewRadioButton" value="#{priv.keepRemoveFlag}">
+						<f:selectItems value="#{accessListBean.keepRemoveOptions}" var="option"
+									   itemLabel="#{option.label}" itemValue="#{option.value}" />
+						<p:ajax event="change"
+								listener="#{accessListBean.statusChanged(priv)}"
+								update="@this" />
+					</h:selectOneRadio>
+				</p:column>
+			</p:dataTable>
+		</p:panel>
+	</ui:repeat>
 	<p:toolbar id="bottomApprovedReviewersTableToolBar">
 		<p:toolbarGroup location="left">
 			<h:commandLink styleClass="listitem" id="bottomApprovedReviewersDistributeLink" value="Return to List"
@@ -177,8 +175,9 @@ function setRadios(parentElementId, radioValue) {
 						   value="Next Employee"/>
 		</p:toolbarGroup>
 	</p:toolbar>
+	</h:form>
 </ui:define>
-<ui:define name="modalPanels" >
+	<ui:define name="modalPanels" >
 			<p:outputPanel autoUpdate="true" id="accessListModalAjaxPanel">
 				<ui:include src="rejectReviewUsersModalPanelComponent.xhtml">
 					<ui:param name="aListBean" value="#{accessListBean}" />
@@ -192,7 +191,7 @@ function setRadios(parentElementId, radioValue) {
                     <ui:param name="cancelId" value="rejectUserModalPanelCancelButton" />
 				</ui:include>
 			</p:outputPanel>
-</ui:define>
+	</ui:define>
 </ui:composition>
 
 </html>
