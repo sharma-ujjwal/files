@@ -1,74 +1,195 @@
 ```
-<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	  xmlns:h="http://xmlns.jcp.org/jsf/html"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:p="http://primefaces.org/ui">
 
-<ui:composition template="../common/main.xhtml">
-    <ui:define name="body">
-        <!-- Add messages component for debugging -->
-        <p:messages id="messages" autoUpdate="true" showDetail="true"/>
-        
-        <h:outputLabel styleClass="sectionHeader" value="Report Details"/>
-        
-        <p:ajaxStatus>
-            <f:facet name="start"><h:graphicImage value="/images/loader.gif"/></f:facet>
-        </p:ajaxStatus>
-        
-        <ui:include src="headerComponent.xhtml">
-            <ui:param name="backingBeanName" value="#{accessListBean}"/>
-        </ui:include> 
-        
-        <div class="verticalSpacer"/>
-        
-        <!-- Main form wrapping all interactive elements -->
-        <h:form id="mainForm">
-            <!-- Top Toolbar -->
-            <p:toolbar id="topToolbar">
-                <!-- Keep your existing toolbar code -->
-            </p:toolbar>
-
-            <!-- Employee Information -->
-            <!-- Keep your existing employee info code -->
-
-            <!-- Access List - FIXED SECTION -->
-            <ui:repeat value="#{accessListBean.reviewUserApplicationAccessesDTOs}" var="group" varStatus="loop">
-                <p:panel id="appPanel" header="Application: #{group.applicationName} (User ID: #{group.applicationUserId})" 
-                         styleClass="myPanelStyle" toggleable="true" collapsed="false">
-                    <p:dataTable id="privTable" value="#{group.accesses}" var="priv">
-                        <!-- Your existing columns -->
-                        <p:column headerText="Review Status" style="text-align:center">
-                            <f:facet name="header">
-                                <h:panelGrid columns="2" style="margin-bottom:5px;">
-                                    <p:commandButton value="All" icon="pi pi-check"
-                                                   action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'KEEP')}"
-                                                   update="@parent"
-                                                   process="@this"/>
-                                    <p:commandButton value="None" icon="pi pi-times"
-                                                   action="#{accessListBean.setAllPrivilegeValues(group.accesses, 'REMOVE')}"
-                                                   update="@parent"
-                                                   process="@this"/>
-                                </h:panelGrid>
-                            </f:facet>
-                            <p:selectOneRadio id="reviewRadio" value="#{priv.keepRemoveFlag}" layout="custom">
-                                <f:selectItems value="#{accessListBean.keepRemoveOptions}" var="option"
-                                             itemLabel="#{option.label}" itemValue="#{option.value}"/>
-                                <p:ajax listener="#{accessListBean.statusChanged(priv)}" update="@this"/>
-                            </p:selectOneRadio>
-                        </p:column>
-                    </p:dataTable>
-                </p:panel>
-            </ui:repeat>
-
-            <!-- Bottom Toolbar -->
-            <!-- Keep your existing bottom toolbar code -->
-        </h:form>
-    </ui:define>
-    
-    <ui:define name="modalPanels">
-        <!-- Keep your existing modal panel code -->
-    </ui:define>
+<ui:composition>
+	<p:toolbar id="pendingReviewersTableToolBar" itemSeparator="line">
+		<p:toolbarGroup>
+			<p:commandLink id="pendingReviewersApproveLink" value="Approve"
+						   action="#{reviewDetailsBean.doApproveReviewers}"
+						   update="bodyForm:headerMessages pendingReviewersList"
+						   styleClass="undecoratedApproveLink"/>
+		</p:toolbarGroup>
+		<p:toolbarGroup>
+			<p:commandLink id="pendingReviewersReassignLink" value="Reassign"
+						   action="#{reviewDetailsBean.doPrepareReassignReviewersPanel}" styleClass="undecoratedReassignLink">
+				<f:param name="#{reviewDetailsBean.actionSourceParamName}" value="#{reviewDetailsBean.pendingParam}"/>
+			</p:commandLink>
+		</p:toolbarGroup>
+		<p:toolbarGroup>
+			<p:commandLink id="pendingReviewersRejectLink"
+						   value="Reject"
+						   update="bodyForm:headerMessages rejectReviewerModalPanelAjax rejectReviewersModalPanelTable"
+						   action="#{reviewDetailsBean.doPrepareRejectReviewersPanel}"
+						   styleClass="undecoratedRejectLink" >
+				<f:param name="#{reviewDetailsBean.actionSourceParamName}" value="#{reviewDetailsBean.pendingParam}"/>
+			</p:commandLink>
+		</p:toolbarGroup>
+	</p:toolbar>
+	<p:outputPanel id="reviewPendingReviewersTablePanel">
+		<p:dataTable id="pendingReviewersList"  value="#{reviewDetailsBean.myPendingTaskListBeanResults}"
+					 var="myAllPendingTask" widgetVar="pendingReviewersListWidget"
+					 rowIndexVar="rowIndex" rowKeyVar="rowKey">
+			<p:column style="width: 80px !important;">
+				<f:facet name="header">
+					<h:panelGrid columns="1" style="width:80px; height: 12px;">
+						<p:commandLink id="selectAllLinkPending" value="All/None"
+									   style="color: #000 !important; margin-left: 5px; font-weight: 800; font-size: 11px;"
+									   action="#{reviewDetailsBean.doSelectAllToggle}"
+									   update="pendingReviewersList" >
+							<f:param name="actionStatusCodeValue" value="PEND" />
+						</p:commandLink>
+					</h:panelGrid>
+				</f:facet>
+				<h:selectBooleanCheckbox value="#{myAllPendingTask.selected}">
+					<p:ajax event="change" listener="#{reviewDetailsBean.onRowSelect}" />
+				</h:selectBooleanCheckbox>
+			</p:column>
+			<p:column headerText="Bundle" sortable="true" field="bundleName">
+				<h:outputText value="#{myAllPendingTask.bundleName}" />
+			</p:column>
+			<p:column headerText="" style="width: 56px">
+				<h:outputLink>
+					<h:graphicImage value="/images/ico_notice.gif" title="#{myAllPendingTask.reviewerStatus}"/>
+				</h:outputLink>
+			</p:column>
+			<p:column rendered="#{reviewDetailsBean.columnType ne 'MNGR' and reviewDetailsBean.columnType ne 'SGDU'}"
+					  sortable="true" field="ownerName" headerText="Data Owner">
+				<h:outputText value="#{myAllPendingTask.ownerName}" />
+			</p:column>
+			<p:column headerText="Application" sortable="true" field="application">
+				<h:outputText value="#{myAllPendingTask.application}" />
+			</p:column>
+			<p:column headerText="Reviewer" sortable="true" field="reviewerName">
+				<h:commandLink id="commandLinkReviewerName"
+							   value="#{myAllPendingTask.reviewer.reviewerName}"
+							   action="#{reviewDetailsBean.doViewReviewerDetails}">
+					<f:param name="actionReviewerId" value="#{myAllPendingTask.reviewerId}" />
+					<f:param name="actionStatusCodeValue" value="PEND" />
+				</h:commandLink>
+			</p:column>
+			<p:column rendered="#{reviewDetailsBean.columnType eq 'MNGR'}" headerText="Escalation Manager" sortable="true"
+					  field="escalationMgrName">
+				<h:outputText value="#{myAllPendingTask.escalationMgrName}" />
+			</p:column>
+			<p:column headerText="Division" sortable="true" field="reviewer.division">
+				<h:outputText value="#{myAllPendingTask.reviewer.division}" />
+			</p:column>
+			<p:column rendered="#{reviewDetailsBean.columnType eq 'MNGR'}" headerText="# of Departments" sortable="true" field="department">
+				<h:outputText value="#{myAllPendingTask.department}" />
+			</p:column>
+			<p:column headerText="# Direct Reports" sortable="true" field="reviewer.numberOfReviewedUsers">
+				<h:outputText value="#{myAllPendingTask.reviewer.numberOfReviewedUsers}" />
+			</p:column>
+			<p:column rendered="#{reviewDetailsBean.columnType ne 'MNGR'}" headerText="# users in report" sortable="true" field="reviewer.numberOfReviewedUsers">
+				<h:outputText value="#{myAllPendingTask.reviewer.numberOfReviewedUsers}" />
+			</p:column>
+			<p:column headerText="Date Created" sortable="true" field="createdDate">
+				<h:outputText value="#{myAllPendingTask.createdDate}">
+					<f:convertDateTime pattern="MM/dd/yyyy" />
+				</h:outputText>
+			</p:column>
+			<p:column rendered="#{reviewDetailsBean.columnType eq 'SGDU'}"
+					  sortable="true" field="reviewerDTO.ownerName" headerText="SOD Owner" >
+				<h:outputText value="#{myAllPendingTask.reviewerDTO.ownerName}" />
+			</p:column>
+		</p:dataTable>
+		<p:toolbar id="bottomPendingReviewersTableToolBar" itemSeparator="line">
+			<p:toolbarGroup>
+				<p:commandLink id="bottomPendingReviewersApproveLink" value="Approve"
+							   update="bodyForm:headerMessages pendingReviewersList"
+							   action="#{reviewDetailsBean.doApproveReviewers}" styleClass="undecoratedApproveLink"
+							   oncomplete="window.scrollTo(0, 0);"/>
+			</p:toolbarGroup>
+			<p:toolbarGroup>
+				<p:commandLink id="bottomPendingReviewersReassignLink" value="Reassign"
+							   action="#{reviewDetailsBean.doPrepareReassignReviewersPanel}"
+							   styleClass="undecoratedReassignLink"
+							   oncomplete="window.scrollTo(0, 0);" >
+					<f:param name="#{reviewDetailsBean.actionSourceParamName}" value="#{reviewDetailsBean.pendingParam}"/>
+				</p:commandLink>
+			</p:toolbarGroup>
+			<p:toolbarGroup>
+				<p:commandLink id="bottomPendingReviewersRejectLink" value="Reject"
+							   action="#{reviewDetailsBean.doPrepareRejectReviewersPanel}"
+							   styleClass="undecoratedRejectLink"
+							   update="bodyForm:headerMessages rejectReviewerModalPanelAjax pendingReviewersList">
+					<f:param name="#{reviewDetailsBean.actionSourceParamName}" value="#{reviewDetailsBean.pendingParam}"/>
+				</p:commandLink>
+			</p:toolbarGroup>
+		</p:toolbar>
+	</p:outputPanel>
+	<ui:define name="modalPanels">
+		<p:outputPanel autoUpdate="true" id="rejectReviewerModalPanelAjax">
+			<ui:include src="rejectReviewersModalPanelComponent.xhtml"/>
+		</p:outputPanel>
+	</ui:define>
 </ui:composition>
+</html>
+
+rejectReviewersModalPanelComponent.xhtml code below
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+ 
+	<ui:composition>
+		<p:dialog id="rejectReviewersModalPanel" resizeable="true"  moveable="true" height="525" width="450"
+			widgetVar="rejectReviewersModalPanelWidget" visible="#{reviewDetailsBean.renderRejectReviewerModalPanel}" modal="true">
+			<f:facet name="header">
+				<h:outputLabel value="Reject Reviewers" />
+			</f:facet>
+			<div>
+				<h:messages id="rejectReviewersModalPanelMessages" fatalClass="fatalMessage" errorClass="errorMessage" 
+					warnClass="warningMessage" infoClass="infoMessage" layout="table"/>
+			</div>
+			<div class="verticalSpacer"/>
+			<div>
+				<h:outputLabel styleClass="sectionHeaderSmall" 
+					value="Please provide a reason and comment for the following rejection."/>
+			</div>
+			<div class="verticalSpacer"/>
+			<div><h:outputLabel value="Reviewer(s):" styleClass="fieldLabel" /></div>
+			<div style="overflow-y: scroll; height: 175px">
+				<h:dataTable id="rejectReviewersModalPanelTable" value="#{reviewDetailsBean.selectedReviewers}"
+					var="reviewer">
+					<h:column>
+						<h:outputText value="#{reviewer.currentReviewerName}"/>
+					</h:column>
+				</h:dataTable>
+			</div>
+			<div class="verticalSpacer"/>
+			<h:form id="rejectReviewersCommentForm">
+				<div>
+					<h:outputLabel value="Reason:" styleClass="fieldLabel"/>
+				</div>
+				<div>
+					<h:selectOneMenu id="rejectReviewerModalPanelReason" value="#{reviewDetailsBean.selectReasonInput}">
+						<f:selectItems value="#{applicationBean.availableReviewerRejectReasons}"/>
+					</h:selectOneMenu>
+				</div>
+				<div class="verticalSpacer"/>
+				<div>
+					<h:outputLabel value="Comments:" styleClass="fieldLabel" />
+				</div>
+				<div>
+					<h:inputTextarea id="rejectReportsModalComments" value="#{reviewDetailsBean.commentsInput}" 
+						cols="50" rows="5"/>
+				</div>
+				<div>
+					<h:commandButton id="rejectReportCommentModalPanelSubmitButtonInvisible" value="Submit"
+									 action="#{reviewDetailsBean.doSaveRejectReviewersPanel}">
+						<f:ajax execute="@form" render=":bodyForm:reviewPendingReviewersTablePanel:pendingReviewersList" />
+					</h:commandButton>
+
+					<h:commandButton id="rejectReportCommentModalPanelCancelButton" value="Cancel" 
+						action="#{reviewDetailsBean.doCancelRejectReviewersPanel}" />
+				</div>
+			</h:form>
+		</p:dialog>
+	</ui:composition>
 </html>
