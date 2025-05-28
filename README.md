@@ -1,5 +1,5 @@
 ```
-bodyForm:tabView:pendingReviewersList
+this is pendingReportsComponent.xhtml
 <html xmlns="http://www.w3.org/1999/xhtml"
 	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	  xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -27,6 +27,7 @@ bodyForm:tabView:pendingReviewersList
 						   action="#{reviewDetailsBean.doPrepareRejectReviewersPanel}"
 						   styleClass="undecoratedRejectLink" >
 				<f:param name="#{reviewDetailsBean.actionSourceParamName}" value="#{reviewDetailsBean.pendingParam}"/>
+				<f:param name="source" value="PEND" />
 			</p:commandLink>
 		</p:toolbarGroup>
 	</p:toolbar>
@@ -119,19 +120,22 @@ bodyForm:tabView:pendingReviewersList
 							   styleClass="undecoratedRejectLink"
 							   update="bodyForm:headerMessages rejectReviewerModalPanelAjax pendingReviewersList">
 					<f:param name="#{reviewDetailsBean.actionSourceParamName}" value="#{reviewDetailsBean.pendingParam}"/>
+					<f:param name="source" value="PEND" />
 				</p:commandLink>
 			</p:toolbarGroup>
 		</p:toolbar>
 	</p:outputPanel>
 	<ui:define name="modalPanels">
 		<p:outputPanel autoUpdate="true" id="rejectReviewerModalPanelAjax">
-			<ui:include src="rejectReviewersModalPanelComponent.xhtml"/>
+			<ui:include src="rejectReviewersModalPanelComponent.xhtml">
+				<ui:param name="tab" value="PEND" />
+			</ui:include>
 		</p:outputPanel>
 	</ui:define>
 </ui:composition>
 </html>
 
-rejectReviewersModalPanelComponent.xhtml code below
+this is rejectReviewersModalPanelComponent.xhtml
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -183,9 +187,7 @@ rejectReviewersModalPanelComponent.xhtml code below
 				</div>
 				<div>
 					<h:commandButton id="rejectReportCommentModalPanelSubmitButtonInvisible" value="Submit"
-									 action="#{reviewDetailsBean.doSaveRejectReviewersPanel}">
-						<f:ajax execute="@form" render=":bodyForm:reviewPendingReviewersTablePanel:pendingReviewersList" />
-					</h:commandButton>
+									 action="#{reviewDetailsBean.doSaveRejectReviewersPanel}" />
 
 					<h:commandButton id="rejectReportCommentModalPanelCancelButton" value="Cancel" 
 						action="#{reviewDetailsBean.doCancelRejectReviewersPanel}" />
@@ -194,3 +196,19 @@ rejectReviewersModalPanelComponent.xhtml code below
 		</p:dialog>
 	</ui:composition>
 </html>
+
+
+public String getActionSourceValue() {
+			String source = FacesContext.getCurrentInstance()
+					.getExternalContext()
+					.getRequestParameterMap()
+					.get("source");
+		if (source.equalsIgnoreCase("PEND")) {
+			return "PENDING";
+		} else if (source.contains("APPR")) {
+			return "APPROVED";
+		}
+		return null; // Default or error case
+	}
+
+I get null in source value. why this is happening. the flow is first I see the datatable present in pendingReportsComponent, then when I click on Reject button, a popup comes, then after submit button inside doSaveRejectReviewersPanel() method I am calling getActionSourceValue() where I am geeting null as source. how to fix this
