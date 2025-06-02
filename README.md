@@ -194,3 +194,79 @@
 	</script>
 	</ui:composition>
 </html>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
+ 
+	<ui:composition>
+		<p:dialog id="distributeReviewerModalPanel"
+				  widgetVar="distributeReviewerModalPanelWidget"
+				  resizeable="true"
+				  draggable="true"
+				  modal="true"
+				  height="550" width="450"
+				  visible="#{reviewDetailsBean.renderDistributeReviewerModalPanel}">
+			<f:facet name="header">
+				<h:outputLabel value="Distribute Reviewer" />
+			</f:facet>
+			<div>
+				<h:messages id="distributeReviewersModalPanelMessages" fatalClass="fatalMessage" errorClass="errorMessage" 
+					warnClass="warningMessage" infoClass="infoMessage" layout="table"/>
+			</div>
+			<div class="verticalSpacer"/>
+			<div>
+				<h:outputLabel styleClass="sectionHeaderSmall" 
+					value="Please provide a target date and instructions for the distribution."/>
+			</div>
+			<div class="verticalSpacer"/>
+			<div><h:outputLabel value="Reviewer(s):" styleClass="fieldLabel" /></div>
+			<div style="overflow-y: scroll; height: 175px">
+				<h:dataTable id="distributeReviewersModalPanelTable" value="#{reviewDetailsBean.selectedReviewers}" 
+					var="reviewer">
+					<h:column>
+						<h:outputText value="#{reviewer.currentReviewerName}"/>
+					</h:column>
+				</h:dataTable>
+			</div>
+			<div class="verticalSpacer"/>
+			<div>
+				<h:outputLabel styleClass="sectionHeaderSmall" 
+					value="Target Completion Date:"/>
+			</div>
+			<p:fragment id="distributeReviewRegion">
+			<h:form id="distributeReviewerModalPanelForm">
+				<div>
+					<p:calendar id="targetDateCalendar"
+								value="#{reviewDetailsBean.targetCompDate}"
+								datePattern="MM/dd/yyyy" showOn="button" autoOpen="false" navigator="true" widgetVar="targetDateCalendarWidget"
+								styleClass="distributeCalendarStyle"/>
+        </div>
+				<div class="verticalSpacer"/>
+				<div class="verticalSpacer"/>
+				<div>
+					<h:outputLabel styleClass="sectionHeaderSmall" value="Instructions:"/>
+				</div>
+				<div>
+					<h:inputTextarea id="distributeReviewerModalPanelComments" value="#{reviewDetailsBean.commentsInput}"
+						cols="50" rows="5"/>
+				</div>
+				<div class="verticalSpacer"/>
+				<div>
+					<p:commandButton id="distributeReviewerModalPanelSubmitButton"
+									 value="Submit"
+									 action="#{reviewDetailsBean.doSaveDistributeReviewersPanel}"
+									 update="bodyForm:tabView:reviewApprovedReviewersTablePanel" />
+					<p:commandButton id="distributeReviewerModalPanelCancelButton" value="Cancel"
+						action="#{reviewDetailsBean.doCancelDistributeReviewersPanel}"/>
+					<p:ajaxStatus>
+						<f:facet name="start"><h:graphicImage  value="/images/loader.gif"/></f:facet>
+					</p:ajaxStatus>
+				</div>
+			</h:form>
+			</p:fragment>
+		</p:dialog>
+	</ui:composition>
+</html>
