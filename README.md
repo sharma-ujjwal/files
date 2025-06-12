@@ -1,272 +1,326 @@
 ```
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html
-		xmlns="http://www.w3.org/1999/xhtml"
-		xmlns:ui="http://java.sun.com/jsf/facelets"
-		xmlns:h="http://xmlns.jcp.org/jsf/html"
-		xmlns:f="http://java.sun.com/jsf/core"
-		xmlns:p="http://primefaces.org/ui">
+IMyTaskListService Interface
+	public interface IMyTaskListService {
+		public List<AbstractTaskListDTO> retrieveItComplianceTasks();
+	}
+----------------------------------------------------------------------
+MyTaskListBean Class
 
-<ui:composition template="../common/main.xhtml">
-	<ui:define name="body">
-		<h:outputLabel styleClass="sectionHeader" value="Review Details"/>
-		<p:ajaxStatus id="ajaxStatusLoaderReviewDetails" style="display: ruby">
-			<f:facet name="start"><h:graphicImage  value="/images/loader.gif"/></f:facet>
-		</p:ajaxStatus>
-		<table id="reviewDetailsHeaderTable">
-			<tbody>
-			<tr>
-				<td class="sideSpaced" width="120px"><h:outputLabel value="Review Name:" styleClass="fieldLabel" /></td>
-				<td class="rightSpaced">
-					<h:outputLabel value="#{reviewDetailsBean.review.name}" styleClass="fieldValue"/>
-				</td>
-				<td class="sideSpaced"><h:outputLabel value="Date Created:" styleClass="fieldLabel" /></td>
-				<td class="rightSpaced">
-					<h:outputLabel value="#{reviewDetailsBean.review.createdDate}" styleClass="fieldValue">
-						<f:convertDateTime pattern="MM/dd/yyyy HH:mm:ss" dateStyle="short" timeZone="#{applicationBean.timeZone}"/>
-					</h:outputLabel>
-				</td>
-				<td class="sideSpaced" rowspan="1" valign="top">
-					<h:commandButton id="reviewDetailsEditCommentsCommand" value="Edit Comments"
-									 action="#{reviewDetailsBean.doPrepareEditReviewCommentPanel}" />
-				</td>
-			</tr>
-			<tr>
-				<td class="sideSpaced"><h:outputLabel value="Review Type:" styleClass="fieldLabel" /></td>
-				<td class="rightSpaced"><h:outputLabel value="#{reviewDetailsBean.review.typeCode}" styleClass="fieldValue"/></td>
-				<td class="sideSpaced"><h:outputLabel value="Created By:" styleClass="fieldLabel" /></td>
-				<td class="rightSpaced"><h:outputLabel value="#{reviewDetailsBean.review.createdBy}" styleClass="fieldValue"/></td>
-				<td class="sideSpaced"><h:outputLabel value="Filter Criteria:" styleClass="fieldLabel"/></td>
-				<td class="rightSpaced" rowspan="3" width="400px">
-					<div style="overflow: auto; height: 50px;" >
-						<h:outputLabel value="#{reviewDetailsBean.filterCriteriaText}" styleClass="fieldValue" escape="false"/>
-					</div>
-				</td>
-			</tr>
-			<tr>
-				<td class="sideSpaced"><h:outputLabel value="Number of Reports:" styleClass="fieldLabel" /></td>
-				<td class="rightSpaced"><h:outputLabel value="#{reviewDetailsBean.totalNumberOfReports}" styleClass="fieldValue"/></td>
-				<td class="sideSpaced"><h:outputLabel value="Ad Hoc" styleClass="fieldLabel" /></td>
-				<td class="rightSpaced"><h:outputLabel value="#{reviewDetailsBean.review.adHoc}" styleClass="fieldValue"/></td>
-			</tr>
-			<tr>
-				<td class="sideSpaced"><h:outputLabel value="Review Status:" styleClass="fieldLabel" /></td>
-				<td class="rightSpaced"><h:outputLabel value="#{reviewDetailsBean.review.statusCode}" styleClass="fieldValue"/></td>
-			</tr>
-			</tbody>
-		</table>
-		<table>
-			<tbody>
-			<tr>
-				<td class="sideSpaced" width="120px"><h:outputLabel value="Comment:" styleClass="fieldLabel" /></td>
-				<td class="rightSpaced">
-					<h:outputLabel id="reviewCommentsOutput" value="#{reviewDetailsBean.review.comments}" styleClass="fieldValue"/>
-				</td>
-			</tr>
-			</tbody>
-		</table>
-		<div class="verticalSpacer"/>
-		<p:tabView id="tabView" styleClass="tabStyle"
-				   activeIndex="#{reviewDetailsBean.selectedTabId}"
-				   dynamic="true" cache="false">
-			<p:ajax event="tabChange"
-					listener="#{reviewDetailsBean.onTabChange}"
-					update="bodyForm:headerMessages" />
-			<p:tab id="pendingTab" title="Pending Reports">
-				<ui:include src="pendingReportsComponent.xhtml"/>
-			</p:tab>
+	@PostConstruct
+	public void init() {
+		setLazyModal(new LazyDataModel<>() {
+			@Override
+			public int count(Map<String, FilterMeta> map) {
+				return 0;
+			}
 
-			<p:tab id="approvedTab" title="Approved Reports">
-				<ui:include src="approvedReportsComponent.xhtml"/>
-			</p:tab>
+			@Override
+			public List<AbstractTaskListDTO> load(int first, int pageSize, Map<String, SortMeta> sortMetaMap, Map<String, FilterMeta> filterMetaMap) {
+				System.out.println("Loading tasks with first: " + first + ", pageSize: " + pageSize);
+				List<TaskDTO> results = retrieveTaskListDTOs(); // fetch the results from the webflow api
+				var reviewSummaryDetails = fetchReviewSummaryDetails(results); // Fetch review summary details
+				StringBuilder sb = new StringBuilder(32);
+				this.setRowCount(results.size());
+				List<AbstractTaskListDTO> finalResult = getMyTaskListService().createAbstractTaskListObjects(results.subList(first, Math.min(first + pageSize, results.size())), sb, true, reviewSummaryDetails, 10);
 
-			<p:tab id="distributedTab" title="Distributed Reports">
-				<ui:include src="distributedReportsComponent.xhtml"/>
-			</p:tab>
+				Map<String, ProcessLock> lock = lockService.getLock(getTaskIds(finalResult));
+				for (AbstractTaskListDTO resultObj : finalResult) {
+					buildClientObject(resultObj, lock);
+				}
+				return finalResult;
+			}
+		});
+	}
 
-			<p:tab id="rejectedTab" title="Rejected Reports">
-				<ui:include src="rejectedReportsComponent.xhtml"/>
-			</p:tab>
-		</p:tabView>
-		<div class="verticalSpacer"/>
-		<h:commandButton id="createBundleButton" value="Create Bundle" action="#{reviewDetailsBean.doCreateBundle}"/>
-		<h:commandButton id="completeTaskButton" value="Complete Task"
-						 action="#{reviewDetailsBean.doCompleteReviewDetailsTask}"
-						 rendered="#{reviewDetailsBean.renderCompleteTaskButton}" >
-		</h:commandButton>
-	</ui:define>
+	@Override
+	protected List<AbstractTaskListDTO> retrieveTaskListDTOs() {
 
-	<ui:define name="modalPanels" >
-		<p:outputPanel autoUpdate="true" id="reviewDetailsModalAjaxPanel">
-			<ui:include src="editReviewCommentsModalPanelComponent.xhtml"/>
-			<ui:include src="reassignReviewerModalPanelComponent.xhtml"/>
-			<ui:include src="reassignSODReviewerModalPanelComponent.xhtml"/>
-			<ui:include src="rejectReviewersModalPanelComponent.xhtml"/>
-			<ui:include src="distributeReviewersModalPanelComponent.xhtml"/>
-		</p:outputPanel>
-	</ui:define>
-</ui:composition>
-</html>
+		List<AbstractTaskListDTO> results;
+		if (this.sessionDataBean.getSelectedTabId().equals(this.sessionDataBean.getMyTaskTabId())) {
+			results = new ArrayList<AbstractTaskListDTO>();
+			if (this.itCompUser) {
+				results.addAll(this.myTaskListService.retrieveItComplianceTasks());
+				// results.addAll(this.actionRequiredTaskListService.retrieveActionRequiredTaskList());
+				// results.addAll(this.rejectedUserTasklistService.retreiveRejectedUserTaskList());
+			}
+			results.addAll(this.reviewerTaskListService.retrieveTaskListForReviewer());
+		} else {
+			results = new ArrayList<AbstractTaskListDTO>(3);
+		}
+
+		if (results.isEmpty()) {
+			AbstractTaskListDTO dto = new ReviewerTaskListDTO("");
+			dto.setAssignedTo("");
+			dto.setCreateDate(null);
+			dto.setLock(null);
+			dto.setName("");
+			dto.setTaskId(null);
+			dto.setTypeCode(null);
+			results.add(dto);
+		}
+		long startTime = System.currentTimeMillis();
+		fetchLockAndBuildClientObjects(results);
+		long endTime = System.currentTimeMillis();
+		System.out.println("Time taken to build client objects: " + (endTime - startTime) + "ms");
+		// Sort the results by
+		String sortField = TaskListField.CREATE_DATE.getFieldName();
+		Collections.sort(results, new GenericComparator(sortField, false));
+		this.previousSortFieldCodeValue = sortField;
+		myTaskListBeanResults = results;
 
 
-<html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-	xmlns:h="http://xmlns.jcp.org/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:p="http://primefaces.org/ui">
- 
-	<ui:composition>
-		<p:toolbar id="distributedReviewersTableToolBar" itemSeparator="line"/>
-		<p:outputPanel autoUpdate="true" id="reviewDistributedReviewersTablePanel">
-			<p:dataTable  id="distributedReviewersList"
-						  value="#{reviewDetailsBean.distributedTableList}"
-						  var="distributedTable" rows="10"
-						  paginator="true" paginatorPosition="bottom"
-						  rowIndexVar="rowIndex" rowKeyVar="rowKey"
-						  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-						  currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-						  rowsPerPageTemplate="10,25,50,100">
+		return results;
+	}
 
-				<p:column headerText="Bundle">
-					<h:outputText value="#{distributedTable.bundleName}" />
-				</p:column>
+	public void fetchLockAndBuildClientObjects (List<AbstractTaskListDTO> resultAbstractTaskListDTO) {
+		Map<String, ProcessLock> lock = this.lockService.getLock(getTaskIds(resultAbstractTaskListDTO));
+		for (AbstractTaskListDTO result : resultAbstractTaskListDTO) {
+			buildClientObject(result, lock);
+		}
+	}
 
-				<p:column rendered="#{reviewDetailsBean.columnType eq 'SGDU'}" headerText="SOD Owner">
-					<h:outputText value="#{distributedTable.ownerName}" />
-				</p:column>
+	public List<String> getTaskIds(List<AbstractTaskListDTO> taskDTOs) {
+		return taskDTOs.stream()
+				.map(AbstractTaskListDTO::getTaskId)
+				.filter(Objects::nonNull) // Optional: To exclude null taskIds
+				.collect(Collectors.toList());
+	}
+	
+	public LazyDataModel<AbstractTaskListDTO> getLazyModal() {
+		return lazyModal;
+	}
 
-				<p:column rendered="#{reviewDetailsBean.columnType eq 'SGDU'}" headerText="SOD Conflict Type">
-					<h:outputText value="#{distributedTable.conflictTypeDisplayName}" />
-				</p:column>
+	public void setLazyModal(LazyDataModel<AbstractTaskListDTO> lazyModal) {
+		this.lazyModal = lazyModal;
+	}
+	
+---------------------------------------------------------------------------------
+	MyTaskListService Class
 
-				<p:column headerText="Reviewer">
-					<h:commandLink id="#{idPrefix}TaskLink"
-								   value="#{distributedTable.reviewer.reviewerName}"
-								   action="#{reviewDetailsBean.doViewReviewerDetails()}">
-						<f:param name="actionReviewerId" value="#{distributedTable.reviewerId}" />
-						<f:param name="actionStatusCodeValue" value="RELE" />
-					</h:commandLink>
-				</p:column>
+	@SuppressWarnings("unchecked")
+	public List<AbstractTaskListDTO> retrieveItComplianceTasks() {
+		return (List<AbstractTaskListDTO>) this.retrieveItComplianceTasks(true);
+	}
 
-				<p:column rendered="#{reviewDetailsBean.columnType eq 'MNGR'}" headerText="Escalation Manager">
-					<h:outputText value="#{distributedTable.escalationMgrName}" />
-				</p:column>
+	private Map<String, ReviewBundle> findBySavvionId(List<String> taskIds) {
+		Map<String, ReviewBundle> reviewBundles = this.reviewBundleDao.findBySavvionId(taskIds);
+		if (reviewBundles == null || reviewBundles.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		return reviewBundles;
+	}
 
-				<p:column headerText="Division">
-					<h:outputText value="#{distributedTable.division}" />
-				</p:column>
+	private List<? extends AbstractTaskListDTO> retrieveItComplianceTasks(boolean retrieveAll) {
+		List<TaskDTO> taskDTOs = this.workflowService.retrieveProcessesByAssignedTo(this.savvionITComplianceUserId).stream()
+				.filter(taskDTO -> taskDTO.getTaskCreatedDate().before(DateUtil.getDateDaysAgo(0)))
+				.sorted((task1, task2) -> task2.getTaskCreatedDate().compareTo(task1.getTaskCreatedDate())) // Sort by latest date first
+				.limit(30)
+				.toList();
+		List<String> reviewSummaryDetails = new ArrayList<>();
+		List<String> validateList = new ArrayList<>();
+		List<String> rejectedList = new ArrayList<>();
 
-				<p:column headerText="Department" >
-					<h:outputText value="#{distributedTable.reviewer.reviewer.department.name}" />
-				</p:column>
+		taskDTOs.forEach(taskDTO -> {
+			TaskTypeCode taskCode = taskDTO.getTaskCode();
+			if (taskCode == TaskTypeCode.REVIEW_SUMMARY || taskCode == TaskTypeCode.REVIEW_DETAILS) {
+				reviewSummaryDetails.add(taskDTO.getProcessId());
+			} else if (taskCode == TaskTypeCode.VALIDATE_ACTION_REQUIERED) {
+				validateList.add(taskDTO.getProcessId());
+			} else if (taskCode == TaskTypeCode.VALIDATE_REJECT_USER) {
+				rejectedList.add(taskDTO.getProcessId());
+			}
+		});
+		Map<String, ReviewBundle> reviewBundles = this.findBySavvionId(reviewSummaryDetails);
+		// want to print size of Map
+		System.out.println("Size of reviewBundles: " + reviewBundles.size());
+		System.out.println("Size of reviewSummaryDetails: " + reviewSummaryDetails.size());
+		System.out.println("Size of validateList: " + validateList.size());
+		System.out.println("Size of rejectedList: " + rejectedList.size());
 
-				<p:column rendered="#{reviewDetailsBean.columnType ne 'MNGR'}" headerText="# of Departments" >
-					<h:outputText value="#{distributedTable.numberOfDepartments}" />
-				</p:column>
+		return processData(taskDTOs, retrieveAll, reviewBundles);
+	}
 
-				<p:column headerText="# Direct Reports" >
-					<h:outputText value="#{distributedTable.numberOfReviewedUsers}" />
-				</p:column>
+	public List<? extends AbstractTaskListDTO> processData(List<TaskDTO> taskDTOs, boolean retrieveAll,
+														   Map<String, ReviewBundle> reviewBundles) {
+		long startTime = System.currentTimeMillis();
+		StringBuilder sb = new StringBuilder(32);
+		List<AbstractTaskListDTO> results = new ArrayList<>(taskDTOs.size());
+		HashMap<Long, ReviewDTO> reviewCache = new HashMap<>(3);
+		HashMap<Long, ReviewerDTO> reviewerCache = new HashMap<>(3);
+		HashMap<Long, ReviewUserDTO> reviewUserCache = new HashMap<>(3);
+		HashMap<Long, ReviewBundleDTO> reviewBundleCache = new HashMap<>(3);
 
-				<p:column headerText="Date Created">
-					<h:outputText value="#{distributedTable.createdDate}">
-						<f:convertDateTime pattern="MM/dd/yyyy" />
-					</h:outputText>
-				</p:column>
+		for (TaskDTO taskDTO : taskDTOs) {
+			String taskProcessId = taskDTO.getProcessId();
+			sb.setLength(0);
+			TaskTypeCode taskCode = taskDTO.getTaskCode();
+			AbstractTaskListDTO tasklist;
+			// Bundle type tasks (details and summary)
+			if (taskCode == null) {
+				continue;
+			}
+			if (taskCode.equals(TaskTypeCode.REVIEW_SUMMARY) || taskCode.equals(TaskTypeCode.REVIEW_DETAILS)) {
+				long startTimereview = System.currentTimeMillis();
+				if (!retrieveAll) {
+					continue;
+				}
+				ReviewBundleDTO reviewBundle = this.getCachedReviewBundleBySavvionId(reviewBundleCache, taskProcessId, reviewBundles);
+				if (reviewBundle == null) {
+					sb.setLength(0);
+					logger.warn(sb.append("Review Bundle not found taskProcessIdId: ").append(taskProcessId).toString());
+					continue;
+				}
 
-				<p:column headerText="Data Sent" >
-					<h:outputText value="#{distributedTable.sentDate}" >
-						<f:convertDateTime pattern="MM/dd/yyyy" />
-					</h:outputText>
-				</p:column>
+				Long reviewId = reviewBundle.getReviewId();
+				ReviewDTO review = this.getCachedReview(reviewCache, reviewId);
+				if (review == null) {
+					sb.setLength(0);
+					logger.warn(sb.append("Review not found.  ReviewId: ").append(reviewId).append(" taskProcessIdId: ").append(taskProcessId)
+							.toString());
+					continue;
+				}
 
-				<p:column headerText="Target DueDate" >
-					<h:outputText value="#{distributedTable.distributionTargetCompleteDate}" >
-						<f:convertDateTime pattern="MM/dd/yyyy" />
-					</h:outputText>
-				</p:column>
-			</p:dataTable>
-		</p:outputPanel>
-		<script>
-    	$(document).ready(function() {
-		$('#bodyForm\\:tabView\\:distributedReviewersList .ui-paginator-rpp-label').text('items per page').addClass('distributed-table-class');
-      });
-	</script>
-	</ui:composition>
-</html>
+				BundleTaskListDTO bundleTasklist = new BundleTaskListDTO(review, reviewBundle);
 
-<html xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-	xmlns:h="http://xmlns.jcp.org/jsf/html"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:p="http://primefaces.org/ui">
- 
-	<ui:composition>
-		<p:dialog id="distributeReviewerModalPanel"
-				  widgetVar="distributeReviewerModalPanelWidget"
-				  resizeable="true"
-				  draggable="true"
-				  modal="true"
-				  height="550" width="450"
-				  visible="#{reviewDetailsBean.renderDistributeReviewerModalPanel}">
-			<f:facet name="header">
-				<h:outputLabel value="Distribute Reviewer" />
-			</f:facet>
-			<div>
-				<h:messages id="distributeReviewersModalPanelMessages" fatalClass="fatalMessage" errorClass="errorMessage" 
-					warnClass="warningMessage" infoClass="infoMessage" layout="table"/>
-			</div>
-			<div class="verticalSpacer"/>
-			<div>
-				<h:outputLabel styleClass="sectionHeaderSmall" 
-					value="Please provide a target date and instructions for the distribution."/>
-			</div>
-			<div class="verticalSpacer"/>
-			<div><h:outputLabel value="Reviewer(s):" styleClass="fieldLabel" /></div>
-			<div style="overflow-y: scroll; height: 175px">
-				<h:dataTable id="distributeReviewersModalPanelTable" value="#{reviewDetailsBean.selectedReviewers}" 
-					var="reviewer">
-					<h:column>
-						<h:outputText value="#{reviewer.currentReviewerName}"/>
-					</h:column>
-				</h:dataTable>
-			</div>
-			<div class="verticalSpacer"/>
-			<div>
-				<h:outputLabel styleClass="sectionHeaderSmall" 
-					value="Target Completion Date:"/>
-			</div>
-			<p:fragment id="distributeReviewRegion">
-			<h:form id="distributeReviewerModalPanelForm">
-				<div>
-					<p:calendar id="targetDateCalendar"
-								value="#{reviewDetailsBean.targetCompDate}"
-								datePattern="MM/dd/yyyy" showOn="button" autoOpen="false" navigator="true" widgetVar="targetDateCalendarWidget"
-								styleClass="distributeCalendarStyle"/>
-        </div>
-				<div class="verticalSpacer"/>
-				<div class="verticalSpacer"/>
-				<div>
-					<h:outputLabel styleClass="sectionHeaderSmall" value="Instructions:"/>
-				</div>
-				<div>
-					<h:inputTextarea id="distributeReviewerModalPanelComments" value="#{reviewDetailsBean.commentsInput}"
-						cols="50" rows="5"/>
-				</div>
-				<div class="verticalSpacer"/>
-				<div>
-					<p:commandButton id="distributeReviewerModalPanelSubmitButton"
-									 value="Submit"
-									 action="#{reviewDetailsBean.doSaveDistributeReviewersPanel}"
-									 update="bodyForm:tabView:reviewApprovedReviewersTablePanel" />
-					<p:commandButton id="distributeReviewerModalPanelCancelButton" value="Cancel"
-						action="#{reviewDetailsBean.doCancelDistributeReviewersPanel}"/>
-					<p:ajaxStatus>
-						<f:facet name="start"><h:graphicImage  value="/images/loader.gif"/></f:facet>
-					</p:ajaxStatus>
-				</div>
-			</h:form>
-			</p:fragment>
-		</p:dialog>
-	</ui:composition>
-</html>
+				String bundleName = ReviewBundleService.buildBundleName(review.getReviewTypeCd(), reviewBundle.getCreatedDate());
+				sb.setLength(0);
+				bundleTasklist.setName(sb.append(taskDTO.getTaskDescription()).append(" - ").append(bundleName).toString());
+				tasklist = bundleTasklist;
+				tasklist.setTaskStatus(bundleTasklist.getStatus());
+				// UserActionRequiredTypeTasks (rejected access and comments)
+			} else if (taskCode.equals(TaskTypeCode.VALIDATE_ACTION_REQUIERED)) {
+				long startTimevalidate = System.currentTimeMillis();
+				Map<String, Object> dataSlots = taskDTO.getDataSlots();
+
+				Long appId = Long.parseLong((String) dataSlots.get(ITaskValues.DATASLOTS_VALIDATE_APPLICATION_ID));
+				Application app = this.applicationDao.findById(appId);
+
+				Long reviewerId = Long.parseLong((String) dataSlots.get(ITaskValues.DATASLOTS_VALIDATE_REVIEWER_ID));
+				ReviewerDTO reviewer = this.getCachedReviewer(reviewerCache, reviewerId);
+				if (reviewer == null) {
+					logger.warn("Reviewer not found.  ReviewerId: " + reviewerId + " taskId: " + taskProcessId);
+					continue;
+				}
+
+				Long reviewBundleId = reviewer.getReviewBundleId();
+				ReviewBundleDTO reviewBundle = this.getCachedReviewBundle(reviewBundleCache, reviewBundleId);
+				if (reviewBundle == null) {
+					sb.setLength(0);
+					logger.warn(sb.append("Review Bundle not found.  ReviewBundleId: ").append(reviewBundleId).append(" taskId: ")
+							.append(taskProcessId).toString());
+					continue;
+				}
+
+				Long reviewId = reviewBundle.getReviewId();
+				ReviewDTO review = this.getCachedReview(reviewCache, reviewId);
+				if (review == null) {
+					sb.setLength(0);
+					logger
+							.warn(String.valueOf(sb.append("Review not found.  ReviewId: ").append(reviewId).append(" taskId: ").append(taskProcessId)));
+					continue;
+				}
+
+				ActionRequiredTasklistDTO value = new ActionRequiredTasklistDTO(review, reviewBundle, reviewer, app);
+				value.setName(taskDTO.getTaskDescription());
+
+				List<ReviewWorkOrder> workOrders = this.workOrderDao.findBySavvionId(taskDTO.getProcessId());
+				List<String> workOrderNumbers = new ArrayList<String>(workOrders.size());
+				for (ReviewWorkOrder workOrder : workOrders) {
+					if (workOrder.getWorkOrderNo() != null) {
+						workOrderNumbers.add(workOrder.getWorkOrderNo().toString());
+					}
+				}
+				value.setWorkOrderNumbers(workOrderNumbers);
+				tasklist = value;
+				tasklist.setTaskStatus(value.getStatus());
+				// RejectedUserTaskList for ReviewUsers that have been rejected.
+			} else if (TaskTypeCode.VALIDATE_REJECT_USER.equals(taskCode)) {
+				long startTimerejected = System.currentTimeMillis();
+				if (!retrieveAll) {
+					continue;
+				}
+				Map<String, Object> dataSlots = taskDTO.getDataSlots();
+				String rejectReviewUserIdString = (String) dataSlots.get(ITaskValues.DATASLOTS_VALIDATE_REJECTED_USER_ID);
+				Long rejectReviewUserId;
+				if (rejectReviewUserIdString == null) {
+
+					sb.setLength(0);
+					logger.warn(sb.append("No reviewUser id found for task task id: ").append(taskProcessId).toString());
+					continue;
+				}
+				try {
+					rejectReviewUserId = Long.parseLong(rejectReviewUserIdString);
+				} catch (NumberFormatException e) {
+					sb.setLength(0);
+					logger.warn(sb.append("Invalid id found for task task id: ").append(taskProcessId).append(" invalid id: ")
+							.append(rejectReviewUserIdString).toString(), e);
+					continue;
+				}
+
+				ReviewUserDTO reviewUser = this.getCachedReviewUser(reviewUserCache, rejectReviewUserId);
+				if (reviewUser == null) {
+					sb.setLength(0);
+					logger.warn(String.valueOf(sb.append("Review user not found.  ReviewUserId: ").append(rejectReviewUserId).append(" taskId: ")
+							.append(taskProcessId)));
+					continue;
+				}
+
+				Long reviewerId = reviewUser.getReviewerId();
+				ReviewerDTO reviewer = this.getCachedReviewer(reviewerCache, reviewerId);
+				if (reviewer == null) {
+					sb.setLength(0);
+					logger.warn(sb.append("Reviewer not found.  ReviewerId: ").append(reviewerId).append(" taskId: ").append(
+							taskProcessId).toString());
+					continue;
+				}
+
+				Long reviewBundleId = reviewer.getReviewBundleId();
+				ReviewBundleDTO reviewBundle = this.getCachedReviewBundle(reviewBundleCache, reviewBundleId);
+				if (reviewBundle == null) {
+					sb.setLength(0);
+					logger.warn("Review Bundle not found.  ReviewBundleId: " + reviewBundleId + " taskId: " + taskProcessId);
+					continue;
+				}
+
+				Long reviewId = reviewBundle.getReviewId();
+				ReviewDTO review = this.getCachedReview(reviewCache, reviewId);
+				if (review == null) {
+					sb.setLength(0);
+					logger.warn(sb.append("Review not found.  ReviewId: ").append(reviewId).append(" taskId: ").append(taskProcessId)
+							.toString());
+					continue;
+				}
+
+				RejectedUserTasklistDTO value = new RejectedUserTasklistDTO(review, reviewBundle, reviewer);
+				value.setName(taskDTO.getTaskDescription() + " - " + reviewUser.getUserName());
+				value.setRejectedReviewUserId(rejectReviewUserId);
+				tasklist = value;
+				tasklist.setTaskStatus(value.getStatus());
+				long endTimeRejecte  = System.currentTimeMillis();
+				System.out.println("RejectedUser End Time in milliseconds: " + (endTimeRejecte - startTimerejected));
+			} else if (TaskTypeCode.REVIEWER_TASK.equals(taskCode)) {
+				if (!retrieveAll) {
+					continue;
+				}
+				sb.setLength(0);
+				logger.warn(sb.append("Reviewer task found assigned to it compliance.  Skipping task with id of: ").append(
+						taskProcessId).toString());
+				continue;
+			} else {
+				sb.setLength(0);
+				throw new RuntimeException(sb.append("Task found with invalid task type of: ").append(taskCode.getCode()).append(
+						" and id of: ").append(taskProcessId).toString());
+			}
+
+			tasklist.setAssignedTo(taskDTO.getAssignedTo());
+			tasklist.setCreateDate(taskDTO.getTaskCreatedDate());
+			tasklist.setTypeCode(taskCode);
+			tasklist.setTaskId(taskProcessId);
+			results.add(tasklist);
+			//myTaskResults = results;
+		}
+		long endTime = System.currentTimeMillis();
+		System.out.println("Deep retrieveItComplianceTasks End Time in milliseconds: " + (endTime - startTime));
+		return results;
+	}
+-------------------------------------------------------------
