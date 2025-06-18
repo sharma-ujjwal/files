@@ -1,5 +1,64 @@
 ```
-in the selected code, when we send taskDTOSubList to processData in case only 10 pageSize are there then, there will be chances that processData may return 4-5 items during the operation but I want to make sure that it should return items based on number of pageSize. how to do it?
+package com.assurant.inc.sox.ar.service.impl.tasklist;
+
+import java.io.Serializable;
+import java.util.*;
+
+import com.assurant.inc.sox.ar.client.bean.tasklist.MyTaskListBean;
+import com.assurant.inc.sox.ar.client.bean.util.JSFUtils;
+import com.assurant.inc.sox.ar.utils.DateUtil;
+import org.springframework.stereotype.Service;
+
+import com.assurant.inc.sox.ar.dto.CodeDTO;
+import com.assurant.inc.sox.ar.dto.ReviewBundleDTO;
+import com.assurant.inc.sox.ar.dto.ReviewDTO;
+import com.assurant.inc.sox.ar.dto.ReviewUserDTO;
+import com.assurant.inc.sox.ar.dto.ReviewerDTO;
+import com.assurant.inc.sox.ar.dto.enums.CodeSet;
+import com.assurant.inc.sox.ar.dto.tasklist.AbstractTaskListDTO;
+import com.assurant.inc.sox.ar.dto.tasklist.ActionRequiredTasklistDTO;
+import com.assurant.inc.sox.ar.dto.tasklist.BundleTaskListDTO;
+import com.assurant.inc.sox.ar.dto.tasklist.RejectedUserTasklistDTO;
+import com.assurant.inc.sox.ar.service.impl.ReviewBundleService;
+import com.assurant.inc.sox.ar.service.tasklist.IMyTaskListService;
+import com.assurant.inc.sox.consts.ITaskValues;
+import com.assurant.inc.sox.consts.TaskTypeCode;
+import com.assurant.inc.sox.domain.ar.Application;
+import com.assurant.inc.sox.domain.ar.Review;
+import com.assurant.inc.sox.domain.ar.ReviewBundle;
+import com.assurant.inc.sox.domain.ar.ReviewUser;
+import com.assurant.inc.sox.domain.ar.ReviewWorkOrder;
+import com.assurant.inc.sox.domain.ar.Reviewer;
+import com.assurant.inc.sox.dto.TaskDTO;
+
+@Service
+public class MyTaskListService extends MyTaskListServiceBase implements IMyTaskListService,Serializable {
+	private static final long serialVersionUID = 10275539472837495L;
+	private int taskListCount;
+	Map<String, ReviewBundle> reviewBundles;
+
+	@SuppressWarnings("unchecked")
+	public List<ActionRequiredTasklistDTO> retrieveActionRequiredTasks() {
+		return (List<ActionRequiredTasklistDTO>) this.retrieveItComplianceTasks(false, -1, -1, false, null);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<AbstractTaskListDTO> retrieveItComplianceTasks() {
+		return (List<AbstractTaskListDTO>) this.retrieveItComplianceTasks(true, -1 , -1, false, null);
+	}
+
+	public List<AbstractTaskListDTO> retrieveItComplianceTasks(int first, int pageSize, boolean forceReload, List<TaskDTO> taskDTOsObject) {
+		return (List<AbstractTaskListDTO>) this.retrieveItComplianceTasks(true, first, pageSize, forceReload, taskDTOsObject);
+	}
+
+	private Map<String, ReviewBundle> findBySavvionId(List<String> taskIds) {
+		Map<String, ReviewBundle> reviewBundles = this.reviewBundleDao.findBySavvionId(taskIds);
+		if (reviewBundles == null || reviewBundles.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		return reviewBundles;
+	}
+
 	private List<? extends AbstractTaskListDTO> retrieveItComplianceTasks(boolean retrieveAll, int first, int pageSize,
 																		  boolean forceReload, List<TaskDTO> taskDTOsObject) {
 		long startTime = System.currentTimeMillis();
@@ -81,7 +140,6 @@ in the selected code, when we send taskDTOSubList to processData in case only 10
 				ReviewBundleDTO reviewBundle = this.getCachedReviewBundleBySavvionId(reviewBundleCache, taskProcessId, reviewBundles);
 				if (reviewBundle == null) {
 					sb.setLength(0);
-					setMaintainIndex(++maintainIndex);
 					logger.warn(sb.append("Review Bundle not found taskProcessIdId: ").append(taskProcessId).toString());
 					continue;
 				}
@@ -237,80 +295,145 @@ in the selected code, when we send taskDTOSubList to processData in case only 10
 		return results;
 	}
 
+	private ReviewDTO getCachedReview(HashMap<Long, ReviewDTO> reviewCache, Long reviewId) {
+		ReviewDTO review = reviewCache.get(reviewId);
+		if (review == null) {
+			Review reviewDomain = this.reviewDao.findById(reviewId);
+			if (reviewDomain == null) {
+				return null;
+			}
 
-private List<? extends AbstractTaskListDTO> retrieveItComplianceTasks(boolean retrieveAll, int first, int pageSize,
-                                                                       boolean forceReload, List<TaskDTO> taskDTOsObject) {
-    long startTime = System.currentTimeMillis();
-    List<TaskDTO> taskDTOs;
-    List<String> reviewSummaryDetails = new ArrayList<>();
-    List<String> validateList = new ArrayList<>();
-    List<String> rejectedList = new ArrayList<>();
+			review = new ReviewDTO(reviewDomain, this.codeService.retrieveCodeByValueFromCache(CodeSet.REVIEW_TYPE, reviewDomain
+			    .getReviewTypeCd()), this.codeService.retrieveCodeByValueFromCache(CodeSet.REVIEW_STATUS, reviewDomain.getReviewStatus()));
+			reviewCache.put(reviewId, review);
+		}
+		return review;
+	}
 
-    if (forceReload || taskDTOsObject == null) {
-        taskDTOs = this.workflowService.retrieveProcessesByAssignedTo(this.savvionITComplianceUserId)
-                .stream()
-                .sorted((task1, task2) -> task2.getTaskCreatedDate().compareTo(task1.getTaskCreatedDate()))
-                .toList();
-        MyTaskListBean myTaskListBean = (MyTaskListBean) JSFUtils.lookupBean("myTaskListBean");
-        myTaskListBean.setForceReload(false);
-        myTaskListBean.setCacheTaskListDTOs(taskDTOs);
+	private ReviewBundleDTO getCachedReviewBundleBySavvionId(HashMap<Long, ReviewBundleDTO> reviewBundleCache, String taskId, Map<String, ReviewBundle> reviewBundles) {
 
-        taskDTOs.forEach(taskDTO -> {
-            TaskTypeCode taskCode = taskDTO.getTaskCode();
-            if (taskCode == TaskTypeCode.REVIEW_SUMMARY || taskCode == TaskTypeCode.REVIEW_DETAILS) {
-                reviewSummaryDetails.add(taskDTO.getProcessId());
-            } else if (taskCode == TaskTypeCode.VALIDATE_ACTION_REQUIERED) {
-                validateList.add(taskDTO.getProcessId());
-            } else if (taskCode == TaskTypeCode.VALIDATE_REJECT_USER) {
-                rejectedList.add(taskDTO.getProcessId());
-            }
-        });
-        reviewBundles = this.findBySavvionId(reviewSummaryDetails);
-    } else {
-        taskDTOs = taskDTOsObject;
-    }
+		ReviewBundleDTO reviewBundle = null;
 
-    // Print list/map sizes for debugging
-    System.out.println("Size of reviewBundles: " + reviewBundles.size());
-    System.out.println("Size of reviewSummaryDetails: " + reviewSummaryDetails.size());
-    System.out.println("Size of validateList: " + validateList.size());
-    System.out.println("Size of rejectedList: " + rejectedList.size());
+		// check the cache to see if there is a bundle
+		for (ReviewBundleDTO reviewBundleDTO : reviewBundleCache.values()) {
+			if (taskId.equals(reviewBundleDTO.getTaskProcessId())) {
+				reviewBundle = reviewBundleDTO;
+				break;
+			}
+		}
 
-    long endTime = System.currentTimeMillis();
-    System.out.println("Time taken to retrieve tasks FROM API : " + (endTime - startTime) + "ms");
+		if (reviewBundle == null) {
+			long startTime = System.currentTimeMillis();
+			ReviewBundle reviewBundleDomain = reviewBundles.get(taskId);//this.reviewBundleDao.findBySavvionId(taskId);
 
-    // Pagination logic with filtering compensation
-    if (first > -1 && pageSize > -1) {
-        setTaskListCount(taskDTOs.size()); // Set total count for pagination
 
-        List<AbstractTaskListDTO> processedResults = new ArrayList<>(pageSize);
-        int index = first;
-        int attemptBatchSize = pageSize * 2;
-        int maxIterations = 10; // prevent infinite loop
-        int iteration = 0;
 
-        while (processedResults.size() < pageSize && index < taskDTOs.size() && iteration < maxIterations) {
-            int toIndex = Math.min(index + attemptBatchSize, taskDTOs.size());
-            List<TaskDTO> sublist = taskDTOs.subList(index, toIndex);
+			if (reviewBundleDomain == null) {
+				return null;
+			}
 
-            List<? extends AbstractTaskListDTO> partialResults = processData(sublist, retrieveAll, reviewBundles);
+			reviewBundle = new ReviewBundleDTO(reviewBundleDomain, this.codeService.retrieveCodeByValueFromCache(CodeSet.REVIEW_BUNDLE_STATUS,
+					reviewBundleDomain.getBundleStatusCode()));
+			reviewBundleCache.put(reviewBundle.getReviewBundleId(), reviewBundle);
+		}
+		return reviewBundle;
+	}
 
-            for (AbstractTaskListDTO dto : partialResults) {
-                if (processedResults.size() < pageSize) {
-                    processedResults.add(dto);
-                } else {
-                    break;
-                }
-            }
+	private ReviewerDTO getCachedReviewer(HashMap<Long, ReviewerDTO> reviewerCache, Long reviewerId) {
+		ReviewerDTO reviewer = reviewerCache.get(reviewerId);
+		if (reviewer == null) {
+			Reviewer reviewerDomain = this.reviewerDao.findById(reviewerId);
+			if (reviewerDomain == null) {
+				return null;
+			}
 
-            index = toIndex;
-            iteration++;
-        }
+			String bundleName = this.reviewBundleService.retrieveBundleName(reviewerDomain.getReviewBundleId());
+			
+			CodeDTO rejectCodeDTO = null;
+			if(reviewerDomain.getRejectCode() != null){
+				rejectCodeDTO = this.codeService.retrieveCodeByValueFromCache(CodeSet.REVIEWER_REJECT_REASON, reviewerDomain.getRejectCode());
+			}
+			
+			CodeDTO statusCodeDTO = null;
+			if(reviewerDomain.getReviewerLastStatusCd() != null){
+				statusCodeDTO = this.codeService.retrieveCodeByValueFromCache(CodeSet.REVIEWER_STATUS, reviewerDomain.getReviewerLastStatusCd());
+			}
+			
+			reviewer = new ReviewerDTO(reviewerDomain, rejectCodeDTO, statusCodeDTO, bundleName);
+			reviewerCache.put(reviewerId, reviewer);
+		}
+		return reviewer;
+	}
 
-        return processedResults;
-    } else {
-        // No pagination, return all processed results
-        return processData(taskDTOs, retrieveAll, reviewBundles);
-    }
+	private ReviewUserDTO getCachedReviewUser(HashMap<Long, ReviewUserDTO> reviewUserCache, Long reviewUserId) {
+		ReviewUserDTO reviewUser = reviewUserCache.get(reviewUserId);
+		if (reviewUser == null) {
+			ReviewUser reviewUserDomain = this.reviewUserDao.findById(reviewUserId);
+			if (reviewUserDomain == null) {
+				return null;
+			}
+
+			CodeDTO completeCode = null;
+			CodeDTO rejectCode = null;
+			if(reviewUserDomain.getReviewUserStatusCd() != null){
+				rejectCode = this.codeService.retrieveCodeByValueFromCache(CodeSet.REVIEW_USER_REJECT_REASON, reviewUserDomain
+						.getReviewUserStatusCd());
+			}
+			if(reviewUserDomain.getReviewCompletedFlag() != null){
+				completeCode = this.codeService.retrieveCodeByValueFromCache(CodeSet.REVIEW_USER_COMPLETE, reviewUserDomain
+						.getReviewCompletedFlag());
+			}
+			reviewUser = new ReviewUserDTO(reviewUserDomain, rejectCode, completeCode);
+			reviewUserCache.put(reviewUserId, reviewUser);
+		}
+		return reviewUser;
+	}
+
+	private ReviewBundleDTO getCachedReviewBundleBySavvionId(HashMap<Long, ReviewBundleDTO> reviewBundleCache, String taskId) {
+
+		ReviewBundleDTO reviewBundle = null;
+
+		// check the cache to see if there is a bundle
+		for (ReviewBundleDTO reviewBundleDTO : reviewBundleCache.values()) {
+			if (taskId.equals(reviewBundleDTO.getTaskProcessId())) {
+				reviewBundle = reviewBundleDTO;
+				break;
+			}
+		}
+
+		if (reviewBundle == null) {
+			ReviewBundle reviewBundleDomain = this.reviewBundleDao.findBySavvionId(taskId);
+			if (reviewBundleDomain == null) {
+				return null;
+			}
+
+			reviewBundle = new ReviewBundleDTO(reviewBundleDomain, this.codeService.retrieveCodeByValueFromCache(CodeSet.REVIEW_BUNDLE_STATUS,
+			    reviewBundleDomain.getBundleStatusCode()));
+			reviewBundleCache.put(reviewBundle.getReviewBundleId(), reviewBundle);
+		}
+		return reviewBundle;
+	}
+
+	private ReviewBundleDTO getCachedReviewBundle(HashMap<Long, ReviewBundleDTO> reviewBundleCache, Long reviewBundleId) {
+		ReviewBundleDTO reviewBundle = reviewBundleCache.get(reviewBundleId);
+		if (reviewBundle == null) {
+			ReviewBundle reviewBundleDomain = this.reviewBundleDao.findById(reviewBundleId);
+			if (reviewBundleDomain == null) {
+				return null;
+			}
+
+			reviewBundle = new ReviewBundleDTO(reviewBundleDomain, this.codeService.retrieveCodeByValueFromCache(CodeSet.REVIEW_BUNDLE_STATUS,
+			    reviewBundleDomain.getBundleStatusCode()));
+			reviewBundleCache.put(reviewBundleId, reviewBundle);
+		}
+		return reviewBundle;
+	}
+
+	public int getTaskListCount() {
+		return taskListCount;
+	}
+
+	public void setTaskListCount(int taskListCount) {
+		this.taskListCount = taskListCount;
+	}
 }
-
