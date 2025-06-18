@@ -236,3 +236,81 @@ in the selected code, when we send taskDTOSubList to processData in case only 10
 		long endTime = System.currentTimeMillis();
 		return results;
 	}
+
+
+private List<? extends AbstractTaskListDTO> retrieveItComplianceTasks(boolean retrieveAll, int first, int pageSize,
+                                                                       boolean forceReload, List<TaskDTO> taskDTOsObject) {
+    long startTime = System.currentTimeMillis();
+    List<TaskDTO> taskDTOs;
+    List<String> reviewSummaryDetails = new ArrayList<>();
+    List<String> validateList = new ArrayList<>();
+    List<String> rejectedList = new ArrayList<>();
+
+    if (forceReload || taskDTOsObject == null) {
+        taskDTOs = this.workflowService.retrieveProcessesByAssignedTo(this.savvionITComplianceUserId)
+                .stream()
+                .sorted((task1, task2) -> task2.getTaskCreatedDate().compareTo(task1.getTaskCreatedDate()))
+                .toList();
+        MyTaskListBean myTaskListBean = (MyTaskListBean) JSFUtils.lookupBean("myTaskListBean");
+        myTaskListBean.setForceReload(false);
+        myTaskListBean.setCacheTaskListDTOs(taskDTOs);
+
+        taskDTOs.forEach(taskDTO -> {
+            TaskTypeCode taskCode = taskDTO.getTaskCode();
+            if (taskCode == TaskTypeCode.REVIEW_SUMMARY || taskCode == TaskTypeCode.REVIEW_DETAILS) {
+                reviewSummaryDetails.add(taskDTO.getProcessId());
+            } else if (taskCode == TaskTypeCode.VALIDATE_ACTION_REQUIERED) {
+                validateList.add(taskDTO.getProcessId());
+            } else if (taskCode == TaskTypeCode.VALIDATE_REJECT_USER) {
+                rejectedList.add(taskDTO.getProcessId());
+            }
+        });
+        reviewBundles = this.findBySavvionId(reviewSummaryDetails);
+    } else {
+        taskDTOs = taskDTOsObject;
+    }
+
+    // Print list/map sizes for debugging
+    System.out.println("Size of reviewBundles: " + reviewBundles.size());
+    System.out.println("Size of reviewSummaryDetails: " + reviewSummaryDetails.size());
+    System.out.println("Size of validateList: " + validateList.size());
+    System.out.println("Size of rejectedList: " + rejectedList.size());
+
+    long endTime = System.currentTimeMillis();
+    System.out.println("Time taken to retrieve tasks FROM API : " + (endTime - startTime) + "ms");
+
+    // Pagination logic with filtering compensation
+    if (first > -1 && pageSize > -1) {
+        setTaskListCount(taskDTOs.size()); // Set total count for pagination
+
+        List<AbstractTaskListDTO> processedResults = new ArrayList<>(pageSize);
+        int index = first;
+        int attemptBatchSize = pageSize * 2;
+        int maxIterations = 10; // prevent infinite loop
+        int iteration = 0;
+
+        while (processedResults.size() < pageSize && index < taskDTOs.size() && iteration < maxIterations) {
+            int toIndex = Math.min(index + attemptBatchSize, taskDTOs.size());
+            List<TaskDTO> sublist = taskDTOs.subList(index, toIndex);
+
+            List<? extends AbstractTaskListDTO> partialResults = processData(sublist, retrieveAll, reviewBundles);
+
+            for (AbstractTaskListDTO dto : partialResults) {
+                if (processedResults.size() < pageSize) {
+                    processedResults.add(dto);
+                } else {
+                    break;
+                }
+            }
+
+            index = toIndex;
+            iteration++;
+        }
+
+        return processedResults;
+    } else {
+        // No pagination, return all processed results
+        return processData(taskDTOs, retrieveAll, reviewBundles);
+    }
+}
+
