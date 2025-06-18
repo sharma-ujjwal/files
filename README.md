@@ -437,3 +437,259 @@ public class MyTaskListService extends MyTaskListServiceBase implements IMyTaskL
 		this.taskListCount = taskListCount;
 	}
 }
+
+
+
+
+public List<? extends AbstractTaskListDTO> retrieveItComplianceTasks(boolean retrieveAll, int first, int pageSize,
+                                                                    boolean forceReload, List<TaskDTO> taskDTOsObject) {
+    long startTime = System.currentTimeMillis();
+    List<TaskDTO> taskDTOs;
+    List<String> reviewSummaryDetails = new ArrayList<>();
+    List<String> validateList = new ArrayList<>();
+    List<String> rejectedList = new ArrayList<>();
+
+    // Fetch tasks if forceReload is true or no cached tasks are provided
+    if (forceReload || taskDTOsObject == null) {
+        taskDTOs = this.workflowService.retrieveProcessesByAssignedTo(this.savvionITComplianceUserId)
+                .stream()
+                .sorted((task1, task2) -> task2.getTaskCreatedDate().compareTo(task1.getTaskCreatedDate()))
+                .toList();
+        MyTaskListBean myTaskListBean = (MyTaskListBean) JSFUtils.lookupBean("myTaskListBean");
+        myTaskListBean.setForceReload(false);
+        myTaskListBean.setCacheTaskListDTOs(taskDTOs);
+
+        taskDTOs.forEach(taskDTO -> {
+            TaskTypeCode taskCode = taskDTO.getTaskCode();
+            if (taskCode == TaskTypeCode.REVIEW_SUMMARY || taskCode == TaskTypeCode.REVIEW_DETAILS) {
+                reviewSummaryDetails.add(taskDTO.getProcessId());
+            } else if (taskCode == TaskTypeCode.VALIDATE_ACTION_REQUIERED) {
+                validateList.add(taskDTO.getProcessId());
+            } else if (taskCode == TaskTypeCode.VALIDATE_REJECT_USER) {
+                rejectedList.add(taskDTO.getProcessId());
+            }
+        });
+        reviewBundles = this.findBySavvionId(reviewSummaryDetails);
+    } else {
+        taskDTOs = taskDTOsObject;
+    }
+
+    System.out.println("Size of reviewBundles: " + reviewBundles.size());
+    System.out.println("Size of reviewSummaryDetails: " + reviewSummaryDetails.size());
+    System.out.println("Size of validateList: " + validateList.size());
+    System.out.println("Size of rejectedList: " + rejectedList.size());
+
+    long endTime = System.currentTimeMillis();
+    System.out.println("Time taken to retrieve tasks FROM API: " + (endTime - startTime) + "ms");
+
+    // Handle pagination
+    if (first > -1 && pageSize > -1) {
+        List<TaskDTO> taskDTOSublist = retrieveTaskDTOsBasedOnLimit(taskDTOs, first, pageSize);
+        setTaskListCount(taskDTOs.size()); // Set the total size for pagination
+        return processDataWithPagination(taskDTOSublist, retrieveAll, reviewBundles, pageSize);
+    } else {
+        return processData(taskDTOs, retrieveAll, reviewBundles);
+    }
+}
+
+public List<TaskDTO> retrieveTaskDTOsBasedOnLimit(List<TaskDTO> taskDTOs, int first, int pageSize) {
+    if (taskDTOs.isEmpty()) {
+        return Collections.emptyList();
+    }
+    // Ensure the sublist does not exceed the list size
+    int endIndex = Math.min(first + pageSize, taskDTOs.size());
+    if (first >= taskDTOs.size()) {
+        return Collections.emptyList(); // No records available for this page
+    }
+    return taskDTOs.subList(first, endIndex);
+}
+
+public List<? extends AbstractTaskListDTO> processDataWithPagination(List<TaskDTO> taskDTOs, boolean retrieveAll,
+                                                                    Map<String, ReviewBundle> reviewBundles, int pageSize) {
+    long startTime = System.currentTimeMillis();
+    List<AbstractTaskListDTO> results = new ArrayList<>();
+    StringBuilder sb = new StringBuilder(32);
+    HashMap<Long, ReviewDTO> reviewCache = new HashMap<>(3);
+    HashMap<Long, ReviewerDTO> reviewerCache = new HashMap<>(3);
+    HashMap<Long, ReviewUserDTO> reviewUserCache = new HashMap<>(3);
+    HashMap<Long, ReviewBundleDTO> reviewBundleCache = new HashMap<>(3);
+
+    int processedCount = 0;
+    int index = 0;
+    while (processedCount < pageSize && index < taskDTOs.size()) {
+        TaskDTO taskDTO = taskDTOs.get(index);
+        String taskProcessId = taskDTO.getProcessId();
+        sb.setLength(0);
+        TaskTypeCode taskCode = taskDTO.getTaskCode();
+        AbstractTaskListDTO tasklist = null;
+
+        if (taskCode == null) {
+            index++;
+            continue;
+        }
+
+        // Bundle type tasks (details and summary)
+        if (taskCode.equals(TaskTypeCode.REVIEW_SUMMARY) || taskCode.equals(TaskTypeCode.REVIEW_DETAILS)) {
+            if (!retrieveAll) {
+                index++;
+                continue;
+            }
+            ReviewBundleDTO reviewBundle = this.getCachedReviewBundleBySavvionId(reviewBundleCache, taskProcessId, reviewBundles);
+            if (reviewBundle == null) {
+                logger.warn(sb.append("Review Bundle not found taskProcessId: ").append(taskProcessId).toString());
+                index++;
+                continue;
+            }
+
+            Long reviewId = reviewBundle.getReviewId();
+            ReviewDTO review = this.getCachedReview(reviewCache, reviewId);
+            if (review == null) {
+                logger.warn(sb.append("Review not found. ReviewId: ").append(reviewId).append(" taskProcessId: ").append(taskProcessId).toString());
+                index++;
+                continue;
+            }
+
+            BundleTaskListDTO bundleTasklist = new BundleTaskListDTO(review, reviewBundle);
+            String bundleName = ReviewBundleService.buildBundleName(review.getReviewTypeCd(), reviewBundle.getCreatedDate());
+            sb.setLength(0);
+            bundleTasklist.setName(sb.append(taskDTO.getTaskDescription()).append(" - ").append(bundleName).toString());
+            tasklist = bundleTasklist;
+            tasklist.setTaskStatus(bundleTasklist.getStatus());
+        }
+        // UserActionRequiredTypeTasks (rejected access and comments)
+        else if (taskCode.equals(TaskTypeCode.VALIDATE_ACTION_REQUIERED)) {
+            Map<String, Object> dataSlots = taskDTO.getDataSlots();
+            Long appId = Long.parseLong((String) dataSlots.get(ITaskValues.DATASLOTS_VALIDATE_APPLICATION_ID));
+            Application app = this.applicationDao.findById(appId);
+
+            Long reviewerId = Long.parseLong((String) dataSlots.get(ITaskValues.DATASLOTS_VALIDATE_REVIEWER_ID));
+            ReviewerDTO reviewer = this.getCachedReviewer(reviewerCache, reviewerId);
+            if (reviewer == null) {
+                logger.warn("Reviewer not found. ReviewerId: " + reviewerId + " taskId: " + taskProcessId);
+                index++;
+                continue;
+            }
+
+            Long reviewBundleId = reviewer.getReviewBundleId();
+            ReviewBundleDTO reviewBundle = this.getCachedReviewBundle(reviewBundleCache, reviewBundleId);
+            if (reviewBundle == null) {
+                logger.warn(sb.append("Review Bundle not found. ReviewBundleId: ").append(reviewBundleId).append(" taskId: ")
+                        .append(taskProcessId).toString());
+                index++;
+                continue;
+            }
+
+            Long reviewId = reviewBundle.getReviewId();
+            ReviewDTO review = this.getCachedReview(reviewCache, reviewId);
+            if (review == null) {
+                logger.warn(sb.append("Review not found. ReviewId: ").append(reviewId).append(" taskId: ").append(taskProcessId).toString());
+                index++;
+                continue;
+            }
+
+            ActionRequiredTasklistDTO value = new ActionRequiredTasklistDTO(review, reviewBundle, reviewer, app);
+            value.setName(taskDTO.getTaskDescription());
+
+            List<ReviewWorkOrder> workOrders = this.workOrderDao.findBySavvionId(taskDTO.getProcessId());
+            List<String> workOrderNumbers = new ArrayList<>(workOrders.size());
+            for (ReviewWorkOrder workOrder : workOrders) {
+                if (workOrder.getWorkOrderNo() != null) {
+                    workOrderNumbers.add(workOrder.getWorkOrderNo().toString());
+                }
+            }
+            value.setWorkOrderNumbers(workOrderNumbers);
+            tasklist = value;
+            tasklist.setTaskStatus(value.getStatus());
+        }
+        // RejectedUserTaskList for ReviewUsers that have been rejected
+        else if (TaskTypeCode.VALIDATE_REJECT_USER.equals(taskCode)) {
+            if (!retrieveAll) {
+                index++;
+                continue;
+            }
+            Map<String, Object> dataSlots = taskDTO.getDataSlots();
+            String rejectReviewUserIdString = (String) dataSlots.get(ITaskValues.DATASLOTS_VALIDATE_REJECTED_USER_ID);
+            Long rejectReviewUserId;
+            if (rejectReviewUserIdString == null) {
+                logger.warn(sb.append("No reviewUser id found for task task id: ").append(taskProcessId).toString());
+                index++;
+                continue;
+            }
+            try {
+                rejectReviewUserId = Long.parseLong(rejectReviewUserIdString);
+            } catch (NumberFormatException e) {
+                logger.warn(sb.append("Invalid id found for task task id: ").append(taskProcessId).append(" invalid id: ")
+                        .append(rejectReviewUserIdString).toString(), e);
+                index++;
+                continue;
+            }
+
+            ReviewUserDTO reviewUser = this.getCachedReviewUser(reviewUserCache, rejectReviewUserId);
+            if (reviewUser == null) {
+                logger.warn(sb.append("Review user not found. ReviewUserId: ").append(rejectReviewUserId).append(" taskId: ")
+                        .append(taskProcessId).toString());
+                index++;
+                continue;
+            }
+
+            Long reviewerId = reviewUser.getReviewerId();
+            ReviewerDTO reviewer = this.getCachedReviewer(reviewerCache, reviewerId);
+            if (reviewer == null) {
+                logger.warn(sb.append("Reviewer FILLER not found. ReviewerId: ").append(reviewerId).append(" taskId: ")
+                        .append(taskProcessId).toString());
+                index++;
+                continue;
+            }
+
+            Long reviewBundleId = reviewer.getReviewBundleId();
+            ReviewBundleDTO reviewBundle = this.getCachedReviewBundle(reviewBundleCache, reviewBundleId);
+            if (reviewBundle == null) {
+                logger.warn("Review Bundle not found. ReviewBundleId: " + reviewBundleId + " taskId: " + taskProcessId);
+                index++;
+                continue;
+            }
+
+            Long reviewId = reviewBundle.getReviewId();
+            ReviewDTO review = this.getCachedReview(reviewCache, reviewId);
+            if (review == null) {
+                logger.warn(sb.append("Review not found. ReviewId: ").append(reviewId).append(" taskId: ").append(taskProcessId)
+                        .toString());
+                index++;
+                continue;
+            }
+
+            RejectedUserTasklistDTO value = new RejectedUserTasklistDTO(review, reviewBundle, reviewer);
+            value.setName(taskDTO.getTaskDescription() + " - " + reviewUser.getUserName());
+            value.setRejectedReviewUserId(rejectReviewUserId);
+            tasklist = value;
+            tasklist.setTaskStatus(value.getStatus());
+        } else if (TaskTypeCode.REVIEWER_TASK.equals(taskCode)) {
+            if (!retrieveAll) {
+                index++;
+                continue;
+            }
+            logger.warn(sb.append("Reviewer task found assigned to it compliance. Skipping task with id of: ")
+                    .append(taskProcessId).toString());
+            index++;
+            continue;
+        } else {
+            throw new RuntimeException(sb.append("Task found with invalid task type of: ").append(taskCode.getCode())
+                    .append(" and id of: ").append(taskProcessId).toString());
+        }
+
+        if (tasklist != null) {
+            tasklist.setAssignedTo(taskDTO.getAssignedTo());
+            tasklist.setCreateDate(taskDTO.getTaskCreatedDate());
+            tasklist.setTypeCode(taskCode);
+            tasklist.setTaskId(taskProcessId);
+            results.add(tasklist);
+            processedCount++;
+        }
+        index++;
+    }
+
+    long endTime = System.currentTimeMillis();
+    System.out.println("Time taken to process data: " + (endTime - startTime) + "ms");
+    return results;
+}
+
