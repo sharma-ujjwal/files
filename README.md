@@ -693,3 +693,39 @@ public List<? extends AbstractTaskListDTO> processDataWithPagination(List<TaskDT
     return results;
 }
 
+
+
+=================================
+private List<? extends AbstractTaskListDTO> processPaginatedTasks(
+        List<TaskDTO> taskDTOs, int first, int pageSize,
+        boolean retrieveAll, Map<String, ReviewBundle> reviewBundles) {
+
+    List<AbstractTaskListDTO> finalResults = new ArrayList<>(pageSize);
+    int currentIndex = 0;
+    int totalSize = taskDTOs.size();
+    int filteredIndex = 0; // Tracks how many valid entries we've seen
+
+    int chunkSize = Math.max(10, pageSize); // Tune for performance
+
+    while (currentIndex < totalSize && finalResults.size() < pageSize) {
+        int endIndex = Math.min(currentIndex + chunkSize, totalSize);
+        List<TaskDTO> chunk = taskDTOs.subList(currentIndex, endIndex);
+        List<? extends AbstractTaskListDTO> processedChunk = processData(chunk, retrieveAll, reviewBundles);
+
+        for (AbstractTaskListDTO dto : processedChunk) {
+            if (filteredIndex++ < first) {
+                continue; // Skip until we reach `first`
+            }
+            if (finalResults.size() >= pageSize) {
+                break;
+            }
+            finalResults.add(dto);
+        }
+
+        currentIndex = endIndex;
+    }
+
+    return finalResults;
+}
+
+
