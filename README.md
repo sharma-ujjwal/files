@@ -381,3 +381,44 @@
 		}
 		return reviewer;
 	}
+
+
+---------------------------------------------------------------------------------------------------------------------------
+if (!isBackgroundProcessingStarted) {
+    isBackgroundProcessingStarted = true;
+    myTaskListService.preloadAllTaskDataAsync(cacheTaskListDTOs);
+}
+
+private volatile boolean isBackgroundProcessingStarted = false;
+
+if (this.itCompUser) {
+	results.addAll(this.myTaskListService.retrieveItComplianceTasks(first, pageSize, cacheTaskListDTOs));
+	
+	if (!isBackgroundProcessingStarted) {
+		isBackgroundProcessingStarted = true;
+		myTaskListService.preloadAllTaskDataAsync(cacheTaskListDTOs); // ✅ trigger background preload
+	}
+}
+
+public void preloadAllTaskDataAsync(List<TaskDTO> taskDTOs) {
+	new Thread(() -> {
+		try {
+			System.out.println("🔄 Background processing of all tasks started...");
+
+			// Break into chunks (optional for batching)
+			int chunkSize = 25;
+			for (int i = 0; i < taskDTOs.size(); i += chunkSize) {
+				int end = Math.min(i + chunkSize, taskDTOs.size());
+				List<TaskDTO> chunk = taskDTOs.subList(i, end);
+				processData(chunk, true, reviewBundles); // Will cache results in `taskIds`
+			}
+
+			System.out.println("✅ Background processing completed. Total cached: " + taskIds.size());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}).start();
+}
+
+
