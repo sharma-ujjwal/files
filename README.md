@@ -1,19 +1,16 @@
 ```
-function selectAllCheckBox(event, parentElementId) {
-    event.preventDefault();
-    var parentElement = document.getElementById(parentElementId);
-    var inputs = parentElement.querySelectorAll('input[type="checkbox"]');
-    
-    // Get the current state from the first checkbox (if exists)
-    if (inputs.length > 0) {
-        checkedToggleValue = inputs[0].checked;
-    }
-    
-    inputs.forEach(function(input) {
-        input.checked = !checkedToggleValue;
-        // Trigger PrimeFaces change event properly
-        $(input).change();
-    });
-    
-    checkedToggleValue = !checkedToggleValue;
-}
+<p:column id="selectAllLink"
+						  styleClass="headerSortLink actionselectAllLinkCls"
+						  sortable="true">
+					<f:facet name="header">
+						<h:commandLink value="All/None" styleClass="headerSortLink" >
+							<f:ajax execute="@this" render="@form bodyForm:actionReqListTable"
+									listener="#{userActionRequiredBean.selectAllNone(userActionRequiredBean.myActionRequiredUIList)}" />
+						</h:commandLink>
+					</f:facet>
+					<p:selectBooleanCheckbox id="reviewUserAccessCheckBox"
+											 value="#{myActionListTable.selected}">
+						<p:ajax event="change" listener="#{userActionRequiredBean.onRowSelect(myActionListTable)}"
+								update="@this" process="@this"/>
+					</p:selectBooleanCheckbox>
+</p:column>
