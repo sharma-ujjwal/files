@@ -4,13 +4,13 @@
 						  sortable="true">
 					<f:facet name="header">
 						<h:commandLink value="All/None" styleClass="headerSortLink" >
-							<f:ajax execute="@this" render="@form bodyForm:actionReqListTable"
+							<p:ajax execute="@this" render="@form actionReqListTable"
 									listener="#{userActionRequiredBean.selectAllNone(userActionRequiredBean.myActionRequiredUIList)}" />
 						</h:commandLink>
 					</f:facet>
-					<p:selectBooleanCheckbox id="reviewUserAccessCheckBox"
+					<h:selectBooleanCheckbox id="reviewUserAccessCheckBox"
 											 value="#{myActionListTable.selected}">
 						<p:ajax event="change" listener="#{userActionRequiredBean.onRowSelect(myActionListTable)}"
 								update="@this" process="@this"/>
-					</p:selectBooleanCheckbox>
-</p:column>
+					</h:selectBooleanCheckbox>
+				</p:column>
