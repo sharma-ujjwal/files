@@ -1,5 +1,5 @@
 ```
-<p:column id="selectAllLink"
+				<p:column id="selectAllLink"
 						  styleClass="headerSortLink actionselectAllLinkCls"
 						  sortable="true">
 					<f:facet name="header">
