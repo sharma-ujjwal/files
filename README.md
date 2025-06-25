@@ -82,3 +82,5 @@
 				</p:panel>
 			</ui:repeat>
 		</p:outputPanel>
+
+headerStyle="background-color: #{accessListBean.review.SODReview ? '#FFE5E6' : '#3d80df'}!important;"
