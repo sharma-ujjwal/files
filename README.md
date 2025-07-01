@@ -1,67 +1,1477 @@
 ```
-package com.assurant.inc.sox.ar.client.bean.admin;
-
-import org.mockito.Mock;
-import org.primefaces.PrimeFaces;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-
-import java.util.Optional;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-public class UserSummaryBeanTest {
-    private UserSummaryBean bean;
-
-    @BeforeEach
-    void setUp() {
-        bean = new UserSummaryBean();
-
-    }
-
-    @Test
-    void testShowAddUserPanel() {
-        try (MockedStatic<PrimeFaces> primeFacesMockedStatic = mockStatic(PrimeFaces.class)) {
-            PrimeFaces primeFacesMock = mock(PrimeFaces.class);
-            primeFacesMockedStatic.when(PrimeFaces::current).thenReturn(primeFacesMock);
-
-            String result = bean.showAddUserPanel();
-
-            assertTrue(bean.isRenderAddUserModalPanel());
-            assertEquals(Optional.of(1L), bean.getStatus());
-            assertNull(result);
-            verify(primeFacesMock).executeScript("PF('addUserModalPanelVar').show();");
-        }
-
-    }
-}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui">
 
 
-getting error 
-"C:\Program Files\Java\jdk-17.0.5\bin\java.exe" -ea -Didea.test.cyclic.buffer.size=1048576 "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA 2024.3.2.2\lib\idea_rt.jar=53507:C:\Program Files\JetBrains\IntelliJ IDEA 2024.3.2.2\bin" -javaagent:C:\Users\fy84\AppData\Local\JetBrains\IntelliJIdea2024.3\captureAgent\debugger-agent.jar -Dkotlinx.coroutines.debug.enable.creation.stack.trace=false -Ddebugger.agent.enable.coroutines=true -Dkotlinx.coroutines.debug.enable.flows.stack.trace=true -Dkotlinx.coroutines.debug.enable.mutable.state.flows.stack.trace=true -Dfile.encoding=UTF-8 -classpath "C:\Users\fy84\.m2\repository\org\junit\platform\junit-platform-launcher\1.10.0\junit-platform-launcher-1.10.0.jar;C:\Users\fy84\.m2\repository\org\junit\vintage\junit-vintage-engine\5.10.0\junit-vintage-engine-5.10.0.jar;C:\Program Files\JetBrains\IntelliJ IDEA 2024.3.2.2\lib\idea_rt.jar;C:\Program Files\JetBrains\IntelliJ IDEA 2024.3.2.2\plugins\junit\lib\junit5-rt.jar;C:\Program Files\JetBrains\IntelliJ IDEA 2024.3.2.2\plugins\junit\lib\junit-rt.jar;C:\Users\fy84\Desktop\GroupApps\soxautoreviews\target\test-classes;C:\Users\fy84\Desktop\GroupApps\soxautoreviews\target\classes;C:\Users\fy84\.m2\repository\com\assurant\inc\sox\SoxDataAccess\4.0.31-SNAPSHOT\SoxDataAccess-4.0.31-SNAPSHOT.jar;C:\Users\fy84\.m2\repository\javax\annotation\javax.annotation-api\1.3.2\javax.annotation-api-1.3.2.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-orm\5.3.31\spring-orm-5.3.31.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-jdbc\5.3.31\spring-jdbc-5.3.31.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-tx\5.3.31\spring-tx-5.3.31.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-core\5.3.31\spring-core-5.3.31.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-jcl\5.3.31\spring-jcl-5.3.31.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-context\5.3.31\spring-context-5.3.31.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-beans\5.3.31\spring-beans-5.3.31.jar;C:\Users\fy84\.m2\repository\commons-lang\commons-lang\2.6\commons-lang-2.6.jar;C:\Users\fy84\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\fy84\.m2\repository\javax\persistence\javax.persistence-api\2.2\javax.persistence-api-2.2.jar;C:\Users\fy84\.m2\repository\org\codehaus\jackson\jackson-core-asl\1.9.13\jackson-core-asl-1.9.13.jar;C:\Users\fy84\.m2\repository\org\codehaus\jackson\jackson-mapper-asl\1.9.13\jackson-mapper-asl-1.9.13.jar;C:\Users\fy84\.m2\repository\commons-dbcp\commons-dbcp\1.4\commons-dbcp-1.4.jar;C:\Users\fy84\.m2\repository\commons-pool\commons-pool\1.5.4\commons-pool-1.5.4.jar;C:\Users\fy84\.m2\repository\dom4j\dom4j\1.6.1\dom4j-1.6.1.jar;C:\Users\fy84\.m2\repository\xml-apis\xml-apis\1.0.b2\xml-apis-1.0.b2.jar;C:\Users\fy84\.m2\repository\org\hibernate\hibernate-core\5.6.15.Final\hibernate-core-5.6.15.Final.jar;C:\Users\fy84\.m2\repository\org\jboss\logging\jboss-logging\3.4.3.Final\jboss-logging-3.4.3.Final.jar;C:\Users\fy84\.m2\repository\net\bytebuddy\byte-buddy\1.12.18\byte-buddy-1.12.18.jar;C:\Users\fy84\.m2\repository\antlr\antlr\2.7.7\antlr-2.7.7.jar;C:\Users\fy84\.m2\repository\org\jboss\spec\javax\transaction\jboss-transaction-api_1.2_spec\1.1.1.Final\jboss-transaction-api_1.2_spec-1.1.1.Final.jar;C:\Users\fy84\.m2\repository\org\jboss\jandex\2.4.2.Final\jandex-2.4.2.Final.jar;C:\Users\fy84\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\fy84\.m2\repository\javax\activation\javax.activation-api\1.2.0\javax.activation-api-1.2.0.jar;C:\Users\fy84\.m2\repository\javax\xml\bind\jaxb-api\2.3.1\jaxb-api-2.3.1.jar;C:\Users\fy84\.m2\repository\org\glassfish\jaxb\jaxb-runtime\2.3.1\jaxb-runtime-2.3.1.jar;C:\Users\fy84\.m2\repository\org\glassfish\jaxb\txw2\2.3.1\txw2-2.3.1.jar;C:\Users\fy84\.m2\repository\com\sun\istack\istack-commons-runtime\3.0.7\istack-commons-runtime-3.0.7.jar;C:\Users\fy84\.m2\repository\org\jvnet\staxex\stax-ex\1.8\stax-ex-1.8.jar;C:\Users\fy84\.m2\repository\com\sun\xml\fastinfoset\FastInfoset\1.2.15\FastInfoset-1.2.15.jar;C:\Users\fy84\.m2\repository\org\hibernate\common\hibernate-commons-annotations\5.1.2.Final\hibernate-commons-annotations-5.1.2.Final.jar;C:\Users\fy84\.m2\repository\aspectj\aspectjweaver\1.5.3\aspectjweaver-1.5.3.jar;C:\Users\fy84\.m2\repository\net\sf\ehcache\ehcache\2.10.9.2\ehcache-2.10.9.2.jar;C:\Users\fy84\.m2\repository\org\apache\myfaces\core\myfaces-impl\2.2.15\myfaces-impl-2.2.15.jar;C:\Users\fy84\.m2\repository\org\apache\myfaces\core\myfaces-api\2.2.15\myfaces-api-2.2.15.jar;C:\Users\fy84\.m2\repository\org\apache\geronimo\specs\geronimo-atinject_1.0_spec\1.0\geronimo-atinject_1.0_spec-1.0.jar;C:\Users\fy84\.m2\repository\commons-collections\commons-collections\3.2.2\commons-collections-3.2.2.jar;C:\Users\fy84\.m2\repository\commons-beanutils\commons-beanutils\1.9.4\commons-beanutils-1.9.4.jar;C:\Users\fy84\.m2\repository\org\apache\commons\commons-lang3\3.14.0\commons-lang3-3.14.0.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-test\5.3.31\spring-test-5.3.31.jar;C:\Users\fy84\.m2\repository\com\sun\mail\jakarta.mail\2.0.1\jakarta.mail-2.0.1.jar;C:\Users\fy84\.m2\repository\com\sun\activation\jakarta.activation\2.0.1\jakarta.activation-2.0.1.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-web\5.3.31\spring-web-5.3.31.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-webmvc\5.3.31\spring-webmvc-5.3.31.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-expression\5.3.31\spring-expression-5.3.31.jar;C:\Users\fy84\.m2\repository\org\springframework\spring-aop\5.3.31\spring-aop-5.3.31.jar;C:\Users\fy84\.m2\repository\org\aspectj\aspectjweaver\1.9.7\aspectjweaver-1.9.7.jar;C:\Users\fy84\.m2\repository\org\ow2\asm\asm\9.5\asm-9.5.jar;C:\Users\fy84\.m2\repository\net\sf\dozer\dozer\5.5.1\dozer-5.5.1.jar;C:\Users\fy84\.m2\repository\org\slf4j\jcl-over-slf4j\1.7.5\jcl-over-slf4j-1.7.5.jar;C:\Users\fy84\.m2\repository\javax\el\javax.el-api\3.0.0\javax.el-api-3.0.0.jar;C:\Users\fy84\.m2\repository\javax\servlet\javax.servlet-api\4.0.1\javax.servlet-api-4.0.1.jar;C:\Users\fy84\.m2\repository\javax\servlet\jsp\javax.servlet.jsp-api\2.3.3\javax.servlet.jsp-api-2.3.3.jar;C:\Users\fy84\.m2\repository\org\primefaces\primefaces\14.0.6\primefaces-14.0.6.jar;C:\Users\fy84\.m2\repository\commons-digester\commons-digester\2.1\commons-digester-2.1.jar;C:\Users\fy84\.m2\repository\commons-logging\commons-logging\1.1.1\commons-logging-1.1.1.jar;C:\Users\fy84\.m2\repository\junit\junit\4.13.2\junit-4.13.2.jar;C:\Users\fy84\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\fy84\.m2\repository\com\oracle\database\jdbc\ojdbc8\23.6.0.24.10\ojdbc8-23.6.0.24.10.jar;C:\Users\fy84\.m2\repository\ch\qos\logback\logback-classic\1.4.14\logback-classic-1.4.14.jar;C:\Users\fy84\.m2\repository\ch\qos\logback\logback-core\1.4.14\logback-core-1.4.14.jar;C:\Users\fy84\.m2\repository\org\slf4j\slf4j-simple\2.0.16\slf4j-simple-2.0.16.jar;C:\Users\fy84\.m2\repository\org\glassfish\expressly\expressly\5.0.0\expressly-5.0.0.jar;C:\Users\fy84\.m2\repository\jakarta\el\jakarta.el-api\5.0.0\jakarta.el-api-5.0.0.jar;C:\Users\fy84\.m2\repository\commons-codec\commons-codec\1.15\commons-codec-1.15.jar;C:\Users\fy84\.m2\repository\org\junit\jupiter\junit-jupiter\5.10.0\junit-jupiter-5.10.0.jar;C:\Users\fy84\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.0\junit-jupiter-api-5.10.0.jar;C:\Users\fy84\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\fy84\.m2\repository\org\junit\platform\junit-platform-commons\1.10.0\junit-platform-commons-1.10.0.jar;C:\Users\fy84\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\fy84\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.10.0\junit-jupiter-params-5.10.0.jar;C:\Users\fy84\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.10.0\junit-jupiter-engine-5.10.0.jar;C:\Users\fy84\.m2\repository\org\junit\platform\junit-platform-engine\1.10.0\junit-platform-engine-1.10.0.jar;C:\Users\fy84\.m2\repository\org\mockito\mockito-inline\5.2.0\mockito-inline-5.2.0.jar;C:\Users\fy84\.m2\repository\org\mockito\mockito-core\5.2.0\mockito-core-5.2.0.jar;C:\Users\fy84\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.1\byte-buddy-agent-1.14.1.jar;C:\Users\fy84\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar" com.intellij.rt.junit.JUnitStarter -ideVersion5 -junit5 com.assurant.inc.sox.ar.client.bean.admin.UserSummaryBeanTest,testShowAddUserPanel
-SLF4J: Class path contains multiple SLF4J providers.
-SLF4J: Found provider [ch.qos.logback.classic.spi.LogbackServiceProvider@5fe94a96]
-SLF4J: Found provider [org.slf4j.simple.SimpleServiceProvider@443118b0]
-SLF4J: See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
-SLF4J: Actual provider is of type [ch.qos.logback.classic.spi.LogbackServiceProvider@5fe94a96]
-Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+		<div class="adminAppDivCls">
+				<!--  Search -->
+			<p:outputPanel id="filterPanel" autoUpdate="true">
 
-java.lang.InternalError: class redefinition failed: invalid class
+				<table width="100%">
+					<tbody>
+						<tr>
+							<td align="left">
+								<h:outputLabel id="keyIdSearchLabel">Key ID:
+								</h:outputLabel>
+							</td>
+							<td align="left">
+	
+								<h:inputText id="keyIdSearchText2" maxlength="100"
+									value="#{rejectedUserSummaryBean.searchSrcUserId}"
+									onchange="this.value = this.value.toUpperCase();">
+								</h:inputText>
+							</td>
+							<td align="right">
+								<h:outputLabel id="selectDateLabel"> Extracted Date: </h:outputLabel>  
+								<h:selectOneMenu id="availablecreatedDateListbox"
+									value="#{rejectedUserSummaryBean.selectedDateCriteria}">
+									<f:selectItems
+										value="#{rejectedUserSummaryBean.availablecreatedDateCriteria}" />
+								</h:selectOneMenu>
+							</td>
+							<td class="right">
+								<p:calendar id="targetDateCalendar"
+											readonlyInput="true"
+											value="#{rejectedUserSummaryBean.createdDateCriteria}"
+											pattern="MM/dd/yyyy" />
+							</td>
+							<td class="rightSpaced">
+								&nbsp;
+							</td>
+						</tr>
+						<tr>
+							<td align="left">
+								<h:outputLabel id="selectStatusLabel">Extract System:  
+								</h:outputLabel>
+							</td>
+							<td align="left">
+								<h:selectOneMenu id="extrctSysListbox"
+									value="#{rejectedUserSummaryBean.searchExtrctSysId}">
+									<f:selectItems
+										value="#{rejectedUserSummaryBean.availableExtractSystem}" />
+								</h:selectOneMenu>
+							</td>
+						</tr>
+	
+						<tr>
+							<td colspan="5" align="left">
+								<!-- Go Button -->
+								<h:commandButton id="goSearchButton3"
+												 value="Go"
+												 action="#{rejectedUserSummaryBean.goSearch}" />
+								<h:commandButton id="resetButton1"
+												 value="Reset"
+												 action="#{rejectedUserSummaryBean.resetSearch}" />
+								<h:commandButton id="reconcileRejectsButton"
+												 value="ReconcileRejects"
+												 action="#{rejectedUserSummaryBean.doReconcile}" />
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</p:outputPanel>
+			</div>
+			<!-- **************************     Reject  summary table     ***********************************   -->
+			<p:outputPanel autoUpdate="true"
+				styleClass="adminConfBlockDivCls">
+				<p:dataTable id="rejectedUserTable"
+							 value="#{rejectedUserSummaryBean.rejectedUserList}"
+							 var="rejectedUser"
+							 rows="#{rejectedUserSummaryBean.displayAmount}"
+							 styleClass="defaultTableHeader" tableStyle="width: auto;" style="overflow-x:hidden"
+							 rowStyleClass="oddRow, evenRow"
+							 >
+					<p:column>
+						<f:facet name="header">
+							<p:commandLink value="Rejected User Id"
+										   action="#{rejectedUserSummaryBean.doSort}"
+										   styleClass="headerSortLink" update="@form">
+								<f:param name="column" value="srcUserId" />
+							</p:commandLink>
+						</f:facet>	
+								#{rejectedUser.srcUserId}  
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<p:commandLink value="User Name"
+										   action="#{rejectedUserSummaryBean.doSort}"
+										   styleClass="headerSortLink" update="@form">
+								<f:param name="column" value="srcUserName" />
+							</p:commandLink>
+						</f:facet>	
+								#{rejectedUser.srcUserName}  
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<p:commandLink value="Sys Environment"
+										   action="#{rejectedUserSummaryBean.doSort}"
+										   styleClass="headerSortLink" update="@form">
+								<f:param name="column" value="srcApplicationName" />
+							</p:commandLink>
+						</f:facet>	
+								#{rejectedUser.srcApplicationName}  
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<p:commandLink value="Additional Values"
+										   action="#{rejectedUserSummaryBean.doSort}"
+										   styleClass="headerSortLink" update="@form">
+								<f:param name="column" value="additionalValues" />
+							</p:commandLink>
+						</f:facet>	
+								#{rejectedUser.additionalValues}  
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<h:outputText value="Actions">
+							</h:outputText>
+						</f:facet>
+						<p:commandLink value="Search User"
+									   action="#{rejectedUserSummaryBean.showSearchUser}"
+									   styleClass="headerSortLink"
+									   rendered="#{rejectedUser.showSearchUser}">
+							<f:param name="column" value="#{rejectedUser.srcUserName}" />
+							<f:param name="rejectedIdcolumn" value="#{rejectedUser.rejectedUserId }" />
+							<f:param name="newAltIdcolumn" value="#{rejectedUser.srcUserId }" />
+						</p:commandLink>
+						<p:commandLink value="Add User | "
+									   action="#{rejectedUserSummaryBean.showAddUserPanel}"
+									   styleClass="headerSortLink"
+									   rendered="#{rejectedUser.showAddUser}">
+							<f:param name="column" value="#{rejectedUser.rejectedUserId}" />
+						</p:commandLink>
+						<p:commandLink value="Add Alternate Id"
+									   action="#{rejectedUserSummaryBean.showAssociatedUserSearchPanel}"
+									   styleClass="headerSortLink"
+									   rendered="#{rejectedUser.showAddUser}">
+							<f:param name="rejectedIdcolumn" value="#{rejectedUser.rejectedUserId }" />
+							<f:param name="newAltIdcolumn" value="#{rejectedUser.srcUserId }" />
+						</p:commandLink>
+					</p:column>
+					<p:column>
+						<f:facet name="header">
+							<p:commandLink value="Extracted Date"
+								action="#{rejectedUserSummaryBean.doSort}"
+								styleClass="headerSortLink" update="@form">
+								<f:param name="column" value="createdDate" />
+							</p:commandLink>
+						</f:facet>	
+						<h:outputText value="#{rejectedUser.createdDate}">
+							<f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" timeZone="#{applicationBean.timeZone}" />
+						</h:outputText>  
+					</p:column>
+	
+	
+				</p:dataTable>
+		</p:outputPanel>
 
-	at java.instrument/sun.instrument.InstrumentationImpl.retransformClasses0(Native Method)
-	at java.instrument/sun.instrument.InstrumentationImpl.retransformClasses(InstrumentationImpl.java:169)
-	at org.mockito.internal.creation.bytebuddy.InlineBytecodeGenerator.triggerRetransformation(InlineBytecodeGenerator.java:281)
-	at org.mockito.internal.creation.bytebuddy.InlineBytecodeGenerator.mockClassStatic(InlineBytecodeGenerator.java:226)
-	at org.mockito.internal.creation.bytebuddy.TypeCachingBytecodeGenerator.mockClassStatic(TypeCachingBytecodeGenerator.java:63)
-	at org.mockito.internal.creation.bytebuddy.InlineDelegateByteBuddyMockMaker.createStaticMock(InlineDelegateByteBuddyMockMaker.java:566)
-	at org.mockito.internal.creation.bytebuddy.InlineByteBuddyMockMaker.createStaticMock(InlineByteBuddyMockMaker.java:83)
-	at org.mockito.internal.util.MockUtil.createStaticMock(MockUtil.java:202)
-	at org.mockito.internal.MockitoCore.mockStatic(MockitoCore.java:134)
-	at org.mockito.Mockito.mockStatic(Mockito.java:2307)
-	at org.mockito.Mockito.mockStatic(Mockito.java:2244)
-	at com.assurant.inc.sox.ar.client.bean.admin.UserSummaryBeanTest.testShowAddUserPanel(UserSummaryBeanTest.java:27)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	<!-- **************************    Add NEW User ModelPanel     ***********************************   -->
+		<ui:define name="styles">
+			<style type="text/css">
+				select {
+					font-size: 1.0em;
+				}
+				input {
+					font-size: 1.0em;
+				}
+			</style>
+		</ui:define>
+		<ui:define name="script">
+			<script type="text/javascript">
+				/* <![CDATA[ */
+				function setDepartmentValue(value) {
+					var selector = document.getElementById('addUserForm:departmentListbox');
+					setSelectorValue(selector, value);
+				}
+
+				function setDivisionValue(value) {
+					var selector = document.getElementById('addUserForm:divisionListbox');
+					setSelectorValue(selector, value);
+				}
+
+				function setBusinessSegValue(value) {
+					var selector = document.getElementById('addUserForm:bsnssSgmntListbox');
+					setSelectorValue(selector, value);
+				}
+
+				function setLocationValue(value) {
+					var selector = document.getElementById('addUserForm:locationListbox');
+					setSelectorValue(selector, value);
+				}
+
+				function setJobTitleValue(value) {
+					var selector = document.getElementById('addUserForm:jobTitleListbox');
+					setSelectorValue(selector, value);
+				}
+
+				function setSelectorValue(selector, value) {
+					if (selector == null) { 
+						return;
+					}
+					value = value.replace('&amp;', '&');
+					
+					for (i = 0; i < selector.options.length; i++) {
+						if (selector.options[i].text == value) {
+							selector.selectedIndex = i;
+							break;
+						}
+					}
+				}
+				
+				/* ]]> */
+			</script>
+		</ui:define>
+
+		<p:outputPanel autoUpdate="true" id="adduserModalAjaxPanel">
+			<p:dialog id="addModalPanel"
+					  resizeable="true"
+					  draggable="true" modal="true"
+					  height="600" width="800"
+					  rendered="#{rejectedUserSummaryBean.renderAddUserModalPanel}"
+					  visible="true"
+					  style="overflow:auto;">
+
+				<f:facet name="header">
+					<h:outputLabel value="Add User" />
+				</f:facet>
+				<!--   Messages                    -->
+				<div>
+					<h:messages id="addUserMsgId" fatalClass="fatalMessage"
+						errorClass="errorMessage" warnClass="warningMessage"
+						infoClass="infoMessage" layout="table"/>
+				</div>
+
+				<h:form id="addUserForm">
+					<table style="width:100%">
+						<tbody>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="Key Id" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.keyId}
+									</td>
+									<td align="left">
+										<h:outputLabel value="Last Name" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="addlastNameText" maxlength="50"
+											value="#{rejectedUserSummaryBean.lastName}" 
+											onchange="this.value = this.value.toUpperCase();" />
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="First Name" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="addfirstNameText" maxlength="50"
+											value="#{rejectedUserSummaryBean.firstName}" 
+											onchange="this.value = this.value.toUpperCase();" />
+									</td>
+									<td align="left">
+										<h:outputLabel value="Middle Name" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="addmiddleNameText" maxlength="50"
+											value="#{rejectedUserSummaryBean.middleName}" 
+											onchange="this.value = this.value.toUpperCase();" />
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+
+										<h:outputLabel value="User Type" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:selectOneMenu id="UserTypeListbox"
+											value="#{rejectedUserSummaryBean.userType}">
+											<f:selectItems
+												value="#{rejectedUserSummaryBean.availableUserType}" />
+										</h:selectOneMenu>
+									</td>
+									<td align="left">
+										<h:outputLabel value="Status"
+											styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:selectOneMenu id="StatusNameText"
+											value="#{rejectedUserSummaryBean.status}" rendered="true">
+											<f:selectItems
+												value="#{rejectedUserSummaryBean.availableStatus}" />
+										</h:selectOneMenu>
+									</td>
+								</tr>
+
+
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Supervisor " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="supervisorListbox" 
+										value="#{rejectedUserSummaryBean.supervisorId}">
+										<f:selectItems id="searchSupervisorSelectItems"
+											value="#{rejectedUserSummaryBean.availableSupervisors}"/>
+										<p:ajax event="change"
+												listener="#{rejectedUserSummaryBean.populateSupevisorData}"
+												update="adduserModalAjaxPanel" />
+									</h:selectOneMenu>
+
+								</td>
+								<td align="left">
+									<h:outputLabel value="Department CostCenter" styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="departmentListbox"
+										value="#{rejectedUserSummaryBean.departmentId}">
+
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.supevisorDepartments}" />
+									</h:selectOneMenu>
+								</td>
+							</tr>
+								<tr>
+									<td align="left">
+
+										<h:outputLabel value="Division" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:selectOneMenu id="divisionListbox"
+											value="#{rejectedUserSummaryBean.divisionId}">
+											<f:selectItems value="#{rejectedUserSummaryBean.supevisorDivisions}" />
+										</h:selectOneMenu>
+									</td>
+									<td align="left">
+										<h:outputLabel value="Business Segment "
+											styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:selectOneMenu id="bsnssSgmntListbox"
+											value="#{rejectedUserSummaryBean.bsnssSgmnt}" rendered="true">
+											<f:selectItems
+												value="#{rejectedUserSummaryBean.supevisorBusinessSegments}" />
+										</h:selectOneMenu>
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="Location " styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:selectOneMenu id="locationListbox"
+											value="#{rejectedUserSummaryBean.location}" rendered="true">
+											<f:selectItems value="#{rejectedUserSummaryBean.supevisorLocations}" />
+										</h:selectOneMenu>
+									</td>
+									<td align="left">
+										<h:outputLabel value="Job Title " styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:selectOneMenu id="jobTitleListbox"
+											value="#{rejectedUserSummaryBean.jobTitle}" rendered="true">
+											<f:selectItems value="#{rejectedUserSummaryBean.supevisorJobTitles}" />
+										</h:selectOneMenu>
+									</td>
+								</tr>
+
+
+
+								<tr>
+									<td align="center" colspan="4">
+
+			<p:outputPanel id="directReportsPanel" autoUpdate="true" >
+				<p:dataTable  id="directReportsTable"
+							  value="#{rejectedUserSummaryBean.supervisorDirectReports}"
+							  var="report" height="100" width="700" rows="3"
+							  paginator="true" tableStyle="width: auto;" style="overflow-x:hidden"
+							  paginatorPosition="bottom"
+							  paginatorTemplate="#{not empty rejectedUserSummaryBean.supervisorDirectReports  ? '{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}' : ''}"
+							  currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+							  rowsPerPageTemplate="10,25,50,100"
+							  rowIndexVar="rowIndex"
+							  rowKeyVar="rowKey"
+							  scrollable="true"
+							  styleClass="defaultTableHeader"
+							  rowStyleClass="oddRow, evenRow" >
+
+					<p:column>
+						<f:facet name="header"> Name </f:facet>	
+										#{report.name} 
+						</p:column>
+					<p:column>
+						<f:facet name="header"> Department </f:facet>	
+						<a href="#" onmouseup="setDepartmentValue(this.innerHTML);">#{report.departmentNmCostCenter}</a>
+						</p:column>
+					<p:column>
+						<f:facet name="header"> CostCenter </f:facet>	
+						#{report.costCenter}
+						</p:column>
+					<p:column>
+						<f:facet name="header"> Division </f:facet>	
+						<a href="#" onmouseup="setDivisionValue(this.innerHTML);">#{report.division}</a>
+						</p:column>
+					<p:column>
+						<f:facet name="header"> Business Segment </f:facet>	
+						<a href="#" onmouseup="setBusinessSegValue(this.innerHTML);">#{report.businessSeg}</a>
+						</p:column>
+					<p:column>
+						<f:facet name="header"> Job Title </f:facet>	
+						<a href="#" onmouseup="setJobTitleValue(this.innerHTML);">#{report.jobTitle}</a>
+						</p:column>
+					<p:column>
+						<f:facet name="header"> Location </f:facet>	
+						<a href="#" onmouseup="setLocationValue(this.innerHTML);">#{report.location}</a>
+						</p:column>
+
+				</p:dataTable>
+			</p:outputPanel>
+
+
+
+									</td>
+								</tr>
+
+								<tr>
+									<td align="left">
+										<h:outputLabel value="Email Address " styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="addEmailAddressText" maxlength="50"
+											value="#{rejectedUserSummaryBean.emailAddress}"
+											onchange="this.value = this.value.toUpperCase();" />
+									</td>
+									<td align="left">
+										<h:outputLabel value="Phone " styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="phoneText" maxlength="50"
+											value="#{rejectedUserSummaryBean.phone}" 
+											onchange="this.value = this.value.toUpperCase();" />
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="SAT Comment" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="satCommentText" maxlength="50"
+											value="#{rejectedUserSummaryBean.satComment}"
+											onchange="this.value = this.value.toUpperCase();" />
+									</td>
+									<td align="left">
+										<h:outputLabel value="SAT Job Role" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="satJobRoleText" maxlength="50"
+											value="#{rejectedUserSummaryBean.satJobRole}"
+											onchange="this.value = this.value.toUpperCase();" />
+									</td>
+								</tr>
+
+								<tr>
+									<td align="left">
+										<h:outputLabel value="SAT Status" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="satStatusText" maxlength="20" tabindex="0"
+											value="#{rejectedUserSummaryBean.satStatus}"
+											onchange="this.value = this.value.toUpperCase();" />
+									</td>
+									<td align="left">
+										<h:outputLabel value="Extract System" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:outputLabel value="#{rejectedUserSummaryBean.extrctSysName}" />
+									</td>
+								</tr>
+
+							<tr>
+								<td align="left" colspan="4">
+									<h:commandButton id="saveButton" value="Save"
+										action="#{rejectedUserSummaryBean.doAddNewUser}" />
+									<h:commandButton id="cancelButton" value="Cancel" immediate="true"
+										action="#{rejectedUserSummaryBean.doCancelAddUser}" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</h:form>
+			</p:dialog>
+		</p:outputPanel>
+
+
+
+
+		<!-- **************************    Search User ModelPanel     ***********************************   -->
+		<p:outputPanel autoUpdate="true" id="searchUserModalAjaxPanel">
+			<p:dialog id="searchUserModalPanel" resizeable="true"
+					  draggable="true" modal="true"
+					  height="500" width="750"
+					  rendered="#{rejectedUserSummaryBean.renderSearchUserModalPanel}"
+					  visible="true">
+
+				<f:facet name="header">
+					<h:outputLabel value="Edit Table" />
+				</f:facet>
+				<f:facet name="controller">
+					<h:panelGroup>
+						<p:commandLink id="hidelink" style="float:left" value="close"
+									   oncomplete="PF('searchUserModalAjaxPanel').hide();" />
+					</h:panelGroup>
+				</f:facet>
+				<h:form id="searchUserForm1">
+					<div>
+						<div class="sectionHeaderSmall">
+							Search User
+						</div>
+					</div>
+					<p:dataTable id="searchUserTable"
+								 value="#{rejectedUserSummaryBean.userList}" var="user"
+								 rows="#{rejectedUserSummaryBean.popupDisplayAmount}"
+								 styleClass="defaultTableHeader"
+								 rowStyleClasses="oddRow, evenRow"
+								 style="width:100%">
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Last Name"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="lastName" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.lastName} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="First Name"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="firstName" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.firstName} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Key Id"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="keyId" />
+								</p:commandLink>
+							</f:facet>
+							<p:commandLink value="#{user.keyId}"
+								action="#{rejectedUserSummaryBean.showAddSearchedUserPanel}"
+								styleClass="headerSortLink">
+								<f:param name="column" value="#{user.keyId}" />
+							</p:commandLink>
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Division"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="division" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.division} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Location"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="location" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.location} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Status"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="status" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.status} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Type"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="type" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.type} 
+						</p:column>
+					</p:dataTable>
+					<table width="100%">
+						<tbody>
+							<tr>
+
+								<td align="left">
+									<h:commandButton id="addButton" value="Add User"
+										action="#{rejectedUserSummaryBean.showAddUserPanelFromSearch}" />
+									<h:commandButton id="addAltButton" value="Add AlternateId"
+										action="#{rejectedUserSummaryBean.showAltUserSearchPanel}" />
+									<h:commandButton id="cancelButton" value="Cancel"
+										action="#{rejectedUserSummaryBean.doCancelSearchUser}" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+				</h:form>
+			</p:dialog>
+		</p:outputPanel>
+		
+		
+
+		<!-- **************************    Add Searched User ModelPanel     ***********************************   -->
+		<p:outputPanel autoUpdate="true" id="addSearchedUserModalAjaxPanel">
+			<p:dialog id="addSeachedUserModalPanel"
+					  resizeable="true" modal="true"
+					  draggable="true" height="550" width="500"
+					  rendered="#{rejectedUserSummaryBean.renderAddSearchedUserPanel}"
+					  visible="true">
+
+				<f:facet name="header">
+					<h:outputLabel value="Edit Table" />
+				</f:facet>
+				<f:facet name="controller">
+					<h:panelGroup>
+						<p:commandLink id="hidelinkOne" style="float: left" value="close"
+									   oncomplete="PF('addSearchedUserModalAjaxPanel').hide();" />
+					</h:panelGroup>
+				</f:facet>
+
+				<!--   Messages                    -->
+				<div>
+					<h:messages id="AddSerchedUserMsgId"
+								fatalClass="fatalMessage"
+								errorClass="errorMessage"
+								warnClass="warningMessage"
+								infoClass="infoMessage"
+								layout="table"/>
+<!--					<richh:messages id="AddSerchedUserMsgId" fatalClass="fatalMessage"-->
+<!--						errorClass="errorMessage" warnClass="warningMessage"-->
+<!--						infoClass="infoMessage" layout="table" />-->
+				</div>
+
+				<h:form id="addSeachedUserForm">
+					<div>
+						<div class="sectionHeaderSmall">
+							Add User
+						</div>
+					</div>
+					<table width="100%">
+						<tbody>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="KeyId " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.keyId}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="First Name " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:inputText maxlength="30"
+										value="#{rejectedUserSummaryBean.firstName}"
+										onchange="this.value = this.value.toUpperCase();" />
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Middle Name  " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:inputText maxlength="30"
+										value="#{rejectedUserSummaryBean.middleName}"
+										onchange="this.value = this.value.toUpperCase();" />
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Last Name " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:inputText maxlength="30"
+										value="#{rejectedUserSummaryBean.lastName}"
+										onchange="this.value = this.value.toUpperCase();" />
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Email Address " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:inputText maxlength="30"
+										value="#{rejectedUserSummaryBean.emailAddress}"
+										onchange="this.value = this.value.toUpperCase();" />
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+
+									<h:outputLabel value="User Type" styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="UserTypeListbox"
+										value="#{rejectedUserSummaryBean.userType}">
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.availableUserType}" />
+									</h:selectOneMenu>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Supervisor " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="supervisorListbox" 
+										value="#{rejectedUserSummaryBean.supervisorId}">
+										<f:selectItems id="searchSupervisorSelectItems"
+											value="#{rejectedUserSummaryBean.availableSupervisors}"/>
+										<p:ajax event="change"
+												listener="#{rejectedUserSummaryBean.populateSupevisorData}"
+												update="@form" />
+									</h:selectOneMenu>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Department-CostCenter" styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="DepartmentListbox"
+										value="#{rejectedUserSummaryBean.departmentId}">
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.supevisorDepartments}" />
+									</h:selectOneMenu>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+
+									<h:outputLabel value="Division" styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="DivisiontListbox"
+										value="#{rejectedUserSummaryBean.divisionId}">
+
+
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.supevisorDivisions}" />
+									</h:selectOneMenu>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Job Title " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="jobTitleListbox"
+										value="#{rejectedUserSummaryBean.jobTitle}" rendered="true">
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.supevisorJobTitles}" />
+									</h:selectOneMenu>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Location " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="locationListbox"
+										value="#{rejectedUserSummaryBean.location}" rendered="true">
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.supevisorLocations}" />
+									</h:selectOneMenu>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Business Segment "
+										styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="bsnssSgmntListbox"
+													 value="#{rejectedUserSummaryBean.bsnssSgmnt}"
+													 rendered="true">
+										<f:selectItems value="#{rejectedUserSummaryBean.supevisorBusinessSegments}" />
+									</h:selectOneMenu>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Phone " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:inputText maxlength="30"
+												 value="#{rejectedUserSummaryBean.phone}"
+												 onchange="this.value = this.value.toUpperCase();" />
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel styleClass="fieldLabel" id="selectStatusLabel">Status:  
+						</h:outputLabel>
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="StatusListbox"
+													 value="#{rejectedUserSummaryBean.status}">
+										<f:selectItems value="#{rejectedUserSummaryBean.availableStatus}" />
+									</h:selectOneMenu>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Sat Status " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									<h:inputText maxlength="20"
+												 value="#{rejectedUserSummaryBean.satStatus}"
+												 onchange="this.value = this.value.toUpperCase();" />
+								</td>
+							</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="SAT Comment" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="satCommentText"
+													 maxlength="50"
+													 value="#{userSummaryBean.satComment}"
+													 onchange="this.value = this.value.toUpperCase();" />
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="SAT Job Role" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										<h:inputText id="satJobRoleText" maxlength="50"
+											value="#{userSummaryBean.satJobRole}"
+											onchange="this.value = this.value.toUpperCase();" />
+									</td>
+								</tr>
+
+							<tr>
+								<td align="left">
+									<h:commandButton id="saveButton"
+													 value="Save"
+													 action="#{rejectedUserSummaryBean.doAddUser}" />
+								</td>
+								<td align="left">
+									<h:commandButton value="Cancel"
+													 action="#{rejectedUserSummaryBean.doCancelAddSearhedUser}" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</h:form>
+			</p:dialog>
+		</p:outputPanel>
+
+
+		<!-- **************************   April 8     ***********************************   -->
+
+
+
+		<!-- **************************   Search associated User ModelPanel     ***********************************   -->
+		<p:outputPanel autoUpdate="true"
+			id="associatedUserSearchModalAjaxPanel">
+			<p:dialog id="associatedUserSearchModalPanel"
+						  resizeable="true"
+						  draggable="true" modal="true"
+						  height="450" width="800"
+						  rendered="#{rejectedUserSummaryBean.renderAssociatedUserSearchModalPanel}"
+						  visible="true">
+
+				<f:facet name="header">
+					<h:outputLabel value="Search User" />
+				</f:facet>
+				<f:facet name="controller">
+					<h:panelGroup>
+						<p:commandLink id="hidelinkTwo" style="float: left" value="close"
+									   oncomplete="PF('associatedUserSearchModalAjaxPanel').hide();" />
+					</h:panelGroup>
+				</f:facet>
+
+				<!--   Messages                    -->
+				<div>
+					<h:messages id="SerchedAssociatedUserMsgId"
+								fatalClass="fatalMessage"
+								errorClass="errorMessage"
+								warnClass="warningMessage"
+								infoClass="infoMessage"
+								layout="table"/>
+<!--					<rich:messages id="SerchedAssociatedUserMsgId"-->
+<!--						fatalClass="fatalMessage" errorClass="errorMessage"-->
+<!--						warnClass="warningMessage" infoClass="infoMessage" layout="table" />-->
+				</div>
+
+				<h:form id="addSeachedAssociatedUserForm">
+					<div>
+						<div class="sectionHeaderSmall">
+							Filter By name or User Id
+						</div>
+					</div>
+					<table width="100%">
+						<tbody>
+							<tr>
+								<td align="left">
+									<h:outputLabel id="firstNameLabel">First Name:  
+							</h:outputLabel>
+								</td>
+								<td align="left">
+									<h:inputText id="firstNameText" maxlength="100"
+										value="#{rejectedUserSummaryBean.firstName}"
+										onchange="this.value = this.value.toUpperCase();">
+									</h:inputText>
+								</td>
+								<td align="left">
+									<h:outputLabel id="LastNameLabel">Last Name:  
+							</h:outputLabel>
+								</td>
+								<td align="left">
+									<h:inputText id="lastNameText" maxlength="100"
+										value="#{rejectedUserSummaryBean.lastName}"
+										onchange="this.value = this.value.toUpperCase();">
+									</h:inputText>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel id="keyIdLabel">Key Id:  
+							</h:outputLabel>
+								</td>
+								<td align="left">
+									<h:inputText id="keyIdText" maxlength="100"
+										value="#{rejectedUserSummaryBean.keyId}"
+										onchange="this.value = this.value.toUpperCase();">
+									</h:inputText>
+								</td>
+								<td align="left">
+									<h:outputLabel id="SupervisorLabel">Supervisor:  
+							</h:outputLabel>
+								</td>
+								<td align="left">
+									<h:selectOneMenu id="supervisorListbox" 
+										value="#{rejectedUserSummaryBean.supervisorId}">
+										<f:selectItems id="searchSupervisorSelectItems"
+											value="#{rejectedUserSummaryBean.availableSupervisors}"/>
+									</h:selectOneMenu>
+								</td>
+							</tr>
+
+							<tr>
+								<td colspan="100%">
+									<hr width="100%" />
+								</td>
+							</tr>
+							<tr>
+								<td align="left" class="sectionHeaderSmall" colspan="100%">
+									Filter User By
+								</td>
+							</tr>
+							<tr>
+								<td colspan="100%">
+									If nothing is selected, all values are included. User
+									ctrl+click to select more than one value.
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel id="StatusLabel">Status</h:outputLabel>
+								</td>
+								<td>
+									<h:selectManyListbox
+										value="#{rejectedUserSummaryBean.searchStatuses}"
+										converter="javax.faces.Long">
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.multiSelectUserStatusList}" />
+									</h:selectManyListbox>
+								</td>
+								<td align="left">
+									<h:outputLabel id="selectDepartmentLabel">Department:  
+									</h:outputLabel>
+								</td>
+								<td align="left">
+									<h:selectManyListbox id="DepartmentListbox"
+										value="#{rejectedUserSummaryBean.searchDepartments}" size="3"
+										converter="javax.faces.Long">
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.multiSelectDepartmentList}" />
+									</h:selectManyListbox>
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+
+									<h:outputLabel id="userTypeLabel">User Type:  
+								</h:outputLabel>
+								</td>
+								<td align="left">
+									<h:selectManyListbox
+										value="#{rejectedUserSummaryBean.searchUserTypes}" size="3"
+										converter="javax.faces.Long">
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.multiSelectUserTypeList}" />
+									</h:selectManyListbox>
+								</td>
+								<td align="left">
+									<h:outputLabel id="selectDivisionLabel">Division:  
+								</h:outputLabel>
+								</td>
+								<td align="left">
+									<h:selectManyListbox id="DivisiontListbox"
+										value="#{rejectedUserSummaryBean.searchDivisions}" size="3"
+										converter="javax.faces.Long">
+										<f:selectItems
+											value="#{rejectedUserSummaryBean.multiSelectDivisionList}" />
+									</h:selectManyListbox>
+								</td>
+								<td align="left"></td>
+							</tr>
+							<tr>
+								<td colspan="100%">
+									<hr width="100%" />
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<h:commandButton id="deleteButton"
+													 value="Continue"
+													 action="#{rejectedUserSummaryBean.doSearchAssociatedUser}" />
+								</td>
+								<td>
+									<h:commandButton id="cancelDeleteButton"
+													 value="Cancel"
+													 immediate="true"
+													 action="#{rejectedUserSummaryBean.doCancelSearchAssociatedUser}" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</h:form>
+			</p:dialog>
+		</p:outputPanel>
+
+		<!-- **************************    Searched Associated User ModelPanel     ***********************************   -->
+		<p:outputPanel autoUpdate="true" id="searchAssociatedUserModalAjaxPanel">
+			<p:dialog id="searchAssociatedUserModalPanel"
+				resizeable="true" draggable="true" height="500" width="800"
+				rendered="#{rejectedUserSummaryBean.renderSearchedAssociatedUserModalPanel}"
+				visible="true" modal="true">
+
+				<f:facet name="header">
+					<h:outputLabel value="Search User" />
+				</f:facet>
+				<f:facet name="controller">
+					<h:panelGroup>
+						<p:commandLink id="hidelinkThree" style="float: left" value="close"
+									   oncomplete="PF('searchAssociatedUserModalAjaxPanel').hide();" />
+					</h:panelGroup>
+				</f:facet>
+				<h:form id="AssociatedUserForm">
+					<p:dataTable id="searchAssociatedUserTable"
+								 value="#{rejectedUserSummaryBean.userList}" var="user"
+								 rows="#{rejectedUserSummaryBean.popupDisplayAmount}"
+								 styleClass="defaultTableHeader"
+								 rowStyleClasses="oddRow, evenRow"
+								 style="width=100%">
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Last Name"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="lastName" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.lastName} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="First Name"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="firstName" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.firstName} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Key Id"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="keyId" />
+								</p:commandLink>
+							</f:facet>
+							<p:commandLink value="#{user.keyId}"
+										   action="#{rejectedUserSummaryBean.showAddAlternateIdPanel}"
+										   styleClass="headerSortLink">
+								<f:param name="column" value="#{user.keyId}" />
+							</p:commandLink>
+						</p:column>
+
+
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Division"
+												 action="#{rejectedUserSummaryBean.doUserSort}"
+												 styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="division" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.division} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Location"
+											   action="#{rejectedUserBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="location" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.location} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Status"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="status" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.status} 
+						</p:column>
+						<p:column>
+							<f:facet name="header">
+								<p:commandLink value="Type"
+											   action="#{rejectedUserSummaryBean.doUserSort}"
+											   styleClass="headerSortLink" update="@form">
+									<f:param name="column" value="type" />
+								</p:commandLink>
+							</f:facet>	
+										#{user.type} 
+						</p:column>
+					</p:dataTable>
+
+
+					<table style="width:100%">
+						<tbody>
+							<tr>
+								<td align="left">
+									<p:dataScroller align="left" for="searchUserTable"
+										maxPages="20" />
+								</td>
+								<td align="right">
+
+								</td>
+							</tr>
+							<tr>
+
+								<td align="left">
+									<h:commandButton id="cancelButton"
+													 value="Cancel"
+													 immediate="true"
+													 action="#{rejectedUserSummaryBean.doCancelAssociatedUserSearch}" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</h:form>
+			</p:dialog>
+		</p:outputPanel>
+
+		<!-- **************************    Add Alternate Id ModelPanel     ***********************************   -->
+
+
+		<p:outputPanel autoUpdate="true" id="addAddAlternateIdModalAjaxPanel">
+			<p:dialog id="AddAlternateIdPanel" resizeable="true"
+					  draggable="true"
+					  height="420" width="750"
+					  rendered="#{rejectedUserSummaryBean.renderAddAlternateIdModalPanel}"
+					  visible="true" modal="true">
+
+				<f:facet name="header">
+					<h:outputLabel value="Add Alternate Id" />
+				</f:facet>
+
+				<!--   Messages                    -->
+				<div>
+					<h:messages id="addAlternateIdMsg"
+								fatalClass="fatalMessage"
+								errorClass="errorMessage"
+								warnClass="warningMessage"
+								infoClass="infoMessage"
+								layout="table"/>
+<!--					<rich:messages id="addAlternateIdMsg" fatalClass="fatalMessage"-->
+<!--						errorClass="errorMessage" warnClass="warningMessage"-->
+<!--						infoClass="infoMessage" layout="table" />-->
+				</div>
+
+				<h:form id="addAlternateIdForm">
+					<table align="left">
+						<tbody>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Key Id " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.keyId}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="First Name " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.firstName}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Middle Name" styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.middleName}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Last Name " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.lastName}
+								</td>
+							</tr>
+
+							<tr>
+								<td align="left">
+									<h:outputLabel value="User Type " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.userTypeDescription}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Department " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.departmentName}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Division " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.divisionName}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Location " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.location}
+								</td>
+							</tr>
+
+							<tr>
+								<td align="left">
+									<h:outputLabel value="JobTitle " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.jobTitle}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Supervisor " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.supervisorName}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Cost Center " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.costCenter}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Phone " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.phone}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Status " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.userStatusDescription}
+								</td>
+							</tr>
+							<tr>
+								<td align="left">
+									<h:outputLabel value="Sat Status " styleClass="fieldLabel" />
+								</td>
+								<td align="left">
+									#{rejectedUserSummaryBean.satStatus}
+								</td>
+							</tr>
+
+							<tr>
+								<td align="left">
+									<h:commandButton id="saveButton" value="Save"
+										action="#{rejectedUserSummaryBean.doAddAlternateId}">
+									</h:commandButton>
+								</td>
+								<td align="left">
+									<h:commandButton id="cancelButton"
+													 value="Cancel"
+													 immediate="true"
+													 action="#{rejectedUserSummaryBean.doCancelAddAlternateId}" />
+								</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<table align="left">
+						<tr>
+							<td align="left" colspan="2">
+								<h:outputLabel value="New Alternate Id "
+									styleClass="fieldLabel" />
+							</td>
+						</tr>
+						<tr>
+							<td align="left">
+								<h:selectOneMenu id="alternateIdListbox"
+												 value="#{rejectedUserSummaryBean.internalIdentifierTypeCD}">
+									<f:selectItems
+										value="#{rejectedUserSummaryBean.availableInternalIdentifierType}" />
+
+								</h:selectOneMenu>
+							</td>
+							<td align="left">
+										#{rejectedUserSummaryBean.newAltId}
+							</td>
+							
+						</tr>
+						<tr>
+							<td align="left" colspan="2">
+								<h:outputLabel value="Existing Alternate Id(s) "
+									styleClass="fieldLabel" />
+							</td>
+						</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="MF ID" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.satMFId}
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="CF ID" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.satCFId}
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="GF ID" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.satGFId}
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="LCS ID" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.satLCSId}
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="FDMSId" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.satFDMSId}
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="SiteMinderId" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.satSiteMinderId}
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="Alternate Id1" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.satAltId1}
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="Alternate Id2" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.satAltId2}
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="Alternate Id3" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.satAltId3}
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputLabel value="Email Address" styleClass="fieldLabel" />
+									</td>
+									<td align="left">
+										#{rejectedUserSummaryBean.emailAddress}
+									</td>
+								</tr>
+
+
+					</table>
+				</h:form>
+			</p:dialog>
+	</p:outputPanel>
+</html>
+
+<?xml version="1.0" encoding="UTF-8"?><partial-response id="j_id__v_0"><changes><update id="bodyForm:tabPanel"><![CDATA[
+        <!-- **************************    Add NEW User ModelPanel     ***********************************   -->]]></update><update id="j_id__v_0:javax.faces.ViewState:1"><![CDATA[QjFBQkU0NTlBMjAzNjhFNzAwMDAwMDAy]]></update></changes></partial-response>
+
