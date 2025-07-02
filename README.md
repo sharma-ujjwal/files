@@ -9,7 +9,7 @@
             <div class="adminAppDivCls">
                 <!--  Search -->
                 <p:outputPanel id="filterPanel">
-    
+
                     <table width="100%">
                         <tbody>
                         <tr>
@@ -18,7 +18,7 @@
                                 </h:outputLabel>
                             </td>
                             <td align="left">
-    
+
                                 <h:inputText id="keyIdSearchText2" maxlength="100"
                                              value="#{rejectedUserSummaryBean.searchSrcUserId}"
                                              onchange="this.value = this.value.toUpperCase();">
@@ -56,7 +56,7 @@
                                 </h:selectOneMenu>
                             </td>
                         </tr>
-    
+
                         <tr>
                             <td colspan="5" align="left">
                                 <!-- Go Button -->
@@ -927,7 +927,7 @@
         </h:form>
 
 
-        <!-- **************************   April 8     ***********************************   -->
+		<!-- **************************   April 8     ***********************************   -->
 
 
         <!-- **************************   Search associated User ModelPanel     ***********************************   -->
