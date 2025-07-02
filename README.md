@@ -60,14 +60,26 @@
                         <tr>
                             <td colspan="5" align="left">
                                 <!-- Go Button -->
-                                <h:commandButton id="goSearchButton3"
+                                <p:commandButton id="goSearchButton3"
+                                                 styleClass="plain-button"
                                                  value="Go"
+                                                 process="@form"
+                                                 update="bodyForm:tabPanel:rejectedUserTable"
+                                                 ajax="true"
                                                  action="#{rejectedUserSummaryBean.goSearch}"/>
-                                <h:commandButton id="resetButton1"
+                                <p:commandButton id="resetButton1"
+                                                 styleClass="plain-button"
                                                  value="Reset"
+                                                 ajax="true"
+                                                 process="@this"
+                                                 update="@form bodyForm:tabPanel:rejectedUserTable"
                                                  action="#{rejectedUserSummaryBean.resetSearch}"/>
-                                <h:commandButton id="reconcileRejectsButton"
+                                <p:commandButton id="reconcileRejectsButton"
+                                                 styleClass="plain-button"
                                                  value="Reconcile Rejects"
+                                                 ajax="true"
+                                                 process="@this"
+                                                 update="bodyForm:tabPanel:rejectedUserTable"
                                                  action="#{rejectedUserSummaryBean.doReconcile}"/>
                             </td>
                         </tr>
@@ -148,7 +160,7 @@
                                    action="#{rejectedUserSummaryBean.showSearchUser}"
                                    styleClass="headerSortLink"
                                    oncomplete="PF('searchUserModalPanelWidget').show()"
-                                   update="searchUserModalAjaxPanel"
+                                   update="@form"
                                    process="@this"
                                    rendered="#{rejectedUser.showSearchUser}">
                         <f:param name="column" value="#{rejectedUser.srcUserName}"/>
@@ -556,8 +568,16 @@
                                      value="#{rejectedUserSummaryBean.userList}" var="user"
                                      rows="#{rejectedUserSummaryBean.popupDisplayAmount}"
                                      styleClass="defaultTableHeader"
+                                     tableStyle="width: auto;"
+                                     style="overflow-x:hidden; height: inherit;"
                                      rowStyleClasses="oddRow, evenRow"
-                                     style="width:100%">
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="#{not empty rejectedUserSummaryBean.userList ? '{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}' : ''}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                     rowsPerPageTemplate="10,25,50,100"
+                                     rowIndexVar="rowIndex"
+                                     rowKeyVar="rowKey">
                             <p:column>
                                 <f:facet name="header">
                                     <p:commandLink value="Last Name"
@@ -657,7 +677,7 @@
                                                      immediate="true"
                                                      process="@this"
                                                      update="searchUserForm1"
-                                                     oncomplete="PF('addUserModalAjaxPanel').show();"/>
+                                                     oncomplete="PF('addSearchedUserModalAjaxPanel').show();"/>
                                     <p:commandButton id="addAltButton" value="Add AlternateId" styleClass="plain-button"
                                                      immediate="true"
                                                      oncomplete="PF('associatedUserSearchModalAjaxVar').show();"
@@ -682,8 +702,8 @@
         <!-- **************************    Add Searched User ModelPanel     ***********************************   -->
         <h:form id="addSeachedUserForm">
             <p:outputPanel id="addSearchedUserModalAjaxPanel">
-                <p:dialog id="addSeachedUserModalPanel"
-                      widgetVar="addUserModalAjaxPanel"
+                <p:dialog id="addSearchedUserModalPanel"
+                      widgetVar="addSearchedUserModalAjaxPanel"
                       modal="true"
                       resizeable="true"
                       draggable="true" height="550" width="500"
@@ -1101,8 +1121,9 @@
                                 <p:commandButton id="cancelDeleteButton"
                                                  value="Cancel"
                                                  styleClass="plain-button"
-                                                 oncomplete="PF('associatedUserSearchModalPanel').hide();"
+                                                 oncomplete="PF('associatedUserSearchModalAjaxVar').hide();"
                                                  process="@this"
+                                                 update="@form"
                                                  ajax="true"
                                                  immediate="true"
                                                  action="#{rejectedUserSummaryBean.doCancelSearchAssociatedUser}"/>
@@ -1120,9 +1141,7 @@
                 <p:dialog id="searchAssociatedUserModalPanel"
                           widgetVar="searchAssociatedUserModalVar"
                           modal="true"
-                          resizeable="true" draggable="true" height="500" width="800"
-                          rendered="#{rejectedUserSummaryBean.renderSearchedAssociatedUserModalPanel}"
-                          visible="true">
+                          resizeable="true" draggable="true" height="500" width="800">
                 <f:facet name="header">
                     <h:outputLabel value="Search User"/>
                 </f:facet>
@@ -1134,7 +1153,14 @@
                 </f:facet>
                     <p:dataTable id="searchAssociatedUserTable"
                                  value="#{rejectedUserSummaryBean.userList}" var="user"
-                                 rows="#{rejectedUserSummaryBean.popupDisplayAmount}"
+                                 paginator="true"
+                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
+                                 rowsPerPageTemplate="10,25,50,100"
+                                 paginatorPosition="bottom"
+                                 rowIndexVar="rowIndex"
+                                 rowKey="#{user.keyId}"
+                                 rows="10"
                                  styleClass="defaultTableHeader"
                                  rowStyleClasses="oddRow, evenRow"
                                  style="width=100%">
