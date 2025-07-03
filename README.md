@@ -1,6 +1,4 @@
 ```
-<?xml version="1.0" encoding="UTF-8"?><partial-response><error><error-name>javax.faces.application.ViewExpiredException</error-name><error-message><![CDATA[View "/xhtml/admin/departmentSummary.xhtml" could not be restored.]]></error-message></error></partial-response>
-
 <f:view xmlns="http://www.w3.org/1999/xhtml"
         xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
         xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -66,7 +64,7 @@
                                                  styleClass="plain-button"
                                                  value="Go"
                                                  process="@form"
-                                                 update="bodyForm:tabPanel:rejectedUserTable"
+                                                 update="bodyRejectForm:filterPanel bodyForm:tabPanel:rejectedUserTable"
                                                  ajax="true"
                                                  action="#{rejectedUserSummaryBean.goSearch}"/>
                                 <p:commandButton id="resetButton1"
@@ -74,7 +72,7 @@
                                                  value="Reset"
                                                  ajax="true"
                                                  process="@this"
-                                                 update="@form bodyForm:tabPanel:rejectedUserTable"
+                                                 update="bodyRejectForm:filterPanel bodyForm:tabPanel:rejectedUserTable"
                                                  action="#{rejectedUserSummaryBean.resetSearch}"/>
                                 <p:commandButton id="reconcileRejectsButton"
                                                  styleClass="plain-button"
@@ -267,7 +265,6 @@
                           draggable="true"
                           modal="true"
                           height="600" width="800"
-                          rendered="#{rejectedUserSummaryBean.renderAddUserModalPanel}"
                           style="overflow:auto;">
 
                     <f:facet name="header">
@@ -532,7 +529,7 @@
                                 <p:commandButton id="cancelButton" value="Cancel"
                                                  action="#{rejectedUserSummaryBean.doCancelAddUser}"
                                                  process="@this" immediate="true"
-                                                 update="searchUserModalAjaxPanel"
+                                                 update="adduserModalAjaxPanel"
                                                  oncomplete="PF('addModalPanelWidget').hide()" />
                             </td>
                         </tr>
@@ -708,8 +705,7 @@
                       widgetVar="addSearchedUserModalAjaxPanel"
                       modal="true"
                       resizeable="true"
-                      draggable="true" height="550" width="500"
-                      style="display: none;">
+                      draggable="true" height="550" width="500">
 
                 <f:facet name="header">
                     <h:outputLabel value="Edit Table"/>
@@ -1125,7 +1121,7 @@
                                                  styleClass="plain-button"
                                                  oncomplete="PF('associatedUserSearchModalAjaxVar').hide();"
                                                  process="@this"
-                                                 update="bodyRejectForm associatedUserSearchModalAjaxPanel"
+                                                 update="associatedUserSearchModalAjaxPanel"
                                                  ajax="true"
                                                  immediate="true"
                                                  action="#{rejectedUserSummaryBean.doCancelSearchAssociatedUser}"/>
@@ -1287,8 +1283,7 @@
                           widgetVar="addAlternateIdModalVar"
                           modal="true"
                           draggable="true"
-                          height="420" width="750"
-                          style="display: none;">
+                          height="420" width="750">
 
                     <f:facet name="header">
                         <h:outputLabel value="Add Alternate Id"/>
