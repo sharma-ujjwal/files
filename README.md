@@ -64,15 +64,16 @@
                                                  styleClass="plain-button"
                                                  value="Go"
                                                  process="@form"
-                                                 update="bodyRejectForm:filterPanel bodyForm:tabPanel:rejectedUserTable"
+                                                 update="rejectedUserTable"
                                                  ajax="true"
                                                  action="#{rejectedUserSummaryBean.goSearch}"/>
                                 <p:commandButton id="resetButton1"
                                                  styleClass="plain-button"
                                                  value="Reset"
                                                  ajax="true"
+                                                 immediate="true"
                                                  process="@this"
-                                                 update="bodyRejectForm:filterPanel bodyForm:tabPanel:rejectedUserTable"
+                                                 update="filterPanel rejectedUserTable"
                                                  action="#{rejectedUserSummaryBean.resetSearch}"/>
                                 <p:commandButton id="reconcileRejectsButton"
                                                  styleClass="plain-button"
@@ -159,8 +160,8 @@
                     <p:commandLink value="Search User"
                                    action="#{rejectedUserSummaryBean.showSearchUser}"
                                    styleClass="headerSortLink"
-                                   oncomplete="PF('searchUserModalPanelWidget').show()"
-                                   update="@form"
+                                   oncomplete="PF('searchUserModalPanelWidget').show();"
+                                   update="@this"
                                    process="@this"
                                    rendered="#{rejectedUser.showSearchUser}">
                         <f:param name="column" value="#{rejectedUser.srcUserName}"/>
@@ -169,13 +170,19 @@
                     </p:commandLink>
                     <p:commandLink value="Add User | "
                                    action="#{rejectedUserSummaryBean.showAddUserPanel}"
+                                   oncomplete="PF('addModalPanelWidget').show();"
                                    styleClass="headerSortLink"
+                                   update="@this"
+                                   process="@this"
                                    rendered="#{rejectedUser.showAddUser}">
                         <f:param name="column" value="#{rejectedUser.rejectedUserId}"/>
                     </p:commandLink>
                     <p:commandLink value="Add Alternate Id"
                                    action="#{rejectedUserSummaryBean.showAssociatedUserSearchPanel}"
                                    styleClass="headerSortLink"
+                                   update="@this"
+                                   process="@this"
+                                   oncomplete="PF('addAlternateIdModalVar').show();"
                                    rendered="#{rejectedUser.showAddUser}">
                         <f:param name="rejectedIdcolumn" value="#{rejectedUser.rejectedUserId }"/>
                         <f:param name="newAltIdcolumn" value="#{rejectedUser.srcUserId }"/>
@@ -522,11 +529,13 @@
                         <tr>
                             <td align="left" colspan="4">
                                 <p:commandButton id="saveButton" value="Save"
+                                                 styleClass="plain-button"
                                                  process="@form"
                                                  update="rejectedUserTable adduserModalAjaxPanel"
                                                  oncomplete="PF('addModalPanelWidget').hide()"
                                                  action="#{rejectedUserSummaryBean.doAddNewUser}"/>
                                 <p:commandButton id="cancelButton" value="Cancel"
+                                                 styleClass="plain-button"
                                                  action="#{rejectedUserSummaryBean.doCancelAddUser}"
                                                  process="@this" immediate="true"
                                                  update="adduserModalAjaxPanel"
@@ -553,10 +562,10 @@
                         <h:outputLabel value="Edit Table"/>
                     </f:facet>
                     <f:facet name="controller">
-                        <h:panelGroup>
+                        <p:outputPanel>
                             <p:commandLink id="hidelink" style="float:left" value="close"
-                                           oncomplete="PF('searchUserModalAjaxPanelVar').hide();"/>
-                        </h:panelGroup>
+                                           oncomplete="PF('searchUserModalPanelWidget').hide();"/>
+                        </p:outputPanel>
                     </f:facet>
                         <div>
                             <div class="sectionHeaderSmall">
@@ -669,19 +678,20 @@
                         <table width="100%">
                             <tbody>
                             <tr>
-
                                 <td align="left">
                                     <p:commandButton id="addButton" value="Add User" styleClass="plain-button"
                                                      action="#{rejectedUserSummaryBean.showAddUserPanelFromSearch}"
+                                                     oncomplete="PF('addSearchedUserModalAjaxPanel').show();"
+                                                     ajax="true"
                                                      immediate="true"
                                                      process="@this"
-                                                     update="searchUserForm1"
-                                                     oncomplete="PF('addSearchedUserModalAjaxPanel').show();"/>
+                                                     update="searchUserForm1" />
                                     <p:commandButton id="addAltButton" value="Add AlternateId" styleClass="plain-button"
                                                      immediate="true"
+                                                     ajax="true"
                                                      oncomplete="PF('associatedUserSearchModalAjaxVar').show();"
                                                      process="@this"
-                                                     update="searchUserForm1"
+                                                     update="bodyForm:tabPanel:addSearchedAssociatedUserForm:associatedUserSearchModalAjaxPanel"
                                                      action="#{rejectedUserSummaryBean.showAltUserSearchPanel}"/>
                                     <p:commandButton id="cancelButton" value="Cancel" styleClass="plain-button"
                                                      action="#{rejectedUserSummaryBean.doCancelSearchUser}"
@@ -702,7 +712,7 @@
         <h:form id="addSeachedUserForm">
             <p:outputPanel id="addSearchedUserModalAjaxPanel">
                 <p:dialog id="addSearchedUserModalPanel"
-                      widgetVar="addSearchedUserModalAjaxPanel"
+                      widgetVar="addSearchedUserModalAjaxPanelVar"
                       modal="true"
                       resizeable="true"
                       draggable="true" height="550" width="500">
@@ -711,10 +721,10 @@
                     <h:outputLabel value="Edit Table"/>
                 </f:facet>
                 <f:facet name="controller">
-                    <h:panelGroup>
+                    <p:outputPanel>
                         <p:commandLink id="hidelinkOne" style="float: left" value="close"
-                                       oncomplete="PF('addSearchedUserModalAjaxPanel').hide();"/>
-                    </h:panelGroup>
+                                       oncomplete="PF('addSearchedUserModalAjaxPanelVar').hide();"/>
+                    </p:outputPanel>
                 </f:facet>
 
                 <!--   Messages                    -->
@@ -738,7 +748,7 @@
                                 <h:outputLabel value="KeyId " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.keyId}
+                                <h:outputLabel value="#{rejectedUserSummaryBean.keyId}"/>
                             </td>
                         </tr>
                         <tr>
@@ -929,12 +939,21 @@
 
                         <tr>
                             <td align="left">
-                                <h:commandButton id="saveButton"
+                                <p:commandButton id="saveButton"
                                                  value="Save"
+                                                 styleClass="plain-button"
+                                                 process="@this"
+                                                 update="rejectedUserTable addSearchedUserModalAjaxPanel"
+                                                 oncomplete="PF('addSearchedUserModalAjaxPanelVar').hide()"
                                                  action="#{rejectedUserSummaryBean.doAddUser}"/>
                             </td>
                             <td align="left">
-                                <h:commandButton value="Cancel"
+                                <p:commandButton value="Cancel"
+                                                 styleClass="plain-button"
+                                                 immediate="true"
+                                                 process="@this"
+                                                 update="addSearchedUserModalAjaxPanel"
+                                                 oncomplete="PF('addSearchedUserModalAjaxPanelVar').hide()"
                                                  action="#{rejectedUserSummaryBean.doCancelAddSearhedUser}"/>
                             </td>
                         </tr>
@@ -949,7 +968,7 @@
 
 
         <!-- **************************   Search associated User ModelPanel     ***********************************   -->
-        <h:form id="addSeachedAssociatedUserForm">
+        <h:form id="addSearchedAssociatedUserForm">
             <p:outputPanel id="associatedUserSearchModalAjaxPanel">
                 <p:dialog id="associatedUserSearchModalPanel"
                           widgetVar="associatedUserSearchModalAjaxVar"
@@ -962,13 +981,12 @@
                         <h:outputLabel value="Search User"/>
                     </f:facet>
                     <f:facet name="controller">
-                        <h:panelGroup>
+                        <p:outputPanel>
                             <p:commandLink id="hidelinkTwo" style="float: left" value="close"
-                                           oncomplete="PF('associatedUserSearchModalAjaxPanel').hide();"/>
-                        </h:panelGroup>
+                                           oncomplete="PF('associatedUserSearchModalAjaxVar').hide();"/>
+                        </p:outputPanel>
                     </f:facet>
 
-                    <!--   Messages                    -->
                     <div>
                         <h:messages id="SerchedAssociatedUserMsgId"
                                     fatalClass="fatalMessage"
@@ -1144,10 +1162,10 @@
                     <h:outputLabel value="Search User"/>
                 </f:facet>
                 <f:facet name="controller">
-                    <h:panelGroup>
+                    <p:outputPanel>
                         <p:commandLink id="hidelinkThree" style="float: left" value="close"
-                                       oncomplete="PF('searchAssociatedUserModalAjaxPanel').hide();"/>
-                    </h:panelGroup>
+                                       oncomplete="PF('searchAssociatedUserModalVar').hide();"/>
+                    </p:outputPanel>
                 </f:facet>
                     <p:dataTable id="searchAssociatedUserTable"
                                  value="#{rejectedUserSummaryBean.userList}" var="user"
@@ -1305,7 +1323,7 @@
                                 <h:outputLabel value="Key Id " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.keyId}
+                                <h:outputText value="#{rejectedUserSummaryBean.keyId}" />
                             </td>
                         </tr>
                         <tr>
@@ -1313,7 +1331,7 @@
                                 <h:outputLabel value="First Name " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.firstName}
+                                <h:outputText value="#{rejectedUserSummaryBean.firstName}" />
                             </td>
                         </tr>
                         <tr>
@@ -1321,7 +1339,7 @@
                                 <h:outputLabel value="Middle Name" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.middleName}
+                                <h:outputText value="#{rejectedUserSummaryBean.middleName}" />
                             </td>
                         </tr>
                         <tr>
@@ -1338,7 +1356,7 @@
                                 <h:outputLabel value="User Type " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.userTypeDescription}
+                                <h:outputText value="#{rejectedUserSummaryBean.userTypeDescription}" />
                             </td>
                         </tr>
                         <tr>
@@ -1346,7 +1364,7 @@
                                 <h:outputLabel value="Department " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.departmentName}
+                                <h:outputText value="#{rejectedUserSummaryBean.departmentName}" />
                             </td>
                         </tr>
                         <tr>
@@ -1354,7 +1372,7 @@
                                 <h:outputLabel value="Division " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.divisionName}
+                                <h:outputText value="#{rejectedUserSummaryBean.divisionName}" />
                             </td>
                         </tr>
                         <tr>
@@ -1362,7 +1380,7 @@
                                 <h:outputLabel value="Location " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.location}
+                                <h:outputText value="#{rejectedUserSummaryBean.location}" />
                             </td>
                         </tr>
 
@@ -1371,7 +1389,7 @@
                                 <h:outputLabel value="JobTitle " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.jobTitle}
+                                <h:outputText value="#{rejectedUserSummaryBean.jobTitle}" />
                             </td>
                         </tr>
                         <tr>
@@ -1379,7 +1397,7 @@
                                 <h:outputLabel value="Supervisor " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.supervisorName}
+                                <h:outputText value="#{rejectedUserSummaryBean.supervisorName}" />
                             </td>
                         </tr>
                         <tr>
@@ -1387,7 +1405,7 @@
                                 <h:outputLabel value="Cost Center " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.costCenter}
+                                <h:outputText value="#{rejectedUserSummaryBean.costCenter}" />
                             </td>
                         </tr>
                         <tr>
@@ -1395,7 +1413,7 @@
                                 <h:outputLabel value="Phone " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.phone}
+                                <h:outputText value="#{rejectedUserSummaryBean.phone}" />
                             </td>
                         </tr>
                         <tr>
@@ -1403,7 +1421,7 @@
                                 <h:outputLabel value="Status " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.userStatusDescription}
+                                <h:outputText value="#{rejectedUserSummaryBean.userStatusDescription}" />
                             </td>
                         </tr>
                         <tr>
@@ -1411,7 +1429,7 @@
                                 <h:outputLabel value="Sat Status " styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satStatus}
+                                <h:outputText value="#{rejectedUserSummaryBean.satStatus}" />
                             </td>
                         </tr>
 
@@ -1456,7 +1474,7 @@
                                 </h:selectOneMenu>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.newAltId}
+                                <h:outputText value="#{rejectedUserSummaryBean.newAltId}"/>
                             </td>
 
                         </tr>
@@ -1471,7 +1489,7 @@
                                 <h:outputLabel value="MF ID" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satMFId}
+                                <h:outputText value="#{rejectedUserSummaryBean.satMFId}"/>
                             </td>
                         </tr>
                         <tr>
@@ -1479,7 +1497,7 @@
                                 <h:outputLabel value="CF ID" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satCFId}
+                                <h:outputText value="#{rejectedUserSummaryBean.satCFId}"/>
                             </td>
                         </tr>
                         <tr>
@@ -1487,7 +1505,7 @@
                                 <h:outputLabel value="GF ID" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satGFId}
+                                <h:outputText value="#{rejectedUserSummaryBean.satGFId}"/>
                             </td>
                         </tr>
                         <tr>
@@ -1495,7 +1513,7 @@
                                 <h:outputLabel value="LCS ID" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satLCSId}
+                                <h:outputText value="#{rejectedUserSummaryBean.satLCSId}"/>
                             </td>
                         </tr>
                         <tr>
@@ -1503,7 +1521,7 @@
                                 <h:outputLabel value="FDMSId" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satFDMSId}
+                                <h:outputText value="#{rejectedUserSummaryBean.satFDMSId}"/>
                             </td>
                         </tr>
                         <tr>
@@ -1511,7 +1529,7 @@
                                 <h:outputLabel value="SiteMinderId" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satSiteMinderId}
+                                <h:outputText value="#{rejectedUserSummaryBean.satSiteMinderId}"/>
                             </td>
                         </tr>
                         <tr>
@@ -1519,7 +1537,7 @@
                                 <h:outputLabel value="Alternate Id1" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satAltId1}
+                                <h:outputText value="#{rejectedUserSummaryBean.satAltId1}"/>
                             </td>
                         </tr>
                         <tr>
@@ -1527,7 +1545,7 @@
                                 <h:outputLabel value="Alternate Id2" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satAltId2}
+                                <h:outputText value="#{rejectedUserSummaryBean.satAltId2}"/>
                             </td>
                         </tr>
                         <tr>
@@ -1535,7 +1553,7 @@
                                 <h:outputLabel value="Alternate Id3" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.satAltId3}
+                                <h:outputText value="#{rejectedUserSummaryBean.satAltId3}"/>
                             </td>
                         </tr>
                         <tr>
@@ -1543,7 +1561,7 @@
                                 <h:outputLabel value="Email Address" styleClass="fieldLabel"/>
                             </td>
                             <td align="left">
-                                #{rejectedUserSummaryBean.emailAddress}
+                                <h:outputText value="#{rejectedUserSummaryBean.emailAddress}"/>
                             </td>
                         </tr>
                     </table>
