@@ -1,4 +1,6 @@
 ```
+<?xml version="1.0" encoding="UTF-8"?><partial-response><error><error-name>javax.faces.application.ViewExpiredException</error-name><error-message><![CDATA[View "/xhtml/admin/departmentSummary.xhtml" could not be restored.]]></error-message></error></partial-response>
+
 <f:view xmlns="http://www.w3.org/1999/xhtml"
         xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
         xmlns:h="http://xmlns.jcp.org/jsf/html"
@@ -1123,7 +1125,7 @@
                                                  styleClass="plain-button"
                                                  oncomplete="PF('associatedUserSearchModalAjaxVar').hide();"
                                                  process="@this"
-                                                 update="@form"
+                                                 update="bodyRejectForm associatedUserSearchModalAjaxPanel"
                                                  ajax="true"
                                                  immediate="true"
                                                  action="#{rejectedUserSummaryBean.doCancelSearchAssociatedUser}"/>
