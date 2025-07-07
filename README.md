@@ -1,6 +1,21 @@
-```
-@Test
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+
+import javax.faces.component.UIComponent;
+import javax.faces.event.ActionEvent;
+
+import static org.mockito.Mockito.*;
+
+public class YourBeanTest {
+
+    private final YourBean bean = new YourBean(); // Replace with your actual bean class
+    private final ReviewerUI reviewerUI = mock(ReviewerUI.class);
+    private final ReviewDashboardUI reviewDashboardUI = mock(ReviewDashboardUI.class);
+    private final ReviewersTable reviewersTable = mock(ReviewersTable.class); // or use HtmlDataTable or correct type
+
+    @Test
     public void testDoSelectReviewer() {
+        // Mocking ActionEvent and component tree
         ActionEvent event = mock(ActionEvent.class);
         UIComponent component = mock(UIComponent.class);
 
@@ -8,7 +23,11 @@
         when(component.findComponent("reviewersTable")).thenReturn(reviewersTable);
         when(reviewersTable.getRowData()).thenReturn(reviewerUI);
 
+        // Mock the bean looked up from JSF
         ReviewUserDashboardBean reviewUserDashboardBean = mock(ReviewUserDashboardBean.class);
+
+        // Mock NavigationHandler (assuming it's a separate class or static inner class)
+        NavigationHandler navigationHandlerMock = mock(NavigationHandler.class);
 
         try (
                 MockedStatic<JSFUtils> jsfUtilsMock = mockStatic(JSFUtils.class);
@@ -17,25 +36,18 @@
             jsfUtilsMock.when(() -> JSFUtils.lookupBean("reviewUserDashboardBean"))
                     .thenReturn(reviewUserDashboardBean);
 
-            // Correctly mock the inner class NavigationHandler
-            NavigationUtility navigationHandlerMock = mock(NavigationUtility.class);
+            navUtilMock.when(NavigationUtility::getNavigationHandlerInstance)
+                    .thenReturn(navigationHandlerMock);
 
-            navUtilMock.when(NavigationUtility::getNavigationHandlerInstance).thenReturn(navigationHandlerMock);
-            navUtilMock.when(NavigationUtility::getFacesContextInstance).thenReturn(null);
+            navUtilMock.when(NavigationUtility::getFacesContextInstance)
+                    .thenReturn(null); // Mock as needed or use a mock FacesContext
 
+            // Run the method under test
+            bean.setReviewDashboardUI(reviewDashboardUI); // assuming setter needed
             bean.doSelectReviewer(event);
 
+            // Verify interaction
             verify(reviewUserDashboardBean).initReviewers(reviewerUI, reviewDashboardUI);
         }
     }
-
-org.mockito.exceptions.misusing.WrongTypeOfReturnValue: 
-NavigationUtility cannot be returned by getNavigationHandlerInstance()
-getNavigationHandlerInstance() should return NavigationHandler
-***
-If you're unsure why you're getting above error read on.
-Due to the nature of the syntax above problem might occur because:
-1. This exception *might* occur in wrongly written multi-threaded tests.
-   Please refer to Mockito FAQ on limitations of concurrency testing.
-2. A spy is stubbed using when(spy.foo()).then() syntax. It is safer to stub spies - 
-   - with doReturn|Throw() family of methods. More in javadocs for Mockito.spy() method.
+}
