@@ -1,51 +1,41 @@
 ```
-public List<RejectedUser> findByValue(String srcUserId, Long extrctSysId,
-        String selectedDateCriteria, Date createdDateCriteria) {
+@Test
+    public void testDoSelectReviewer() {
+        ActionEvent event = mock(ActionEvent.class);
+        UIComponent component = mock(UIComponent.class);
 
-    StringBuilder sb = new StringBuilder(256);
-    sb.append(" SELECT r FROM RejectedUser as r ");
-    sb.append(" WHERE r.deleteFlag <> 'Y' ");
-    sb.append(" AND r.extractSystem.extrctSysId <> 9 ");
+        when(event.getComponent()).thenReturn(component);
+        when(component.findComponent("reviewersTable")).thenReturn(reviewersTable);
+        when(reviewersTable.getRowData()).thenReturn(reviewerUI);
 
-    if (srcUserId != null && !srcUserId.isEmpty()) {
-        sb.append(" AND r.srcUserId like :srcUserId ");
-    }
-    if (extrctSysId != null && extrctSysId != -1) {
-        sb.append(" AND r.extractSystem.extrctSysId = :extrctSysId ");
-    }
-    if (createdDateCriteria != null) {
-        switch (selectedDateCriteria) {
-            case "gt":
-                sb.append(" AND trunc(r.createdDate) > :createdDate ");
-                break;
-            case "lt":
-                sb.append(" AND trunc(r.createdDate) < :createdDate ");
-                break;
-            case "eq":
-                sb.append(" AND trunc(r.createdDate) = :createdDate ");
-                break;
+        ReviewUserDashboardBean reviewUserDashboardBean = mock(ReviewUserDashboardBean.class);
+
+        try (
+                MockedStatic<JSFUtils> jsfUtilsMock = mockStatic(JSFUtils.class);
+                MockedStatic<NavigationUtility> navUtilMock = mockStatic(NavigationUtility.class)
+        ) {
+            jsfUtilsMock.when(() -> JSFUtils.lookupBean("reviewUserDashboardBean"))
+                    .thenReturn(reviewUserDashboardBean);
+
+            // Correctly mock the inner class NavigationHandler
+            NavigationUtility navigationHandlerMock = mock(NavigationUtility.class);
+
+            navUtilMock.when(NavigationUtility::getNavigationHandlerInstance).thenReturn(navigationHandlerMock);
+            navUtilMock.when(NavigationUtility::getFacesContextInstance).thenReturn(null);
+
+            bean.doSelectReviewer(event);
+
+            verify(reviewUserDashboardBean).initReviewers(reviewerUI, reviewDashboardUI);
         }
     }
 
-    sb.append(" AND r.rejectedUserId in ( ");
-    sb.append(" SELECT MIN (u.rejectedUserId) FROM RejectedUser as u ");
-    sb.append(" GROUP BY u.srcUserId, u.extractSystem.extrctSysId) ");
-    sb.append(" ORDER BY r.createdDate DESC ");
-
-    return this.hibernateTemplate.execute((session) -> {
-        org.hibernate.query.Query query = session.createQuery(sb.toString());
-
-        if (srcUserId != null && !srcUserId.isEmpty()) {
-            query.setParameter("srcUserId", "%" + srcUserId + "%");
-        }
-        if (extrctSysId != null && extrctSysId != -1) {
-            query.setParameter("extrctSysId", extrctSysId);
-        }
-        if (createdDateCriteria != null) {
-            query.setParameter("createdDate", createdDateCriteria);
-        }
-
-        query.setMaxResults(100);
-        return query.list();
-    });
-}
+org.mockito.exceptions.misusing.WrongTypeOfReturnValue: 
+NavigationUtility cannot be returned by getNavigationHandlerInstance()
+getNavigationHandlerInstance() should return NavigationHandler
+***
+If you're unsure why you're getting above error read on.
+Due to the nature of the syntax above problem might occur because:
+1. This exception *might* occur in wrongly written multi-threaded tests.
+   Please refer to Mockito FAQ on limitations of concurrency testing.
+2. A spy is stubbed using when(spy.foo()).then() syntax. It is safer to stub spies - 
+   - with doReturn|Throw() family of methods. More in javadocs for Mockito.spy() method.
