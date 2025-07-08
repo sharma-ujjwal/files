@@ -1,34 +1,47 @@
 ```
-StringBuilder sb = new StringBuilder(256);
-		sb.append(" SELECT r FROM RejectedUser as r ");
-		sb.append(" WHERE r.deleteFlag <> 'Y'  ");
-		sb.append(" AND r.extractSystem <> 9  ");
-		if (!"".equals(srcUserId) && srcUserId != null) {
-			sb.append(" AND r.srcUserId like '%" + srcUserId + "%' ");
-		}
-		if (extrctSysId != null) {
-			sb.append(" AND r.extractSystem.extrctSysId = " + extrctSysId );
-		}
-		if (createdDateCriteria != null) {
+public List<RejectedUser> findByValueJdbc(String srcUserId, Long extrctSysId,
+                                          String selectedDateCriteria, Date createdDateCriteria) {
 
-			if ("gt".equals(selectedDateCriteria)) {
-				sb.append(" AND trunc(r.createdDate) > ? " );
-			}
-			if ("lt".equals(selectedDateCriteria)) {
-				sb.append(" AND trunc(r.createdDate) < ? " );
-			}
-			if ("eq".equals(selectedDateCriteria)) {
-				sb.append(" AND trunc(r.createdDate) = ? " );
-			}
-		}
-		// to get the first occurrence this reject came in
-		sb.append(" AND r.rejectedUserId in  ");
-		sb.append(" (SELECT MIN (u.rejectedUserId) ");
-		sb.append(" FROM RejectedUser as u GROUP BY u.srcUserId, u.extractSystem) ");
-		sb.append(" ORDER BY r.createdDate DESC ");
-        Object[] params = { createdDateCriteria} ;
+    StringBuilder sql = new StringBuilder();
+    List<Object> params = new ArrayList<>();
 
-		if (createdDateCriteria != null) 
-			return this.hibernateTemplate.find(sb.toString(), params);
-		else
-			return this.hibernateTemplate.find(sb.toString());
+    sql.append("SELECT * FROM RejectedUser r ");
+    sql.append("WHERE r.deleteFlag <> 'Y' ");
+    sql.append("AND r.extractSystem <> 9 ");
+
+    if (srcUserId != null && !srcUserId.isEmpty()) {
+        sql.append("AND r.srcUserId LIKE ? ");
+        params.add("%" + srcUserId + "%");
+    }
+
+    if (extrctSysId != null) {
+        sql.append("AND r.extractSystem = ? ");
+        params.add(extrctSysId);
+    }
+
+    if (createdDateCriteria != null) {
+        if ("gt".equals(selectedDateCriteria)) {
+            sql.append("AND trunc(r.createdDate) > ? ");
+        } else if ("lt".equals(selectedDateCriteria)) {
+            sql.append("AND trunc(r.createdDate) < ? ");
+        } else if ("eq".equals(selectedDateCriteria)) {
+            sql.append("AND trunc(r.createdDate) = ? ");
+        }
+        params.add(new java.sql.Date(createdDateCriteria.getTime()));
+    }
+
+    // First occurrence condition
+    sql.append("AND r.rejectedUserId IN ( ");
+    sql.append("  SELECT MIN(u.rejectedUserId) ");
+    sql.append("  FROM RejectedUser u ");
+    sql.append("  GROUP BY u.srcUserId, u.extractSystem ");
+    sql.append(") ");
+
+    sql.append("ORDER BY r.createdDate DESC ");
+
+    // Oracle-specific row limit
+    sql.insert(0, "SELECT * FROM (");
+    sql.append(") WHERE ROWNUM <= 100");
+
+    return jdbcTemplate.query(sql.toString(), params.toArray(), new BeanPropertyRowMapper<>(RejectedUser.class));
+}
