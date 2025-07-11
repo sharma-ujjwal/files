@@ -1,185 +1,152 @@
 ```
-<h:form id="addSearchedAssociatedUserForm">
-		<p:outputPanel id="associatedUserSearchModalAjaxPanel">
-			<p:dialog id="associatedUserSearchModalPanel"
-					  styleClass="addUserModalPanelClass"
-					  blockScroll="true"
-					  widgetVar="associatedUserSearchModalAjaxVar"
-					  resizeable="true"
-					  modal="true"
-					  draggable="true"
-					  height="450" width="800">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://java.sun.com/jsf/facelets"
+	  xmlns:h="http://java.sun.com/jsf/html"
+	  xmlns:f="http://java.sun.com/jsf/core"
+	  xmlns:p="http://primefaces.org/ui">
 
-				<f:facet name="header">
-					<h:outputLabel value="Search User"/>
-				</f:facet>
-				<f:facet name="controller">
-					<p:outputPanel>
-						<p:commandLink id="hidelinkTwo" style="float: left" value="close"
-									   oncomplete="PF('associatedUserSearchModalAjaxVar').hide();"/>
-					</p:outputPanel>
-				</f:facet>
+<ui:composition template="../common/main.xhtml">
+	<ui:define name="body">
+		<p:ajaxStatus id="tableMaintenanceAjaxLoadStatus"
+					  onstart="showModalInfoWindow();"
+					  oncomplete="hideModalInfoWindow();" />
 
-				<div>
-					<h:messages id="SerchedAssociatedUserMsgId"
-								fatalClass="fatalMessage"
-								errorClass="errorMessage"
-								warnClass="warningMessage"
-								infoClass="infoMessage"
-								layout="table"/>
-				</div>
+		<p:tabView id="tabPanel"
+				   activeIndex="#{adminConsoleBean.selectedTab}"
+				   dynamic="true"
+				   cache="false"
+				   styleClass="tabStyle userTableTabAdminConsole" style="min-height: 25vh;">
+			<p:ajax event="tabChange"
+					update="bodyForm:headerMessages"
+					listener="#{adminConsoleBean.onTabChange}" />
+			<p:tab id="rejectsTab" title="Rejects" rendered="#{!sessionDataBean.systemUser.ipsUser}">
+			  <ui:include src="/xhtml/admin/rejectedUserSummary.xhtml" />
+			</p:tab>
+			<p:tab id="exceptionReportingTab" title="Exception Reporting" rendered="#{!sessionDataBean.systemUser.ipsUser}">
+			  <ui:include src="/xhtml/admin/exceptionSummary.xhtml" />
+			</p:tab>
+			<p:tab id="tableMaintenanceTab" title="Table Maintenance">
+			  <ui:insert name="tableMaintenanceTab" />
+			</p:tab>
+		</p:tabView>
+	</ui:define>
+</ui:composition>
+</html>
 
-				<div>
-					<div class="sectionHeaderSmall">
-						Filter By name or User Id
-					</div>
-				</div>
-				<table width="100%">
-					<tbody>
-					<tr>
-						<td align="left">
-							<h:outputLabel id="firstNameLabel" styleClass="filterCls">First Name:
-							</h:outputLabel>
-						</td>
-						<td align="left">
-							<h:inputText id="firstNameText" maxlength="100"
-										 value="#{rejectedUserSummaryBean.firstName}"
-										 onchange="this.value = this.value.toUpperCase();">
-							</h:inputText>
-						</td>
-						<td align="left">
-							<h:outputLabel id="LastNameLabel" styleClass="filterCls">Last Name:
-							</h:outputLabel>
-						</td>
-						<td align="left">
-							<h:inputText id="lastNameText" maxlength="100"
-										 value="#{rejectedUserSummaryBean.lastName}"
-										 onchange="this.value = this.value.toUpperCase();">
-							</h:inputText>
-						</td>
-					</tr>
-					<tr>
-						<td align="left">
-							<h:outputLabel id="keyIdLabel" styleClass="filterCls">Key Id:
-							</h:outputLabel>
-						</td>
-						<td align="left">
-							<h:inputText id="keyIdText" maxlength="100"
-										 value="#{rejectedUserSummaryBean.keyId}"
-										 onchange="this.value = this.value.toUpperCase();">
-							</h:inputText>
-						</td>
-						<td align="left">
-							<h:outputLabel id="SupervisorLabel" styleClass="filterCls">Supervisor:
-							</h:outputLabel>
-						</td>
-						<td align="left">
-							<h:selectOneMenu id="supervisorListbox"
-											 value="#{rejectedUserSummaryBean.supervisorId}">
-								<f:selectItems id="searchSupervisorSelectItems"
-											   value="#{rejectedUserSummaryBean.availableSupervisors}"/>
-							</h:selectOneMenu>
-						</td>
-					</tr>
+package com.assurant.inc.sox.ar.client.bean.admin;
 
-					<tr>
-						<td colspan="100%">
-							<hr width="100%"/>
-						</td>
-					</tr>
-					<tr>
-						<td align="left" class="sectionHeaderSmall" colspan="100%">
-							Filter User By
-						</td>
-					</tr>
-					<tr>
-						<td colspan="100%" style="color: #000000; font-size: 11px; font-family: Arial, Verdana, sans-serif;">
-							If nothing is selected, all values are included. User
-							ctrl+click to select more than one value.
-						</td>
-					</tr>
-					<tr>
-						<td align="left">
-							<h:outputLabel id="StatusLabel" styleClass="filterCls">Status</h:outputLabel>
-						</td>
-						<td>
-							<h:selectManyListbox id="StatusListbox"
-									value="#{rejectedUserSummaryBean.searchStatuses}"
-									converter="javax.faces.Long">
-								<f:selectItems
-										value="#{rejectedUserSummaryBean.multiSelectUserStatusList}"/>
-							</h:selectManyListbox>
-						</td>
-						<td align="left">
-							<h:outputLabel id="selectDepartmentLabel" styleClass="filterCls">Department:
-							</h:outputLabel>
-						</td>
-						<td align="left">
-							<h:selectManyListbox id="DepartmentListbox"
-												 value="#{rejectedUserSummaryBean.searchDepartments}" size="3"
-												 converter="javax.faces.Long">
-								<f:selectItems
-										value="#{rejectedUserSummaryBean.multiSelectDepartmentList}"/>
-							</h:selectManyListbox>
-						</td>
-					</tr>
-					<tr>
-						<td align="left">
+import com.assurant.inc.sox.ar.client.bean.util.JSFUtils;
+import com.assurant.inc.sox.ar.dto.SystemUserDTO;
+import org.primefaces.event.TabChangeEvent;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
-							<h:outputLabel id="userTypeLabel" styleClass="filterCls">User Type:
-							</h:outputLabel>
-						</td>
-						<td align="left">
-							<h:selectManyListbox id="UserTypeListbox"
-									value="#{rejectedUserSummaryBean.searchUserTypes}" size="3"
-									converter="javax.faces.Long">
-								<f:selectItems
-										value="#{rejectedUserSummaryBean.multiSelectUserTypeList}"/>
-							</h:selectManyListbox>
-						</td>
-						<td align="left">
-							<h:outputLabel id="selectDivisionLabel" styleClass="filterCls">Division:
-							</h:outputLabel>
-						</td>
-						<td align="left">
-							<h:selectManyListbox id="DivisiontListbox"
-												 value="#{rejectedUserSummaryBean.searchDivisions}" size="3"
-												 converter="javax.faces.Long">
-								<f:selectItems
-										value="#{rejectedUserSummaryBean.multiSelectDivisionList}"/>
-							</h:selectManyListbox>
-						</td>
-						<td align="left"></td>
-					</tr>
-					<tr>
-						<td colspan="100%">
-							<hr width="100%"/>
-						</td>
-					</tr>
-					<tr>
-						<td>
-							<p:commandButton id="deleteButton"
-											 styleClass="plain-button"
-											 value="Continue"
-											 action="#{rejectedUserSummaryBean.doSearchAssociatedUser}"
-											 process="@form"
-											 oncomplete="PF('searchAssociatedUserModalVar').show();"
-											 update="associatedUserSearchModalAjaxPanel bodyForm:tabPanel:associatedUserForm:searchAssociatedUserTable"/>
-						</td>
-						<td>
-							<p:commandButton id="cancelDeleteButton"
-											 value="Cancel"
-											 styleClass="plain-button"
-											 oncomplete="PF('associatedUserSearchModalAjaxVar').hide();"
-											 process="@none"
-											 update="associatedUserSearchModalAjaxPanel bodyForm:headerMessages"
-											 ajax="true"
-											 immediate="true"
-											 action="#{rejectedUserSummaryBean.doCancelSearchAssociatedUser}"/>
-						</td>
-					</tr>
-					</tbody>
-				</table>
-			</p:dialog>
-		</p:outputPanel>
-	</h:form>
+
+/**
+ * 
+ * @author Brian Olson
+ *
+ */
+@Component("adminConsoleBean")
+@Scope("session")
+public class AdminConsoleBean {
+
+	@Autowired
+	@Qualifier("sessionSystemUser")
+	private SystemUserDTO systemUser;
+	
+	private static final String REJECTS_TAB_ID = "rejectsTab";
+	private static final String EXCEPTIONS_TAB_ID = "exceptionReportingTab";
+	private static final String TABLE_MAINTENANCE_TAB_ID = "tableMaintenanceTab";
+	
+	private int selectedTab;
+	private int activeIndex;
+
+	public void setSelectedTab(int selectedTabIndex) {
+		if (selectedTabIndex == 0) {
+			this.selectedTab = 0;
+		} else if (selectedTabIndex == 1) {
+			this.selectedTab = 1;
+		} else if (selectedTabIndex == 2) {
+			this.selectedTab = 2;
+		}
+	}
+	
+	public void init() {
+		this.switchToTableMaintenance();
+	}
+	
+	public String switchToTableMaintenance() {
+		this.clearTabData();
+		this.activeIndex = 2;
+		this.selectedTab = 2;
+		TableMaintenanceBean bean = (TableMaintenanceBean) JSFUtils.lookupBean("tableMaintenanceBean");
+		return bean.switchMaintenanceTable();
+	}
+
+	public String switchToExceptionReporting() {
+		clearTabData();
+		this.activeIndex = 1;
+		this.selectedTab = 1;
+		return "switchToExceptionReporting";
+	}
+	
+	public String switchToRejectedUsers() {
+		clearTabData();
+		this.activeIndex = 0;
+		this.selectedTab = 0;
+		return "switchToRejectedUsers";
+	}
+
+	public void onTabChange(TabChangeEvent event) {
+			String tabId = event.getTab().getId();
+			if (REJECTS_TAB_ID.equals(tabId)) {
+				this.activeIndex = 0;
+				this.selectedTab = activeIndex;
+				switchToRejectedUsers();
+			} else if (EXCEPTIONS_TAB_ID.equals(tabId)) {
+				this.activeIndex = 1;
+				this.selectedTab = activeIndex;
+				switchToExceptionReporting();
+			} else if (TABLE_MAINTENANCE_TAB_ID.equals(tabId)) {
+				this.activeIndex = 2;
+				this.selectedTab = activeIndex;
+				System.out.println("Switching to Exception Reporting Tab");
+				System.out.println("Active Index>>>>>: " + activeIndex);
+				System.out.println("Selected Tab:>>>> " + selectedTab);
+				switchToTableMaintenance();
+			}
+	}
+	
+	private void clearTabData() {
+		TableMaintenanceBean tableMaintenanceBean = (TableMaintenanceBean) JSFUtils.lookupBean("tableMaintenanceBean");
+		tableMaintenanceBean.init();
+		ExceptionSummaryBean exceptionSummaryBean = (ExceptionSummaryBean) JSFUtils.lookupBean("exceptionSummaryBean");
+		exceptionSummaryBean.init();
+		RejectedUserSummaryBean rejectedUserSummaryBean = (RejectedUserSummaryBean) JSFUtils.lookupBean("rejectedUserSummaryBean");
+		rejectedUserSummaryBean.init();
+	}
+
+	public SystemUserDTO getSystemUser() {
+		return systemUser;
+	}
+
+	public void setSystemUser(SystemUserDTO systemUser) {
+		this.systemUser = systemUser;
+	}
+
+	public int getActiveIndex() {
+		return activeIndex;
+	}
+
+	public void setActiveIndex(int activeIndex) {
+		this.activeIndex = activeIndex;
+	}
+
+	public int getSelectedTab() {
+		return selectedTab;
+	}
+}
