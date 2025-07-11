@@ -150,3 +150,101 @@ public class AdminConsoleBean {
 		return selectedTab;
 	}
 }
+
+package com.assurant.inc.sox.ar.client.bean.admin;
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+import javax.faces.model.SelectItem;
+
+import com.assurant.inc.sox.ar.client.bean.SessionDataBean;
+import com.assurant.inc.sox.ar.client.bean.util.JSFUtils;
+import com.assurant.inc.sox.ar.dto.enums.TableMaintenanceCode;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+@Component("tableMaintenanceBean")
+@Scope("session")
+public class TableMaintenanceBean {
+	private String selectedTable;
+
+	public String getSelectedTable() {
+			return selectedTable;
+	}
+
+	public void setSelectedTable(String selectedTable) {
+		this.selectedTable = selectedTable;
+	}
+
+	public List<SelectItem> getAvailableMaintenanceTables() {
+		List<SelectItem> avaliableMaintenanceTables = new ArrayList<SelectItem>();
+		for (TableMaintenanceCode code : TableMaintenanceCode.values()){
+			avaliableMaintenanceTables.add(new SelectItem(code.name(), code.departmentName()));
+		}
+		return avaliableMaintenanceTables;
+	}
+	
+	public String switchMaintenanceTable() {
+		// first clear all session data from all other reference table
+		// session beans
+		initMaintenanceTableSessionBeans();
+		
+		// always force IPS users to the user summary screen; others go to the 
+		// department summary screen
+		SessionDataBean sessionDataBean = (SessionDataBean) JSFUtils.lookupBean("sessionDataBean");
+		if (sessionDataBean.getSystemUser().isIpsUser()) {
+			this.selectedTable = TableMaintenanceCode.DEPARTMENTS.name();
+		}
+		
+		TableMaintenanceCode selectedCode = 
+     		TableMaintenanceCode.valueOf(this.selectedTable);
+        return switch (selectedCode) {
+            case APPLICATION -> "switchToApplicationTable";
+            case CONFLICTS -> "switchToConflictsTable";
+            case CONFLICTTYPES -> "switchToConflictTypesTable";
+            case DATA_OWNER -> "switchToDataOwnerTable";
+            case DIVISIONS -> "switchToDivisionsTable";
+            case ENVIRONMENT -> "switchToEnvironmentsTable";
+            case FUNCTIONDUTY -> "switchToFunctionDutyTable";
+            case REVIEW_OWNER -> "switchToReviewOwnerTable";
+            case SOD_OWNER -> "switchToSodOwnerTable";
+            case SOXCONCERN -> "switchToSoxConcernTable";
+            case USERSTATUS -> "switchToUserStatusTable";
+            case USERTYPE -> "switchToUserTypeTable";
+            case USERTABLE -> "switchToUserTable";
+            case PRIVILEGECOMMENTS -> "switchToPrivilegeComments";
+            default -> "switchToDepartmentsTable";
+        };
+	}
+
+	public void init() {
+		this.selectedTable = TableMaintenanceCode.DEPARTMENTS.name();
+		this.initMaintenanceTableSessionBeans();
+		switchMaintenanceTable();
+	}
+	
+	/*
+	 * Initializes all session managed beans so that data is removed from the
+	 * session. 
+	 */
+	private void initMaintenanceTableSessionBeans() {
+		((ApplicationSummaryBean) JSFUtils.lookupBean("applicationSummaryBean")).init();
+		((ConflictSummaryBean) JSFUtils.lookupBean("conflictSummaryBean")).init();
+		((ConflictTypeSummaryBean) JSFUtils.lookupBean("conflictTypeSummaryBean")).init();
+		((DataOwnerSummaryBean) JSFUtils.lookupBean("dataOwnerSummaryBean")).init();
+		((DepartmentSummaryBean) JSFUtils.lookupBean("departmentSummaryBean")).init();
+		((DivisionSummaryBean) JSFUtils.lookupBean("divisionSummaryBean")).init();
+		((EnvironmentSummaryBean) JSFUtils.lookupBean("environmentSummaryBean")).init();
+		((FunctionDutySummaryBean) JSFUtils.lookupBean("functionDutySummaryBean")).init();
+		((PrivilegeCommentSummaryBean) JSFUtils.lookupBean("privilegeCommentSummaryBean")).init();
+		((ReviewOwnerSummaryBean) JSFUtils.lookupBean("reviewOwnerSummaryBean")).init();
+		((SodOwnerSummaryBean) JSFUtils.lookupBean("sodOwnerSummaryBean")).init();
+		((SoxConcernSummaryBean) JSFUtils.lookupBean("soxConcernSummaryBean")).init();
+		((UserSummaryBean) JSFUtils.lookupBean("userSummaryBean")).init();
+		((UserStatusSummaryBean) JSFUtils.lookupBean("userStatusSummaryBean")).init();
+		((UserTypeSummaryBean) JSFUtils.lookupBean("userTypeSummaryBean")).init();
+	}
+}
+
