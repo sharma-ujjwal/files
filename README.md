@@ -1,51 +1,45 @@
 ```
-public class CustomExceptionHandler extends ExceptionHandlerWrapper {
-    private final ExceptionHandler wrapped;
-
-    public CustomExceptionHandler(ExceptionHandler wrapped) {
-        this.wrapped = wrapped;
-    }
-
-    @Override
-    public ExceptionHandler getWrapped() {
-        return wrapped;
-    }
-
-    @Override
-    public void handle() throws FacesException {
-        for (Iterator<ExceptionQueuedEvent> i = getUnhandledExceptionQueuedEvents().iterator(); i.hasNext();) {
-            Throwable t = i.next().getContext().getException();
-            if (t instanceof ViewExpiredException) {
-                try {
-                    FacesContext context = FacesContext.getCurrentInstance();
-                    context.getExternalContext().redirect("https://your-url.com");
-                    context.responseComplete();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    i.remove();
-                }
-            }
-        }
-        getWrapped().handle(); // Let others flow through
-    }
-}
-
-public class CustomExceptionHandlerFactory extends ExceptionHandlerFactory {
-    private final ExceptionHandlerFactory parent;
-
-    public CustomExceptionHandlerFactory(ExceptionHandlerFactory parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public ExceptionHandler getExceptionHandler() {
-        return new CustomExceptionHandler(parent.getExceptionHandler());
-    }
-}
-
-<application>
-  <exception-handler-factory>
-    com.assurant.inc.sox.ar.exceptionhandling.CustomExceptionHandlerFactory
-  </exception-handler-factory>
-</application>
+[7/21/25, 6:57:05:397 EDT] 0000005b org.apache.myfaces.renderkit.html.HtmlLabelRenderer          W Attribute 'for' of label component with id bodyForm:j_id_d is not defined
+[7/21/25, 6:57:05:397 EDT] 0000005b org.apache.myfaces.renderkit.html.HtmlLabelRenderer          W Attribute 'for' of label component with id bodyForm:j_id_f is not defined
+[7/21/25, 6:57:05:402 EDT] 0000005b org.apache.myfaces.renderkit.html.HtmlLabelRenderer          W Attribute 'for' of label component with id bodyForm:j_id_x is not defined
+[7/21/25, 7:38:41:104 EDT] 0000005d com.ibm.ws.webcontainer.util.ApplicationErrorUtils           E SRVE0777E: Exception thrown by application class 'javax.faces.webapp.FacesServlet.service:220'
+javax.servlet.ServletException: View "/xhtml/dashboard/reviewManagementDashboard.xhtml" could not be restored.
+	at javax.faces.webapp.FacesServlet.service(FacesServlet.java:220)
+	at com.ibm.ws.webcontainer.servlet.ServletWrapper.service(ServletWrapper.java:1266)
+	at com.ibm.ws.webcontainer.servlet.ServletWrapper.handleRequest(ServletWrapper.java:754)
+	at com.ibm.ws.webcontainer.servlet.ServletWrapper.handleRequest(ServletWrapper.java:451)
+	at com.ibm.ws.webcontainer.filter.WebAppFilterChain.invokeTarget(WebAppFilterChain.java:197)
+	at com.ibm.ws.webcontainer.filter.WebAppFilterChain.doFilter(WebAppFilterChain.java:100)
+	at com.assurant.inc.sox.ar.Filters.IE8CompatablityFixServlet.doFilter(IE8CompatablityFixServlet.java:27)
+	at com.ibm.ws.webcontainer.filter.FilterInstanceWrapper.doFilter(FilterInstanceWrapper.java:203)
+	at com.ibm.ws.webcontainer.filter.WebAppFilterChain.doFilter(WebAppFilterChain.java:93)
+	at com.ibm.ws.webcontainer.filter.WebAppFilterManager.doFilter(WebAppFilterManager.java:1069)
+	at com.ibm.ws.webcontainer.filter.WebAppFilterManager.invokeFilters(WebAppFilterManager.java:1260)
+	at com.ibm.ws.webcontainer.filter.WebAppFilterManager.invokeFilters(WebAppFilterManager.java:1078)
+	at com.ibm.ws.webcontainer.servlet.CacheServletWrapper.handleRequest(CacheServletWrapper.java:77)
+	at com.ibm.ws.webcontainer40.servlet.CacheServletWrapper40.handleRequest(CacheServletWrapper40.java:87)
+	at com.ibm.ws.webcontainer.WebContainer.handleRequest(WebContainer.java:978)
+	at com.ibm.ws.webcontainer.osgi.DynamicVirtualHost$2.run(DynamicVirtualHost.java:293)
+	at com.ibm.ws.http.dispatcher.internal.channel.HttpDispatcherLink$TaskWrapper.run(HttpDispatcherLink.java:1260)
+	at com.ibm.ws.http.dispatcher.internal.channel.HttpDispatcherLink.wrapHandlerAndExecute(HttpDispatcherLink.java:476)
+	at com.ibm.ws.http.dispatcher.internal.channel.HttpDispatcherLink.ready(HttpDispatcherLink.java:435)
+	at com.ibm.ws.http.channel.internal.inbound.HttpInboundLink.handleDiscrimination(HttpInboundLink.java:569)
+	at com.ibm.ws.http.channel.internal.inbound.HttpInboundLink.handleNewRequest(HttpInboundLink.java:503)
+	at com.ibm.ws.http.channel.internal.inbound.HttpInboundLink.processRequest(HttpInboundLink.java:363)
+	at com.ibm.ws.http.channel.internal.inbound.HttpInboundLink.ready(HttpInboundLink.java:330)
+	at com.ibm.ws.tcpchannel.internal.NewConnectionInitialReadCallback.sendToDiscriminators(NewConnectionInitialReadCallback.java:169)
+	at com.ibm.ws.tcpchannel.internal.NewConnectionInitialReadCallback.complete(NewConnectionInitialReadCallback.java:77)
+	at com.ibm.ws.tcpchannel.internal.WorkQueueManager.requestComplete(WorkQueueManager.java:516)
+	at com.ibm.ws.tcpchannel.internal.WorkQueueManager.attemptIO(WorkQueueManager.java:586)
+	at com.ibm.ws.tcpchannel.internal.WorkQueueManager.workerRun(WorkQueueManager.java:970)
+	at com.ibm.ws.tcpchannel.internal.WorkQueueManager$Worker.run(WorkQueueManager.java:1059)
+	at com.ibm.ws.threading.internal.ExecutorServiceImpl$RunnableWrapper.run(ExecutorServiceImpl.java:280)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:857)
+Caused by: javax.faces.application.ViewExpiredException: View "/xhtml/dashboard/reviewManagementDashboard.xhtml" could not be restored.
+	at org.apache.myfaces.lifecycle.RestoreViewExecutor.execute(RestoreViewExecutor.java:181)
+	at org.apache.myfaces.lifecycle.LifecycleImpl.executePhase(LifecycleImpl.java:195)
+	at org.apache.myfaces.lifecycle.LifecycleImpl.execute(LifecycleImpl.java:142)
+	at javax.faces.webapp.FacesServlet.service(FacesServlet.java:204)
+	... 32 more
