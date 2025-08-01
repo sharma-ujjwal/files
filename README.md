@@ -162,3 +162,13 @@
         </td>
     </tr>
 </table>
+
+.formtable td {
+    padding: 2px 6px !important;
+    vertical-align: middle !important;
+}
+
+.leftLabelBold {
+    font-weight: bold;
+    margin-left: 4px;
+}
