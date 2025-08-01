@@ -78,3 +78,55 @@
     </p:dataTable>
 </ui:composition>
 </html>
+
+
+
+
+<table class="formtable" style="width:auto; border-collapse: collapse;">
+    <tr>
+        <td class="rightLabelBold">Effective date:</td>
+        <td><h:outputText value="#{dependent.effectiveDate}" /></td>
+    </tr>
+    <tr>
+        <td class="rightLabelBold">Name:</td>
+        <td><h:outputText value="#{dependent.formattedName}" /></td>
+        <td class="rightLabelBold">Gender:</td>
+        <td><h:outputText value="#{dependent.gender}" /></td>
+    </tr>
+    <tr>
+        <td class="rightLabelBold">Date of Birth:</td>
+        <td><h:outputText value="#{dependent.dateOfBirth}" /></td>
+    </tr>
+    <tr>
+        <td class="rightLabelBold">Preferred Language:</td>
+        <td><h:outputText value="#{dependent.preferredLanguage}" /></td>
+    </tr>
+    <tr>
+        <td class="rightLabelBold">Facility ID:</td>
+        <td><h:outputText value="#{dependent.facilityId}" /></td>
+        <td>
+            <h:selectBooleanCheckbox value="#{dependent.establishedPatient}" />
+        </td>
+        <td class="leftLabelBold">Established Patient?</td>
+    </tr>
+</table>
+
+.formtable {
+    border-collapse: collapse;
+    width: auto !important; /* No forced 100% width */
+}
+
+.formtable td {
+    padding: 2px 6px !important; /* Reduce spacing between text */
+    white-space: nowrap; /* Prevent breaking into multiple lines unnecessarily */
+}
+
+.rightLabelBold {
+    font-weight: bold;
+    text-align: right;
+}
+
+.leftLabelBold {
+    font-weight: bold;
+    text-align: left;
+}
