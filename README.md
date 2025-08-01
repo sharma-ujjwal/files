@@ -130,3 +130,35 @@
     font-weight: bold;
     text-align: left;
 }
+
+
+<table class="formtable" style="width:auto; border-collapse: collapse;">
+    <tr>
+        <td class="rightLabelBold">Effective date:</td>
+        <td><h:outputText value="#{dependent.effectiveDate}" /></td>
+    </tr>
+    <tr>
+        <td class="rightLabelBold">Name:</td>
+        <td><h:outputText value="#{dependent.formattedName}" /></td>
+        <td class="rightLabelBold">Gender:</td>
+        <td><h:outputText value="#{dependent.gender}" /></td>
+    </tr>
+    <tr>
+        <td class="rightLabelBold">Date of Birth:</td>
+        <td><h:outputText value="#{dependent.dateOfBirth}" /></td>
+    </tr>
+    <tr>
+        <td class="rightLabelBold">Preferred Language:</td>
+        <td><h:outputText value="#{dependent.preferredLanguage}" /></td>
+    </tr>
+    <tr>
+        <td class="rightLabelBold">Facility ID:</td>
+        <td><h:outputText value="#{dependent.facilityId}" /></td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <h:selectBooleanCheckbox value="#{dependent.establishedPatient}" />
+            <span class="leftLabelBold">Established Patient?</span>
+        </td>
+    </tr>
+</table>
