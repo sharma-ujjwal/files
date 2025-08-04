@@ -231,3 +231,61 @@
         </ui:repeat>
     </tbody>
 </table>
+
+
+
+/* Main table styling for dependents */
+.formtable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 10px;
+    background-color: #fff;
+    table-layout: fixed;
+}
+
+/* Alternating background color for each dependent row */
+.ui-datatable .oddRow {
+    background-color: #ffffff;
+}
+
+.ui-datatable .evenRow {
+    background-color: #f9f9f9;
+}
+
+/* Section header (relationship) styling */
+.sectionheader {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 5px;
+    color: #444;
+}
+
+/* Label styling */
+.rightLabelBold, 
+.leftLabelBold {
+    font-weight: bold;
+    padding-right: 8px;
+    white-space: nowrap;
+}
+
+/* Table cell padding */
+.formtable td {
+    padding: 4px 8px;
+    vertical-align: middle;
+}
+
+/* Yellow border on the right side */
+.ui-datatable .ui-datatable-data > tr > td {
+    border-right: 5px solid #f6d77a; /* yellow vertical bar */
+}
+
+/* Remove border from the last column */
+.ui-datatable .ui-datatable-data > tr > td:last-child {
+    border-right: none;
+}
+
+/* Align checkbox with label */
+.formtable td h\:selectBooleanCheckbox {
+    margin-right: 4px;
+    vertical-align: middle;
+}
