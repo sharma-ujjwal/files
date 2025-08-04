@@ -313,3 +313,43 @@
     display: flex;
     align-items: center;
 }
+
+
+
+.formtable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin-bottom: 10px;
+}
+
+.formtable td {
+    padding: 4px 8px;
+    vertical-align: middle;
+}
+
+/* Define column widths */
+.formtable td:nth-child(1) { width: 18%; } /* Label */
+.formtable td:nth-child(2) { width: 30%; } /* Value */
+.formtable td:nth-child(3),
+.formtable td:nth-child(4) { width: 26%; } /* Facility ID + Established Patient */
+
+/* Adjust checkbox alignment */
+.checkbox-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+/* Alternating rows */
+.ui-datatable .oddRow { background-color: #ffffff; }
+.ui-datatable .evenRow { background-color: #f9f9f9; }
+
+/* Yellow right border */
+.ui-datatable .ui-datatable-data > tr > td {
+    border-right: 5px solid #f6d77a;
+}
+.ui-datatable .ui-datatable-data > tr > td:last-child {
+    border-right: none;
+}
