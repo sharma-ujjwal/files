@@ -199,3 +199,35 @@
         </tr>
     </ui:repeat>
 </table>
+
+
+<table class="formtable">
+    <thead>
+        <tr>
+            <th class="rightLabelBold">Effective Date</th>
+            <th class="rightLabelBold">Name</th>
+            <th class="rightLabelBold">Gender</th>
+            <th class="rightLabelBold">Date of Birth</th>
+            <th class="rightLabelBold">Preferred Language</th>
+            <th class="rightLabelBold">Facility ID</th>
+            <th class="leftLabelBold">Established Patient?</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        <ui:repeat value="#{bean.dependents}" var="dependent">
+            <tr>
+                <td><h:outputText value="#{dependent.effectiveDate}" /></td>
+                <td><h:outputText value="#{dependent.formattedName}" /></td>
+                <td><h:outputText value="#{dependent.gender}" /></td>
+                <td><h:outputText value="#{dependent.dateOfBirth}" /></td>
+                <td><h:outputText value="#{dependent.preferredLanguage}" /></td>
+                <td><h:outputText value="#{dependent.facilityId}" /></td>
+                <td>
+                    <h:selectBooleanCheckbox value="#{dependent.establishedPatient}" />
+                    <h:outputLabel value="Established Patient?" />
+                </td>
+            </tr>
+        </ui:repeat>
+    </tbody>
+</table>
