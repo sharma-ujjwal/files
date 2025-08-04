@@ -289,3 +289,27 @@
     margin-right: 4px;
     vertical-align: middle;
 }
+
+.formtable {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* FIXED column layout */
+    margin-bottom: 10px;
+}
+
+.formtable td {
+    padding: 4px 8px;
+    vertical-align: middle;
+}
+
+/* Define fixed widths for each column */
+.formtable td:nth-child(1) { width: 20%; }  /* Label column */
+.formtable td:nth-child(2) { width: 30%; }  /* Value column */
+.formtable td:nth-child(3) { width: 20%; }  /* Label column (Gender/Checkbox) */
+.formtable td:nth-child(4) { width: 30%; }  /* Value column (Gender value / Checkbox label) }
+
+/* Align checkbox and label properly */
+.formtable td[colspan="2"] {
+    display: flex;
+    align-items: center;
+}
