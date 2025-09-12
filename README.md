@@ -1,3 +1,4 @@
+```
 Servlets and Filters
 	> When a broswer sends a HTTP request to our application, as JAVA code will not directly understand the HTTP protocol, there will be a midddleman sitting between our java code and the broswer, which is a servlet containers or web servers. We usually use web servers like Apache Tomcat which is a servlet container.
 	
