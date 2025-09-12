@@ -1,297 +1,43 @@
-```
-package com.assurant.inc.amp.config;
+Servlets and Filters
+	> When a broswer sends a HTTP request to our application, as JAVA code will not directly understand the HTTP protocol, there will be a midddleman sitting between our java code and the broswer, which is a servlet containers or web servers. We usually use web servers like Apache Tomcat which is a servlet container.
+	
+	What a servlet container will do is, they will convert the HTTP protocol based request which was sent by the browser into a HttPServletRequest object. The same object will then be provided to the Java code or the framework that we are using in our application.
+	
+	Similarly, when we are sending the response back to the browser, the servlet container will convert the HttPServletResponse object to the Http response so that browser can understand.
+	
+	Just like servlets there is another concept called as Filters which are used in web application.
+	>	Filters are special kind of servlets which we can use to intercept each and every request coming to our web application.
+	
+	Inside the filters we can define a logic that will be implemented before we will write our business logic.
+	
+	
+Spring Security Internal Flow:
 
-import com.assurant.inc.tpm.ws.FileActionTxnActivityField;
-import net.sf.ehcache.Cache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.config.CacheConfiguration;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.cache.ehcache.EhCacheCacheManager;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Scope;
-
-import javax.annotation.PreDestroy;
-import java.util.List;
-
-@Configuration
-public class CacheConfig extends AdminMemberProcessorAppConfig {
-
-    @Bean(name = "cacheManager")
-    @Scope
-    @Required
-    public EhCacheCacheManager cacheManager() {
-        EhCacheCacheManager manager = new EhCacheCacheManager();
-        System.setProperty(net.sf.ehcache.CacheManager.ENABLE_SHUTDOWN_HOOK_PROPERTY, "true");
-
-        CacheConfiguration cacheConfiguration = new CacheConfiguration();
-        cacheConfiguration.setName("ampdatacache");
-        cacheConfiguration.setMemoryStoreEvictionPolicy("LRU");
-        cacheConfiguration.setMaxEntriesLocalHeap(10000);
-        cacheConfiguration.setMaxEntriesLocalDisk(10000);
-        cacheConfiguration.timeToLiveSeconds(300);
-
-        net.sf.ehcache.config.Configuration config = new net.sf.ehcache.config.Configuration();
-        config.addCache(cacheConfiguration);
-
-        return manager;
-    }
-
-    @PreDestroy
-    public void shutdownCache() {
-        cacheManager().getCacheManager().clearAll();
-        cacheManager().getCacheManager().shutdown();
-    }
-
-    @Bean(name= "fileActionTxnActivityFieldsCache")
-    @Scope
-    @DependsOn("tpmRestClient")
-    public Cache fileActionTxnActivityFieldsCache(){
-        final String cacheName = "fileActionTxnActivityFieldsCache";
-        Cache fileActionTxnActivityFieldsCache = new Cache(new CacheConfiguration(cacheName, 0).eternal(true));
-        cacheManager().getCacheManager().addCache(fileActionTxnActivityFieldsCache);
-        List<FileActionTxnActivityField> fileActionTxnActivityFieldList = tpmRestClient().findAllFileActionTxnActivityField();
-        cacheManager().getCacheManager().getCache(cacheName).put(new Element(cacheName,fileActionTxnActivityFieldList));
-        return fileActionTxnActivityFieldsCache;
-    }
-
-    @Bean(name = "policyRequestCache")
-    @Scope(value = BeanDefinition.SCOPE_SINGLETON)
-    public Cache policyRequestCache(){
-        Cache policyRequestCache = new Cache(new CacheConfiguration("policyRequestCache", 0).eternal(true));
-        cacheManager().getCacheManager().addCache(policyRequestCache);
-        return policyRequestCache;
-    }
-
-    @Bean(name = "qpsClientRequestCache")
-    @Scope(value = BeanDefinition.SCOPE_SINGLETON)
-    public Cache qpsClientRequestCache(){
-        Cache qpsClientRequestCache = new Cache(new CacheConfiguration("qpsClientRequestCache", 0).eternal(true));
-        cacheManager().getCacheManager().addCache(qpsClientRequestCache);
-        return qpsClientRequestCache;
-    }
-}
-
-
-
-
-import com.assurant.inc.tpm.ws.FileActionTxnActivityField;
-import org.ehcache.Cache;
-import org.ehcache.CacheManager;
-import org.ehcache.config.CacheConfiguration;
-import org.ehcache.config.builders.CacheConfigurationBuilder;
-import org.ehcache.config.builders.CacheManagerBuilder;
-import org.ehcache.config.builders.ResourcePoolsBuilder;
-import org.ehcache.config.units.EntryUnit;
-import org.ehcache.expiry.ExpiryPolicy;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Scope;
-
-import javax.annotation.PreDestroy;
-import java.time.Duration;
-import java.util.List;
-
-@Configuration
-@EnableCaching
-public class CacheConfig extends AdminMemberProcessorAppConfig {
-
-    private CacheManager ehcacheManager;
-
-    @Bean
-    public CacheManager ehcacheManager() {
-        // Create cache configuration for ampdatacache
-        CacheConfiguration<String, Object> ampDataCacheConfig = CacheConfigurationBuilder
-            .newCacheConfigurationBuilder(String.class, Object.class,
-                ResourcePoolsBuilder.newResourcePoolsBuilder()
-                    .heap(10000, EntryUnit.ENTRIES)
-                    .disk(10000, EntryUnit.ENTRIES, true))
-            .withExpiry(ExpiryPolicy.builder().timeToLiveExpiration(Duration.ofSeconds(300)))
-            .build();
-
-        // Build cache manager
-        ehcacheManager = CacheManagerBuilder.newCacheManagerBuilder()
-            .with(CacheManagerBuilder.persistence("./cache-data")) // Disk persistence directory
-            .withCache("ampdatacache", ampDataCacheConfig)
-            .build(true); // true = initialize immediately
-
-        return ehcacheManager;
-    }
-
-    @Bean
-    public org.springframework.cache.CacheManager cacheManager() {
-        return new org.springframework.cache.ehcache.EhCacheCacheManager(ehcacheManager());
-    }
-
-    @PreDestroy
-    public void shutdownCache() {
-        if (ehcacheManager != null) {
-            ehcacheManager.close();
-        }
-    }
-
-    @Bean(name = "fileActionTxnActivityFieldsCache")
-    @Scope(BeanDefinition.SCOPE_SINGLETON)
-    @DependsOn("tpmRestClient")
-    public Cache<String, List<FileActionTxnActivityField>> fileActionTxnActivityFieldsCache() {
-        final String cacheName = "fileActionTxnActivityFieldsCache";
-        
-        // Create eternal cache configuration
-        CacheConfiguration<String, List<FileActionTxnActivityField>> cacheConfig = 
-            CacheConfigurationBuilder.newCacheConfigurationBuilder(
-                String.class, 
-                (Class<List<FileActionTxnActivityField>>) (Class<?>) List.class,
-                ResourcePoolsBuilder.heap(0)) // 0 = unlimited
-            .withExpiry(ExpiryPolicy.NO_EXPIRY)
-            .build();
-
-        // Create and initialize cache
-        Cache<String, List<FileActionTxnActivityField>> cache = ehcacheManager.createCache(
-            cacheName, cacheConfig);
-        
-        // Pre-populate cache
-        List<FileActionTxnActivityField> fileActionTxnActivityFieldList = tpmRestClient().findAllFileActionTxnActivityField();
-        cache.put(cacheName, fileActionTxnActivityFieldList);
-        
-        return cache;
-    }
-
-    @Bean(name = "policyRequestCache")
-    @Scope(BeanDefinition.SCOPE_SINGLETON)
-    public Cache<String, Object> policyRequestCache() {
-        CacheConfiguration<String, Object> cacheConfig = CacheConfigurationBuilder
-            .newCacheConfigurationBuilder(String.class, Object.class,
-                ResourcePoolsBuilder.heap(0))
-            .withExpiry(ExpiryPolicy.NO_EXPIRY)
-            .build();
-
-        return ehcacheManager.createCache("policyRequestCache", cacheConfig);
-    }
-
-    @Bean(name = "qpsClientRequestCache")
-    @Scope(BeanDefinition.SCOPE_SINGLETON)
-    public Cache<String, Object> qpsClientRequestCache() {
-        CacheConfiguration<String, Object> cacheConfig = CacheConfigurationBuilder
-            .newCacheConfigurationBuilder(String.class, Object.class,
-                ResourcePoolsBuilder.heap(0))
-            .withExpiry(ExpiryPolicy.NO_EXPIRY)
-            .build();
-
-        return ehcacheManager.createCache("qpsClientRequestCache", cacheConfig);
-    }
-}
-
-
-package com.example.config;
-
-import com.assurant.inc.tpm.ws.FileActionTxnActivityField;
-import org.ehcache.config.builders.*;
-import org.ehcache.jsr107.Eh107Configuration;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.jcache.JCacheCacheManager;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import javax.cache.Cache;
-import javax.cache.CacheManager;
-import javax.cache.Caching;
-import javax.cache.spi.CachingProvider;
-import java.time.Duration;
-import java.util.List;
-
-@Configuration
-@EnableCaching
-public class CacheConfig extends AdminMemberProcessorAppConfig {
-
-    /**
-     * Create the JSR-107 (JCache) manager backed by Ehcache 3.x
-     */
-    @Bean(destroyMethod = "close")
-    public CacheManager eh107CacheManager() {
-        CachingProvider provider = Caching.getCachingProvider();
-        CacheManager cacheManager = provider.getCacheManager();
-
-        // ampdatacache - with TTL 300 seconds
-        org.ehcache.config.CacheConfiguration<String, Object> ampDataCacheConfig =
-                CacheConfigurationBuilder
-                        .newCacheConfigurationBuilder(
-                                String.class, Object.class,
-                                ResourcePoolsBuilder.heap(10_000))
-                        .withExpiry(ExpiryPolicyBuilder.timeToLiveExpiration(Duration.ofSeconds(300)))
-                        .build();
-
-        cacheManager.createCache("ampdatacache",
-                Eh107Configuration.fromEhcacheCacheConfiguration(ampDataCacheConfig));
-
-        // fileActionTxnActivityFieldsCache - eternal
-        org.ehcache.config.CacheConfiguration<String, List<FileActionTxnActivityField>> fileActionCacheConfig =
-                CacheConfigurationBuilder
-                        .newCacheConfigurationBuilder(
-                                String.class, (Class<List<FileActionTxnActivityField>>) (Class<?>) List.class,
-                                ResourcePoolsBuilder.heap(1000))
-                        .withExpiry(ExpiryPolicyBuilder.noExpiration())
-                        .build();
-
-        cacheManager.createCache("fileActionTxnActivityFieldsCache",
-                Eh107Configuration.fromEhcacheCacheConfiguration(fileActionCacheConfig));
-
-        // policyRequestCache - eternal
-        org.ehcache.config.CacheConfiguration<String, Object> policyRequestConfig =
-                CacheConfigurationBuilder
-                        .newCacheConfigurationBuilder(
-                                String.class, Object.class,
-                                ResourcePoolsBuilder.heap(1000))
-                        .withExpiry(ExpiryPolicyBuilder.noExpiration())
-                        .build();
-
-        cacheManager.createCache("policyRequestCache",
-                Eh107Configuration.fromEhcacheCacheConfiguration(policyRequestConfig));
-
-        // qpsClientRequestCache - eternal
-        org.ehcache.config.CacheConfiguration<String, Object> qpsClientRequestConfig =
-                CacheConfigurationBuilder
-                        .newCacheConfigurationBuilder(
-                                String.class, Object.class,
-                                ResourcePoolsBuilder.heap(1000))
-                        .withExpiry(ExpiryPolicyBuilder.noExpiration())
-                        .build();
-
-        cacheManager.createCache("qpsClientRequestCache",
-                Eh107Configuration.fromEhcacheCacheConfiguration(qpsClientRequestConfig));
-
-        return cacheManager;
-    }
-
-    /**
-     * Bridge JCache (Ehcache 3) into Spring Cache abstraction
-     */
-    @Bean
-    public org.springframework.cache.CacheManager springCacheManager(CacheManager eh107CacheManager) {
-        return new JCacheCacheManager(eh107CacheManager);
-    }
-
-    /**
-     * Populate fileActionTxnActivityFieldsCache after startup
-     */
-    @Bean
-    public Cache<String, List<FileActionTxnActivityField>> fileActionTxnActivityFieldsCache(CacheManager eh107CacheManager) {
-        Cache<String, List<FileActionTxnActivityField>> cache =
-                eh107CacheManager.getCache("fileActionTxnActivityFieldsCache",
-                        String.class, (Class<List<FileActionTxnActivityField>>) (Class<?>) List.class);
-
-        List<FileActionTxnActivityField> fileActionTxnActivityFieldList =
-                tpmRestClient().findAllFileActionTxnActivityField();
-
-        cache.put("fileActionTxnActivityFieldsCache", fileActionTxnActivityFieldList);
-
-        return cache;
-    }
-}
-
-
+	Step 1 - User will enter their own credentials to the login page, user can invoke the request to the backend server with the help of browser or Postman.
+	
+	Step 2 - The request is then passed through Spring Security Filters. The purpose of the filter is to monitor each and every request that is coming to our application, it will check the path of the request which the client is trying to access. Based upon the path and configurations that we have done, filters will determine whether it is a protected/public resource. 
+	
+	One of the most important filters is the AuthenticationFilter (like UsernamePasswordAuthenticationFilter). This filter attempts to extract the username and password from the HTTP request and then prepare the authentication type object. If the user is successfully authenticated, an Authentication object is created. The filter will then decide whether the authentication needs to enforced on the end user. This authentication will only happen at the beginning of the request. After successful login at the beginning, the filter will also check if the user is already logged in or not, if already logged in, these filters will not enforce login page to the user.
+	
+	The username and password that user sends while authentication, filters will convert these into authentication object. Once the request has been authenticated, this Authentication object is then stored in the SecurityContext, which is held in the SecurityContextHolder. This object will help when the same user who has already autheticated don't need to authenticate again.
+	
+	Step 3 - Once we get the authentication object, it is passed to the Authentication Manager. It is manager interface which handles the authentication logic. It will check, what are all the Authentication Providers available in our application.
+	
+	Step 4 - In Authentication Providers, we can define the actual logic of authentication, whether we want to validate the user credentials from a database or a LDAP server or cache or any authentication server. There can be multiple Authentication Provider in a web application, eg 1 Authentication Provider can be used to hanle Username and Password authentication and another authentication provider can act as some other provider.
+	
+	Step 5 - If we want to levarage the already created Authentication Provider for authentication of the user, we can also do that which will directly use its own Manager/Service.
+	When comparing the username and password that are provided by the end user and the username, password from the database the predefined logic for the same is given inside the UserDetails Manager/Service.
+	
+	Step 6 - When validating the password, we can levarage Password Encoder in order to encrypt and decrypt the stored database or any manager. So for performing password related standards and logic we can use Password Encoder interface and its implementations in Spring Security.
+	
+	It is the responsibility of the authentication manager in identifying what are all the available authentication providers for a particular request and accordingly it will send the request to the particular Authentication Provider. If in case authentication fails from a particular Provider, Manager will also make sure that the credentials are undergone through all of the remaining Providers, and if it fails again, Manager will send failed authentication as response to the end user.
+	
+	
+	Step -7 ,8, 9
+	 After the validation is done, the Authentication Provider sends the response to the Authentication Manager and Manager will send it back to the Spring Security filters. Before sending the response back to the end user, filters will store the Authentication object that was created in Step - 2. The SecurityContext and thus the Authentication object can be accessed from anywhere in your code, regardless of how many methods deep you are, as long as it's in the same thread.
+	
+	And finally the response will be send back to the end user.
+	
+	
+	
+	
