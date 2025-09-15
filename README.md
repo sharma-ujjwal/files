@@ -22,7 +22,7 @@
 				.dataTableb .evenRow:hover > td,
 				.dataTableb .oddRow:hover > td {
 					background-color: rgb(152, 194, 234) !important; /* Solid hover color */
-					color: #000 !important; /* Ensure text remains visible */
+					color: #000 !important; /* Ensure text remains rendered */
 				}
 			</style>
 			<p:dataTable
@@ -88,45 +88,68 @@
 			</p:dataTable>
 			<table>
 				<tr>
-					<td>
-						<h:commandButton 
-							id="firstPage" 
-							actionListener="#{aPolicySearchActionListener.findFirstListener}" 
-							image="#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findFirstButtonImage}"
-							rendered="#{!aPolicySearchData.pagingNeeded}" 
-							disabled="#{aPolicySearchData.backDisabled}"
-							onclick="showModalInfoWindow(true);"/>
-						<h:commandButton 
-							id="prevPage" 
-							actionListener="#{aPolicySearchActionListener.findPrevListener}" 
-							image="#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findPrevButtonImage}"
-							rendered="#{!aPolicySearchData.pagingNeeded}" 
-							disabled="#{aPolicySearchData.backDisabled}"
-							onclick="showModalInfoWindow(true);"/>
-					</td>
-					<td>
-						<h:selectOneMenu id="selectedPageId" value="#{aPolicySearchData.selectedPage}" rendered="#{!aPolicySearchData.pagingNeeded}">
-							<f:selectItems value="#{aPolicySearchData.pageList}"/>
-							<p:ajax event="change"
-								listener="#{aPolicySearchActionListener.selectPageListener}"
-								onstart="showModalInfoWindow(true);"
-								oncomplete="hideModalInfoWindow();"/>
-						</h:selectOneMenu>
-					</td>
-					<td>
-						<h:commandButton id="nextPage"
-							actionListener="#{aPolicySearchActionListener.findNextListener}" 
-							image="#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findNextButtonImage}"
-							rendered="#{!aPolicySearchData.pagingNeeded}" 
-							disabled="#{aPolicySearchData.forwardDisabled}"
-							onclick="showModalInfoWindow(true);"/>
-						<h:commandButton id="lastPage"
-							actionListener="#{aPolicySearchActionListener.findLastListener}" 
-							image="#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findLastButtonImage}"
-							rendered="#{!aPolicySearchData.pagingNeeded}" 
-							disabled="#{aPolicySearchData.forwardDisabled}"
-							onclick="showModalInfoWindow(true);"/>
-					</td>
+					<p:outputPanel id="pagingButtons">
+						<td>
+							<p:commandButton
+									id="firstPage"
+									widgetVar="firstPageWidget"
+									actionListener="#{aPolicySearchActionListener.findFirstListener}"
+									rendered="#{!aPolicySearchData.pagingNeeded}"
+									disabled="#{aPolicySearchData.backDisabled}"
+									onclick="showModalInfoWindow(true);"
+									oncomplete="hideModalInfoWindow();"
+									value=""
+									style="width:20px;height:20px;background:transparent url('#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findFirstButtonImage}') no-repeat center center;border:none;padding:0;"
+									update="policySearchDataTable typeLabelId firstPage prevPage nextPage lastPage selectedPageId aPolicySelectId"/>
+							<p:commandButton
+									id="prevPage"
+									widgetVar="prevPageWidget"
+									actionListener="#{aPolicySearchActionListener.findPrevListener}"
+									rendered="#{!aPolicySearchData.pagingNeeded}"
+									disabled="#{aPolicySearchData.backDisabled}"
+									value=""
+									onclick="showModalInfoWindow(true);"
+									oncomplete="hideModalInfoWindow();"
+									update="policySearchDataTable typeLabelId firstPage prevPage nextPage lastPage selectedPageId aPolicySelectId"
+									style="width:20px;height:20px;background:transparent url('#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findPrevButtonImage}') no-repeat center center;border:none;padding:0;"/>
+						</td>
+						<td>
+							<h:selectOneMenu id="selectedPageId" value="#{aPolicySearchData.selectedPage}" rendered="#{!aPolicySearchData.pagingNeeded}">
+								<f:selectItems value="#{aPolicySearchData.pageList}"/>
+								<p:ajax event="change"
+										listener="#{aPolicySearchActionListener.selectPageListener}"
+										onstart="showModalInfoWindow(true);"
+										oncomplete="hideModalInfoWindow();"/>
+							</h:selectOneMenu>
+						</td>
+						<td>
+							<p:commandButton
+									id="nextPage"
+									widgetVar="nextPageWidget"
+									actionListener="#{aPolicySearchActionListener.findNextListener}"
+									rendered="#{!aPolicySearchData.pagingNeeded}"
+									disabled="#{aPolicySearchData.forwardDisabled}"
+									value=""
+									title="Next page"
+									onclick="showModalInfoWindow(true);"
+									oncomplete="hideModalInfoWindow();"
+									update="policySearchDataTable typeLabelId firstPage prevPage nextPage lastPage selectedPageId aPolicySelectId"
+									style="width:20px;height:20px;background:transparent url('#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findNextButtonImage}') no-repeat center center;border:none;padding:0;" />
+	
+							<p:commandButton
+									id="lastPage"
+									widgetVar="lastPageWidget"
+									actionListener="#{aPolicySearchActionListener.findLastListener}"
+									rendered="#{!aPolicySearchData.pagingNeeded}"
+									disabled="#{aPolicySearchData.forwardDisabled}"
+									value=""
+									title="Last page"
+									onclick="showModalInfoWindow(true);"
+									oncomplete="hideModalInfoWindow();"
+									update="policySearchDataTable typeLabelId firstPage prevPage nextPage lastPage selectedPageId aPolicySelectId"
+									style="width:20px;height:20px;background:transparent url('#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findLastButtonImage}') no-repeat center center;border:none;padding:0;" />
+						</td>
+					</p:outputPanel>
 				</tr>
 			</table>
 			<table id="policySearchDataTableInfo">
@@ -144,7 +167,7 @@
 							<f:selectItem itemLabel="50" itemValue="50"/>
 							<f:selectItem itemLabel="100" itemValue="100"/>
 							<p:ajax event="change"
-									update="policySearchDataTable typeLabelId firstPage prevPage nextPage lastPage selectedPageId"
+									update="policySearchDataTable typeLabelId pagingButtons"
 									listener="#{aPolicySearchActionListener.changePageSizeListener}"
 									onstart="showModalInfoWindow(true);"
 									oncomplete="resetScrollPosition(); hideModalInfoWindow();"/>
@@ -156,11 +179,3 @@
 		</p:outputPanel>
 	</ui:composition>
 </html>
-
-method is
-
-public boolean isPagingNeeded() {
-		System.out.println("Total Count:>>>>> " + totalCount + " Page Size:>>>>> " + pageSize);
-		return (totalCount <= pageSize)
-}
-
