@@ -1,44 +1,166 @@
 ```
-Servlets and Filters
-	> When a broswer sends a HTTP request to our application, as JAVA code will not directly understand the HTTP protocol, there will be a midddleman sitting between our java code and the broswer, which is a servlet containers or web servers. We usually use web servers like Apache Tomcat which is a servlet container.
-	
-	What a servlet container will do is, they will convert the HTTP protocol based request which was sent by the browser into a HttPServletRequest object. The same object will then be provided to the Java code or the framework that we are using in our application.
-	
-	Similarly, when we are sending the response back to the browser, the servlet container will convert the HttPServletResponse object to the Http response so that browser can understand.
-	
-	Just like servlets there is another concept called as Filters which are used in web application.
-	>	Filters are special kind of servlets which we can use to intercept each and every request coming to our web application.
-	
-	Inside the filters we can define a logic that will be implemented before we will write our business logic.
-	
-	
-Spring Security Internal Flow:
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
 
-	Step 1 - User will enter their own credentials to the login page, user can invoke the request to the backend server with the help of browser or Postman.
-	
-	Step 2 - The request is then passed through Spring Security Filters. The purpose of the filter is to monitor each and every request that is coming to our application, it will check the path of the request which the client is trying to access. Based upon the path and configurations that we have done, filters will determine whether it is a protected/public resource. 
-	
-	One of the most important filters is the AuthenticationFilter (like UsernamePasswordAuthenticationFilter). This filter attempts to extract the username and password from the HTTP request and then prepare the authentication type object. If the user is successfully authenticated, an Authentication object is created. The filter will then decide whether the authentication needs to enforced on the end user. This authentication will only happen at the beginning of the request. After successful login at the beginning, the filter will also check if the user is already logged in or not, if already logged in, these filters will not enforce login page to the user.
-	
-	The username and password that user sends while authentication, filters will convert these into authentication object. Once the request has been authenticated, this Authentication object is then stored in the SecurityContext, which is held in the SecurityContextHolder. This object will help when the same user who has already autheticated don't need to authenticate again.
-	
-	Step 3 - Once we get the authentication object, it is passed to the Authentication Manager. It is manager interface which handles the authentication logic. It will check, what are all the Authentication Providers available in our application.
-	
-	Step 4 - In Authentication Providers, we can define the actual logic of authentication, whether we want to validate the user credentials from a database or a LDAP server or cache or any authentication server. There can be multiple Authentication Provider in a web application, eg 1 Authentication Provider can be used to hanle Username and Password authentication and another authentication provider can act as some other provider.
-	
-	Step 5 - If we want to levarage the already created Authentication Provider for authentication of the user, we can also do that which will directly use its own Manager/Service.
-	When comparing the username and password that are provided by the end user and the username, password from the database the predefined logic for the same is given inside the UserDetails Manager/Service.
-	
-	Step 6 - When validating the password, we can levarage Password Encoder in order to encrypt and decrypt the stored database or any manager. So for performing password related standards and logic we can use Password Encoder interface and its implementations in Spring Security.
-	
-	It is the responsibility of the authentication manager in identifying what are all the available authentication providers for a particular request and accordingly it will send the request to the particular Authentication Provider. If in case authentication fails from a particular Provider, Manager will also make sure that the credentials are undergone through all of the remaining Providers, and if it fails again, Manager will send failed authentication as response to the end user.
-	
-	
-	Step -7 ,8, 9
-	 After the validation is done, the Authentication Provider sends the response to the Authentication Manager and Manager will send it back to the Spring Security filters. Before sending the response back to the end user, filters will store the Authentication object that was created in Step - 2. The SecurityContext and thus the Authentication object can be accessed from anywhere in your code, regardless of how many methods deep you are, as long as it's in the same thread.
-	
-	And finally the response will be send back to the end user.
-	
-	
-	
-	
+<html xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	  xmlns:h="http://xmlns.jcp.org/jsf/html"
+	  xmlns:f="http://xmlns.jcp.org/jsf/core"
+	  xmlns:p="http://primefaces.org/ui" xml:lang="en" lang="en">
+
+	<!-- aPolicySearchData PolicySearchData -->
+	<!-- aPolicySearchActionListener PolicySearchActionListener -->
+	<!-- aPolicySearchRule PolicySearchRule -->
+	<!-- onsubmit javascript to execute on submit of row select-->
+	<!-- oncomplete javascript to execute on completion of row select-->
+	<ui:composition>
+		<p:outputPanel id="policySearchResultPanel" ajaxRendered="true">
+			<script src="#{request.contextPath}/resources/js/ui-wait-modal.js" type="text/javascript"/>
+			<style type="text/css">
+				.ui-datatable tbody.ui-datatable-data > tr.ui-widget-content.ui-datatable-even:hover > td,
+				.ui-datatable tbody.ui-datatable-data > tr.ui-widget-content.ui-datatable-odd:hover > td,
+				.dataTableb .evenRow:hover > td,
+				.dataTableb .oddRow:hover > td {
+					background-color: rgb(152, 194, 234) !important; /* Solid hover color */
+					color: #000 !important; /* Ensure text remains visible */
+				}
+			</style>
+			<p:dataTable
+				value="#{aPolicySearchData.policySearchResultList}"
+				id="policySearchDataTable"
+				var="policy"
+				rows="0" tableStyle="width:auto;"
+				styleClass="dataTableb"
+				rowClasses="oddRow evenRow"
+				style="cursor:pointer;  width:auto; font-size: 13px;"
+				rendered="#{aPolicySearchRule.displayResults}"
+				rowKey="#{policy.uniqueId}"
+				selectionMode="single"
+			    selection="#{policyDetailData.selectedPolicy}">
+				<p:ajax
+					event="rowSelect"
+					listener="#{aPolicySearchActionListener.selectPolicyRow}" onsubmit="#{onsubmit}"
+					onstart="showModalInfoWindow();" oncomplete="hideModalInfoWindow();"/>
+				<p:column headerClass="#{aPolicySearchRule.policyStyle}" >
+					<f:facet name="header">
+						<h:commandLink id="policyHeader" value="Policy"
+							actionListener="#{aPolicySearchActionListener.sortPolicy}"
+							onmouseup="showModalInfoWindow(true);" styleClass="header-test_style"/>
+					</f:facet>
+					<h:outputText id="polPartAcct" value="#{policy.polPartAcct}" escape="false" styleClass="output-test_style"/>
+					<br />
+					<h:outputText id="accountName" value="#{policy.accountName}" escape="false" styleClass="output-test_style"/>
+					<br />
+					<h:outputText id="status" value="#{policy.status}" styleClass="output-test_style"/>
+					<br />
+					<h:outputText id="adminType" value="#{policy.adminType}" escape="false" styleClass="output-test_style"/>
+				</p:column>
+				<p:column headerClass="#{aPolicySearchRule.groupStyle}">
+					<f:facet name="header">
+						<h:commandLink id="groupHeader" value="Group"
+							actionListener="#{aPolicySearchActionListener.sortGroup}" 
+							onmouseup="showModalInfoWindow(true);" styleClass="header-test_style"/>
+					</f:facet>
+					<h:outputText id="group" value="#{policy.group}" escape="false" styleClass="output-test_style"/>
+				</p:column>
+				<p:column headerClass="#{aPolicySearchRule.groupOfficeStyle}">
+					<f:facet name="header">
+						<h:commandLink id="groupOfficeHeader" value="Group Office"
+							actionListener="#{aPolicySearchActionListener.sortGroupOffice}"
+							onmouseup="showModalInfoWindow(true);" styleClass="header-test_style"/>
+					</f:facet>
+					<h:outputText styleClass="groupOfficeCls" id="groupOffice" value="#{policy.groupOffice}"/>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText id="brokerHeader" value="Broker" styleClass="header-test_style"/>
+					</f:facet>
+					<h:outputText id="broker" value="#{policy.broker}" escape="false" styleClass="output-test_style"/>
+				</p:column>
+				<p:column headerClass="#{aPolicySearchRule.systemStyle}">
+					<f:facet name="header">
+						<h:commandLink id="systemHeader" value="System"
+							actionListener="#{aPolicySearchActionListener.sortSystem}"
+							onmouseup="showModalInfoWindow(true);" styleClass="header-test_style"/>
+					</f:facet>
+					<h:outputText id="system" value="#{policy.system}" styleClass="output-test_style"/>
+				</p:column>
+			</p:dataTable>
+			<table>
+				<tr>
+					<td>
+						<h:commandButton 
+							id="firstPage" 
+							actionListener="#{aPolicySearchActionListener.findFirstListener}" 
+							image="#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findFirstButtonImage}"
+							rendered="#{!aPolicySearchData.pagingNeeded}" 
+							disabled="#{aPolicySearchData.backDisabled}"
+							onclick="showModalInfoWindow(true);"/>
+						<h:commandButton 
+							id="prevPage" 
+							actionListener="#{aPolicySearchActionListener.findPrevListener}" 
+							image="#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findPrevButtonImage}"
+							rendered="#{!aPolicySearchData.pagingNeeded}" 
+							disabled="#{aPolicySearchData.backDisabled}"
+							onclick="showModalInfoWindow(true);"/>
+					</td>
+					<td>
+						<h:selectOneMenu id="selectedPageId" value="#{aPolicySearchData.selectedPage}" rendered="#{!aPolicySearchData.pagingNeeded}">
+							<f:selectItems value="#{aPolicySearchData.pageList}"/>
+							<p:ajax event="change"
+								listener="#{aPolicySearchActionListener.selectPageListener}"
+								onstart="showModalInfoWindow(true);"
+								oncomplete="hideModalInfoWindow();"/>
+						</h:selectOneMenu>
+					</td>
+					<td>
+						<h:commandButton id="nextPage"
+							actionListener="#{aPolicySearchActionListener.findNextListener}" 
+							image="#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findNextButtonImage}"
+							rendered="#{!aPolicySearchData.pagingNeeded}" 
+							disabled="#{aPolicySearchData.forwardDisabled}"
+							onclick="showModalInfoWindow(true);"/>
+						<h:commandButton id="lastPage"
+							actionListener="#{aPolicySearchActionListener.findLastListener}" 
+							image="#{sessionData.baseUrl}/assets/images/icons/#{aPolicySearchData.findLastButtonImage}"
+							rendered="#{!aPolicySearchData.pagingNeeded}" 
+							disabled="#{aPolicySearchData.forwardDisabled}"
+							onclick="showModalInfoWindow(true);"/>
+					</td>
+				</tr>
+			</table>
+			<table id="policySearchDataTableInfo">
+				<tr>
+					<td>
+						<h:outputText id="typeLabelId" value="#{aPolicySearchData.typeLabel} #{aPolicySearchData.displayedPageStartPosition} to #{aPolicySearchData.displayedPageEndPosition} of #{aPolicySearchData.totalCount} displayed." rendered="#{!aPolicySearchData.listEmpty}"/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<h:outputText value="Display " rendered="#{!aPolicySearchData.listEmpty}"/>
+						<h:selectOneMenu id="aPolicySelectId" value="#{aPolicySearchData.selectedPageSize}" rendered="#{!aPolicySearchData.listEmpty}">
+							<f:selectItem itemLabel="10" itemValue="10"/>
+							<f:selectItem itemLabel="25" itemValue="25"/>
+							<f:selectItem itemLabel="50" itemValue="50"/>
+							<f:selectItem itemLabel="100" itemValue="100"/>
+							<p:ajax event="change"
+									update="policySearchDataTable typeLabelId firstPage prevPage nextPage lastPage selectedPageId"
+									listener="#{aPolicySearchActionListener.changePageSizeListener}"
+									onstart="showModalInfoWindow(true);"
+									oncomplete="resetScrollPosition(); hideModalInfoWindow();"/>
+						</h:selectOneMenu>
+						<h:outputText value=" #{aPolicySearchData.typeLabel} per page." rendered="#{!aPolicySearchData.listEmpty}"/>
+					</td>
+				</tr>
+			</table>
+		</p:outputPanel>
+	</ui:composition>
+</html>
+
+method is
+
+public boolean isPagingNeeded() {
+		System.out.println("Total Count:>>>>> " + totalCount + " Page Size:>>>>> " + pageSize);
+		return (totalCount <= pageSize)
+}
+
