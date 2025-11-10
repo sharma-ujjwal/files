@@ -1,5 +1,4 @@
-```
-package slf.com.dependencyFinder.utility;
+package abc.com.dependencyFinder.utility;
 
 import com.sunlife.commonutils.CommonUtils;
 import com.sunlife.commonutils.MavenUtils;
@@ -24,10 +23,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-import slf.com.dependencyFinder.utility.pojo.DetailedProjectInfo;
-import slf.com.dependencyFinder.utility.pojo.ProjectCommonInfo;
-import slf.com.dependencyFinder.utility.pojo.ProjectInfo;
-import slf.com.dependencyFinder.utility.pojo.ProjectSizeInfo;
+import abc.com.dependencyFinder.utility.pojo.DetailedProjectInfo;
+import abc.com.dependencyFinder.utility.pojo.ProjectCommonInfo;
+import abc.com.dependencyFinder.utility.pojo.ProjectInfo;
+import abc.com.dependencyFinder.utility.pojo.ProjectSizeInfo;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -37,6 +36,8 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.nio.file.Files;
@@ -1385,100 +1386,107 @@ public class KnowYourProject {
         return method;
     }
 
-    // check if jboss cache dependency is added in the project dependency tree in gradle/maven or ant based projects
-    public void checkCacheDependencyInProject(File file) {
-        if (file == null || !file.isFile()) return;
-        String lowerName = file.getName().toLowerCase();
-        boolean candidate = lowerName.endsWith(".xml") || lowerName.endsWith(".java") || lowerName.endsWith(".gradle")
-                || lowerName.endsWith(".pom") || lowerName.endsWith(".properties");
-        if (!candidate) return;
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(file.getPath()))) {
-            br.lines().forEach(raw -> {
-                String line = raw.trim().toLowerCase();
-                if (line.contains("infinispan") || line.contains("jboss.cache") || line.contains("javax.cache") || line.contains("jcache")) {
-                    getProjectInfo().setCacheConfigMap(detectCacheConfig(file));
-                }
-            });
-        } catch (IOException ex) {
-            logger.debug("Cache dependency detection read failure: {}", file.getPath());
-        }
-    }
-
-    // Added: cache sheet population
-    private void populateCacheInfo(XSSFWorkbook workbook) {
+    public void populateCacheInfo(XSSFWorkbook workbook) {
         if (getProjectInfo().getCacheConfigMap().isEmpty()) return;
-        XSSFSheet sheet = createSheet(workbook, "Cache_Config");
-        AtomicInteger rowCounter = new AtomicInteger();
-        List<String> heading = new ArrayList<>(List.of(DependencyFinderConstant.FILE_NAME, "Cache Names", DependencyFinderConstant.COUNT));
+        XSSFSheet sheet = workbook.createSheet("Cache Configuration");
+        AtomicInteger rowCounter = new AtomicInteger(0);
+        List<String> heading = new ArrayList<>(List.of(DependencyFinderConstant.FILE_NAME, "Cache Names",
+                DependencyFinderConstant.COUNT));
         createExcelHeading(workbook, sheet, rowCounter.getAndIncrement(), heading);
         getProjectInfo().getCacheConfigMap().forEach((path, caches) -> {
             XSSFRow row = sheet.createRow(rowCounter.getAndIncrement());
             AtomicInteger cellCounter = new AtomicInteger();
             setCellvalueInExcel(path, row.createCell(cellCounter.getAndIncrement()), false, workbook);
-            setCellvalueInExcel(String.join(", ", caches), row.createCell(cellCounter.getAndIncrement()), false, workbook);
             setCellvalueInExcel(caches.size(), row.createCell(cellCounter.getAndIncrement()), false, workbook);
         });
+
+        int total = getProjectInfo().getCacheConfigMap()
+                .values().stream().mapToInt(Set::size).sum();
+        XSSFRow summary = sheet.createRow(rowCounter.getAndIncrement());
+        setCellvalueInExcel("Total", summary.createCell(0), true, workbook);
+        setCellvalueInExcel("", summary.createCell(1), false, workbook);
+        setCellvalueInExcel(total, summary.createCell(2), false, workbook);
+
     }
-    // Added: detect JBoss / Infinispan / JCache cache definitions
-    private Map<String, Set<String>> detectCacheConfig(File file) {
-        if (file == null || !file.isFile()) return null;
+
+    public void checkCacheDependencyInProject(File file) {
+        if (file == null || !file.isFile()) return;
+
         String lowerName = file.getName().toLowerCase();
-        boolean candidate = lowerName.endsWith(".xml") || lowerName.endsWith(".java") || lowerName.endsWith(".yaml") || lowerName.endsWith(".yml") || lowerName.endsWith(".properties");
-        if (!candidate) return null;
-        Set<String> found = new HashSet<>();
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(file.getPath()))) {
-            br.lines().forEach(raw -> {
-                String line = raw.trim();
-                String l = line.toLowerCase();
-                // XML cache definitions
-                if (l.contains("<cache-container") || l.contains("<infinispan") || l.contains("<local-cache") || l.contains("<replicated-cache") || l.contains("<distributed-cache") || l.contains("<invalidation-cache")) {
-                    int nameIdx = l.indexOf("name=");
-                    if (nameIdx > -1) {
-                        String after = line.substring(nameIdx + 5);
-                        if (after.startsWith("\"") || after.startsWith("'")) {
-                            char q = after.charAt(0);
-                            int end = after.indexOf(q, 1);
-                            if (end > 1) found.add(after.substring(1, end));
+        boolean candidate = lowerName.endsWith(".xml") || lowerName.endsWith(".java")
+                || lowerName.endsWith(".gradle") || lowerName.endsWith(".pom")
+                || lowerName.endsWith(".properties") || lowerName.endsWith(".yaml")
+                || lowerName.endsWith(".yml");
+        if (!candidate) return;
+
+        try (BufferedReader br = Files.newBufferedReader(file.toPath())) {
+            boolean cacheCandidate = false;
+            String content = br.lines()
+                    .peek(line -> {
+                        String l = line.toLowerCase();
+                        if (l.contains("infinispan") || l.contains("jboss.cache") ||
+                                l.contains("javax.cache") || l.contains("jcache")) {
+                            // flag detection, real extraction handled below
                         }
-                    } else {
-                        if (l.contains("<local-cache")) found.add("local-cache");
-                        if (l.contains("<replicated-cache")) found.add("replicated-cache");
-                        if (l.contains("<distributed-cache")) found.add("distributed-cache");
-                        if (l.contains("<invalidation-cache")) found.add("invalidation-cache");
-                    }
-                }
-                // Java Infinispan usage
-                if (l.contains("org.infinispan") || l.contains("defaultcachemanager") || l.contains("new configurationbuilder")) {
-                    if (l.contains("getcache(")) {
-                        int idx = l.indexOf("getcache(");
-                        int start = l.indexOf('"', idx);
-                        if (start > -1) {
-                            int end = l.indexOf('"', start + 1);
-                            if (end > start) found.add(line.substring(start + 1, end));
-                        }
-                    }
-                    if (l.contains("defineconfiguration(")) {
-                        int idx = l.indexOf("defineconfiguration(");
-                        int start = l.indexOf('"', idx);
-                        if (start > -1) {
-                            int end = l.indexOf('"', start + 1);
-                            if (end > start) found.add(line.substring(start + 1, end));
-                        }
-                    }
-                }
-                // JCache annotations
-                if (l.contains("@cacheresult") || l.contains("@cacheput") || l.contains("@cacheremove") || l.contains("@cacheremoveall")) {
-                    found.add("jcache-annotation");
-                }
-            });
+                    })
+                    .collect(Collectors.joining("\n"));
+            // Instead of modifying global map directly, get per-file results
+            Map<String, Set<String>> detected = detectCacheConfig(file, content);
+            detected.forEach((path, caches) ->
+                    getProjectInfo().getCacheConfigMap()
+                            .computeIfAbsent(path, x -> new HashSet<>()).addAll(caches));
         } catch (IOException ex) {
-            logger.debug("Cache detection read failure: {}", file.getPath());
-            return null;
+            logger.debug("Cache dependency detection failed for: {}", file.getPath());
         }
-        if (!found.isEmpty()) {
-            getProjectInfo().getCacheConfigMap().computeIfAbsent(file.getPath(), k -> new HashSet<>()).addAll(found);
+    }
+
+
+    private Map<String, Set<String>> detectCacheConfig(File file, String content) {
+        if (file == null || content == null || content.isEmpty())
+            return Collections.emptyMap();
+
+        Set<String> found = new HashSet<>();
+        String lowerContent = content.toLowerCase();
+        String[] lines = content.split("\\R");
+
+        for (String line : lines) {
+            String l = line.toLowerCase();
+
+            // XML cache configuration
+            if (l.contains("<local-cache") || l.contains("<replicated-cache") ||
+                    l.contains("<distributed-cache") || l.contains("<invalidation-cache") ||
+                    l.contains("<cache-container") || l.contains("<infinispan")) {
+
+                Matcher m = Pattern.compile("name\\s*=\\s*['\"]([^'\"]+)['\"]").matcher(line);
+                if (m.find()) found.add(m.group(1));
+                else if (l.contains("<local-cache")) found.add("local-cache");
+                else if (l.contains("<replicated-cache")) found.add("replicated-cache");
+                else if (l.contains("<distributed-cache")) found.add("distributed-cache");
+                else if (l.contains("<invalidation-cache")) found.add("invalidation-cache");
+            }
+
+            // Java usage
+            if (l.contains("org.infinispan") || l.contains("defaultcachemanager") ||
+                    l.contains("new configurationbuilder")) {
+                Matcher m1 = Pattern.compile("getcache\\([\"']([^\"']+)[\"']\\)").matcher(line);
+                if (m1.find()) found.add(m1.group(1));
+
+                Matcher m2 = Pattern.compile("defineconfiguration\\([\"']([^\"']+)[\"']").matcher(line);
+                if (m2.find()) found.add(m2.group(1));
+            }
+
+            // JCache annotations
+            if (l.contains("@cacheresult") || l.contains("@cacheput") ||
+                    l.contains("@cacheremove") || l.contains("@cacheremoveall")) {
+                found.add("jcache-annotation");
+            }
+
+            // YAML or properties
+            Matcher yaml = Pattern.compile("(jboss|infinispan)\\.cache.*[:=]\\s*(\\w+)").matcher(line);
+            if (yaml.find()) found.add(yaml.group(2));
         }
-        return getProjectInfo().getCacheConfigMap();
+
+        if (found.isEmpty()) return Collections.emptyMap();
+        return Map.of(file.getPath(), found);
     }
 }
-```
