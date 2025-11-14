@@ -1,9 +1,7 @@
 ```
 package slf.com.dependencyFinder;
 
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.usermodel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import slf.com.dependencyFinder.utility.DependencyFinderConstant;
@@ -20,147 +18,162 @@ import java.util.stream.IntStream;
 
 public class DetectTestClasses {
 
-    // Shared context (must be the same instance used elsewhere in the app)
     private final KnowYourProject context;
     private static final Logger logger = LoggerFactory.getLogger(DetectTestClasses.class);
 
     public DetectTestClasses(KnowYourProject context) {
-        this.context = Objects.requireNonNull(context, "KnowYourProject context required");
+        this.context = Objects.requireNonNull(context);
     }
 
+    // Model
+    public static class TestClassInfo {
+        public final String className;
+        public final List<String> testMethods = new ArrayList<>();
+        public TestClassInfo(String className) { this.className = className; }
+        @Override public String toString() { return className + " (methods: " + testMethods.size() + ")"; }
+    }
+
+    // Entry point
     public void checkTestClassesInProject(File file) {
-        if (file == null || !file.isFile()) return;
+        if (file == null || !file.isFile() || !file.getName().endsWith(".java")) return;
+        List<TestClassInfo> detected = detectTestClasses(file);
+        if (detected.isEmpty()) return;
+        // FIX: use Set<TestClassInfo> not List<TestClassInfo>
+        context.getProjectInfo().getTestClassesMap()
+                .computeIfAbsent(file.getPath(), k -> new LinkedHashSet<>())
+                .addAll(detected);
+    }
 
-        Set<String> found = new HashSet<>();
-        boolean inTestClass = false;
-        boolean junit3Mode = false;
-
-        String currentClass = null;
-        int methodCount = 0;
-
-        boolean importTestCase = false;
-
-        Pattern classNamePattern = Pattern.compile("\\bclass\\s+(\\w+)");
-        Pattern junit3ExtendsPattern = Pattern.compile("class\\s+(\\w+)\\s+extends\\s+TestCase");
-        Pattern junit4ClassPattern = Pattern.compile(".*\\bclass\\b.*Test\\b.*");
-        Pattern junit3MethodPattern = Pattern.compile("\\bpublic\\s+\\w.*\\s+test\\w*\\s*\\(");
-
+    // Detection
+    private List<TestClassInfo> detectTestClasses(File file) {
+        List<TestClassInfo> results = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(file.toPath())) {
             String line;
+            boolean inTestClass = false;
+            boolean junit3Mode = false;
+            boolean lastLineWasAnnotation = false;
+
+            String currentClass;
+            TestClassInfo currentInfo = null;
+
+            Pattern classNamePattern = Pattern.compile("\\bclass\\s+(\\w+)");
+            Pattern junit3ExtendsPattern = Pattern.compile("class\\s+(\\w+)\\s+extends\\s+TestCase");
+            Pattern junitSuffixClassPattern = Pattern.compile("\\bclass\\s+\\w*Test\\b");
+            Pattern junit3MethodPattern = Pattern.compile("\\bpublic\\s+\\w.*\\s+(test\\w*)\\s*\\(");
+            Pattern methodNamePattern = Pattern.compile("\\bpublic\\s+\\w.*\\s+(\\w+)\\s*\\(");
 
             while ((line = br.readLine()) != null) {
-                String l = line.trim();
+                String trimmed = line.trim();
 
-                // -------- Detect JUnit-3 class: extends TestCase --------
-                Matcher junit3Ext = junit3ExtendsPattern.matcher(l);
-                if (junit3Ext.find()) {
+                // JUnit3 class
+                Matcher j3 = junit3ExtendsPattern.matcher(trimmed);
+                if (j3.find()) {
                     inTestClass = true;
                     junit3Mode = true;
-                    currentClass = junit3Ext.group(1);
+                    currentClass = j3.group(1);
+                    currentInfo = new TestClassInfo(currentClass);
                     continue;
                 }
 
-                // -------- Detect JUnit-4/5/TestNG class ending with Test --------
-                if (junit4ClassPattern.matcher(l).matches()) {
+                // Class ending with Test (JUnit4/5/TestNG naming)
+                if (!inTestClass && junitSuffixClassPattern.matcher(trimmed).find()) {
                     inTestClass = true;
                     junit3Mode = false;
-
-                    Matcher m = classNamePattern.matcher(l);
-                    if (m.find()) currentClass = m.group(1);
-                }
-
-                // -------- Method-level detection --------
-                if (inTestClass) {
-                    // JUnit-4/5/TestNG
-                    if (l.startsWith("@Test")) {
-                        methodCount++;
-                    }
-                    // JUnit-3 (testXXX methods)
-                    else if (junit3Mode && junit3MethodPattern.matcher(l).find()) {
-                        methodCount++;
+                    Matcher m = classNamePattern.matcher(trimmed);
+                    if (m.find()) {
+                        currentClass = m.group(1);
+                        currentInfo = new TestClassInfo(currentClass);
                     }
                 }
 
-                // -------- End of class (rough but effective) --------
-                if (l.equals("}") && inTestClass) {
-                    if (currentClass != null && methodCount > 0) {
-                        found.add(currentClass + " (methods: " + methodCount + ")");
+                // @Test annotation (simple form)
+                if (trimmed.startsWith("@Test")) {
+                    lastLineWasAnnotation = true;
+                    continue;
+                }
+
+                // JUnit4/5/TestNG method
+                if (inTestClass && lastLineWasAnnotation) {
+                    Matcher m = methodNamePattern.matcher(trimmed);
+                    if (m.find() && currentInfo != null) currentInfo.testMethods.add(m.group(1));
+                    lastLineWasAnnotation = false;
+                }
+
+                // JUnit3 methods
+                if (inTestClass && junit3Mode) {
+                    Matcher m = junit3MethodPattern.matcher(trimmed);
+                    if (m.find() && currentInfo != null) currentInfo.testMethods.add(m.group(1));
+                }
+
+                // Class end
+                if (trimmed.equals("}")) {
+                    if (inTestClass && currentInfo != null && !currentInfo.testMethods.isEmpty()) {
+                        results.add(currentInfo);
                     }
                     inTestClass = false;
                     junit3Mode = false;
                     currentClass = null;
-                    methodCount = 0;
+                    currentInfo = null;
+                    lastLineWasAnnotation = false;
                 }
             }
-
-            // -------- Handle EOF without closing brace --------
-            if (inTestClass && currentClass != null && methodCount > 0) {
-                found.add(currentClass + " (methods: " + methodCount + ")");
-            }
-
-            System.out.println("Detected test classes in " + file.getPath() + ": " + found);
-
         } catch (Exception e) {
-            logger.debug("Test detection failed for: {}", file.getPath());
+            logger.debug("Test detection failed for: {}", file.getPath(), e);
         }
-
-        if(!found.isEmpty()) {
-            context.getProjectInfo().getTestClassesMap()
-                    .computeIfAbsent(file.getPath(), k -> new HashSet<>())
-                    .addAll(found);
-        }
+        return results;
     }
 
+    // Excel output
     public void populateTestInfo(XSSFWorkbook workbook) {
-        Map<String, Set<String>> testMap = context.getProjectInfo().getTestClassesMap();
+        Map<String, Set<TestClassInfo>> testMap = context.getProjectInfo().getTestClassesMap();
         if (testMap == null || testMap.isEmpty()) return;
 
         XSSFSheet sheet = workbook.createSheet("Test Classes");
         AtomicInteger rowIdx = new AtomicInteger();
 
-        int maxTests = testMap.values().stream().mapToInt(Set::size).max().orElse(1);
+        int maxClasses = testMap.values().stream().mapToInt(Set::size).max().orElse(1);
+
         List<String> heading = new ArrayList<>(List.of(
                 DependencyFinderConstant.FILE_NAME,
-                "Class Count"
+                "Test Class Count"
         ));
-        for (int i = 1; i <= maxTests; i++) heading.add("Test Class " + i);
+        for (int i = 1; i <= maxClasses; i++) heading.add("Test Class " + i);
+
         context.createExcelHeading(workbook, sheet, rowIdx.getAndIncrement(), heading);
 
         int totalClasses = 0;
         int totalMethods = 0;
 
-        for (Map.Entry<String, Set<String>> e : testMap.entrySet()) {
+        for (Map.Entry<String, Set<TestClassInfo>> e : testMap.entrySet()) {
             XSSFRow row = sheet.createRow(rowIdx.getAndIncrement());
             int col = 0;
-            List<String> sorted = e.getValue().stream().sorted().toList();
-            int classCount = sorted.size();
-            totalClasses += classCount;
 
-            // Sum method counts from string pattern "(methods: N)"
-            for (String s : sorted) {
-                Matcher m = Pattern.compile("\\(methods:\\s*(\\d+)\\)").matcher(s);
-                if (m.find()) totalMethods += Integer.parseInt(m.group(1));
-            }
+            List<TestClassInfo> sorted = e.getValue().stream()
+                    .sorted(Comparator.comparing(t -> t.className))
+                    .toList();
+
+            totalClasses += sorted.size();
+            for (TestClassInfo info : sorted) totalMethods += info.testMethods.size();
 
             context.setCellvalueInExcel(e.getKey(), row.createCell(col++), false, workbook);
-            context.setCellvalueInExcel(classCount, row.createCell(col++), false, workbook);
+            context.setCellvalueInExcel(sorted.size(), row.createCell(col++), false, workbook);
 
-            for (String testClass : sorted) {
-                context.setCellvalueInExcel(testClass, row.createCell(col++), false, workbook);
+            for (TestClassInfo info : sorted) {
+                context.setCellvalueInExcel(
+                        info.className + " (methods: " + info.testMethods.size() + ")",
+                        row.createCell(col++), false, workbook
+                );
             }
         }
 
-        // Summary rows
-        XSSFRow summary1 = sheet.createRow(rowIdx.getAndIncrement());
-        context.setCellvalueInExcel("Total Test Classes", summary1.createCell(0), true, workbook);
-        context.setCellvalueInExcel(totalClasses, summary1.createCell(1), false, workbook);
+        XSSFRow s1 = sheet.createRow(rowIdx.getAndIncrement());
+        context.setCellvalueInExcel("Total Test Classes", s1.createCell(0), true, workbook);
+        context.setCellvalueInExcel(totalClasses, s1.createCell(1), false, workbook);
 
-        XSSFRow summary2 = sheet.createRow(rowIdx.getAndIncrement());
-        context.setCellvalueInExcel("Total Test Methods", summary2.createCell(0), true, workbook);
-        context.setCellvalueInExcel(totalMethods, summary2.createCell(1), false, workbook);
+        XSSFRow s2 = sheet.createRow(rowIdx.getAndIncrement());
+        context.setCellvalueInExcel("Total Test Methods", s2.createCell(0), true, workbook);
+        context.setCellvalueInExcel(totalMethods, s2.createCell(1), false, workbook);
 
         IntStream.range(0, heading.size()).forEach(sheet::autoSizeColumn);
     }
 }
-
-```
